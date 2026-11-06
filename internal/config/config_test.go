@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"testing"
 
+	访问包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/accesslist"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -16,6 +18,13 @@ func Test配置往返(t *testing.T) {
 		U模式:   "shadow",
 		U受信代理: []string{"10.0.0.0/8", "192.168.1.0/24"},
 		U检查头:  []string{"User-Agent", "X-Custom"},
+		U访问列表: 访问包.U列表{
+			U仅允许: false,
+			U条目: []访问包.U条目{
+				{UID: "office", U动作: "allow", U地址: "203.0.113.0/24", U备注: "office network", U启用: true},
+				{UID: "blocked", U动作: "deny", U地址: "198.51.100.9", U启用: true},
+			},
+		},
 		U站点: []U站点{
 			{
 				U主机:     "app.example.com",
@@ -105,6 +114,11 @@ func Test校验拒绝无效配置(t *testing.T) {
 				{U主机: "a.example.com", U上游: "http://127.0.0.1:1"},
 				{U主机: "A.example.com", U上游: "http://127.0.0.1:2"},
 			},
+		},
+		"bad access list": {
+			U监听: "127.0.0.1:8080", U管理监听: "127.0.0.1:9091", U模式: "enforce",
+			U访问列表: 访问包.U列表{U条目: []访问包.U条目{{UID: "x", U动作: "block", U地址: "10.0.0.1", U启用: true}}},
+			U站点:   []U站点{{U主机: "a.example.com", U上游: "http://127.0.0.1:1"}},
 		},
 		"bad trusted proxy": {
 			U监听: "127.0.0.1:8080", U管理监听: "127.0.0.1:9091", U模式: "enforce",

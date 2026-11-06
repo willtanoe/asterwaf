@@ -24,3 +24,17 @@ inspect_headers:
   - User-Agent
   - Referer
   - X-Forwarded-For
+
+# Access lists are seeded from YAML only when the database table is empty.
+access_lists:
+  allow_only: false
+  entries:
+    - id: office
+      action: allow
+      address: 203.0.113.0/24
+      note: office network
+      enabled: true
+    - id: blocked-host
+      action: deny
+      address: 198.51.100.9
+      enabled: true
