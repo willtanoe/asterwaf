@@ -6,7 +6,7 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 | --- | --- | --- | --- | --- |
 | 0 repo-bootstrap | phase/0-repo-bootstrap | phase-0 | complete | make check passes; standalone build works |
 | 1 proxy-skeleton | phase/1-proxy-skeleton | phase-1 | complete | host routing, trusted client IP, graceful shutdown |
-| 2 inspection-pipeline | phase/2-inspection-pipeline | phase-2 | pending | |
+| 2 inspection-pipeline | phase/2-inspection-pipeline | phase-2 | complete | bounded body read, gzip/deflate copy, target extraction, redaction |
 | 3 rule-engine | phase/3-rule-engine | phase-3 | pending | Stage A gate included |
 | 4 access-lists | phase/4-access-lists | phase-4 | pending | |
 | 5 rate-limiting | phase/5-rate-limiting | phase-5 | pending | |
