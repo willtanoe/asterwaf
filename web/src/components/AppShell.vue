@@ -23,8 +23,11 @@ async function signOut(): Promise<void> {
   <div class="shell">
     <aside class="sidebar">
       <div class="brand">
-        {{ copy.appName }}
-        <span class="brand-subtitle">{{ copy.appSubtitle }}</span>
+        <img class="brand-logo" src="/aster.svg" alt="" width="36" height="36" />
+        <span class="brand-text">
+          {{ copy.appName }}
+          <span class="brand-subtitle">{{ copy.appSubtitle }}</span>
+        </span>
       </div>
       <nav class="nav" :aria-label="copy.nav.label">
         <RouterLink class="nav-link" :to="{ name: 'overview' }">{{ copy.nav.overview }}</RouterLink>

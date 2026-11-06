@@ -46,8 +46,11 @@ async function submit(): Promise<void> {
   <main class="login-page">
     <section class="login-card" aria-labelledby="login-title">
       <div class="brand">
-        {{ copy.appName }}
-        <span class="brand-subtitle">{{ copy.appSubtitle }}</span>
+        <img class="brand-logo" src="/aster.svg" alt="" width="40" height="40" />
+        <span class="brand-text">
+          {{ copy.appName }}
+          <span class="brand-subtitle">{{ copy.appSubtitle }}</span>
+        </span>
       </div>
       <h1 id="login-title" class="page-title">{{ copy.login.title }}</h1>
       <p class="page-subtitle">{{ copy.login.subtitle }}</p>

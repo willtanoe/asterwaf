@@ -117,6 +117,10 @@ export const copy = {
       aria: "Request and blocked request counts over time",
     },
     approximate: "Approximate values",
+    gauge: {
+      aria: "Block rate gauge",
+      counters: "Decision counts",
+    },
   },
   pages: {
     logs: {

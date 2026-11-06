@@ -37,7 +37,8 @@ Only `--sp-4`, `--sp-8`, `--sp-12`, `--sp-16`, `--sp-24`, `--sp-32` are used. Pa
 
 | Component | File | States |
 | --- | --- | --- |
-| `AppShell` | `web/src/components/AppShell.vue` | skip link, navigation, theme toggle, sign out |
+| `AppShell` | `web/src/components/AppShell.vue` | skip link, brand logo, navigation, theme toggle, sign out |
+| `Gauge` | `web/src/components/Gauge.vue` | SVG speedometer for the block rate: track arc, progress arc, ticks, animated needle |
 | `StatusBar` | `web/src/components/StatusBar.vue` | loading, error, runtime status with site health |
 | `KpiCard` | `web/src/components/KpiCard.vue` | loading, error, value with delta and sparkline |
 | `Sparkline` | `web/src/components/Sparkline.vue` | inline trend, tooltip enabled, animations disabled |
@@ -50,7 +51,7 @@ Semantic states always carry a text label (`Blocked`, `Recorded`, `Rate limited`
 
 ## Layout
 
-The shell is a two-column grid (sidebar, content) above 900px and a single column with a horizontally scrollable navigation below that. KPI cards are 4 columns at desktop, 2 at tablet, 1 at 320px. Tables scroll inside their own container; the page itself does not scroll horizontally at 320, 768, or 1440.
+The shell is a two-column grid (sidebar, content) above 900px and a single column with a horizontally scrollable navigation below that. The Overview hero pairs the block-rate gauge with four decision counters; KPI cards are 3 columns at desktop, 2 at tablet, 1 at 320px. Tables scroll inside their own container; the page itself does not scroll horizontally at 320, 768, or 1440.
 
 ## Verification
 

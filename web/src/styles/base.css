@@ -93,6 +93,20 @@ button {
   font-size: var(--fs-20);
   font-weight: 600;
   letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  flex: none;
+}
+
+.brand-text {
+  min-width: 0;
 }
 
 .brand-subtitle {
@@ -390,7 +404,7 @@ tbody tr:hover {
 
 .grid-kpi {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--sp-12);
 }
 

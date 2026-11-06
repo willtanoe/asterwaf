@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { api } from "../api/client";
 import type { LogEntry, OverviewResponse, SiteView, StatusResponse } from "../api/types";
 import BreakdownList from "../components/BreakdownList.vue";
+import Gauge from "../components/Gauge.vue";
 import KpiCard from "../components/KpiCard.vue";
 import StateMessage from "../components/StateMessage.vue";
 import StatusBar from "../components/StatusBar.vue";
@@ -41,15 +42,19 @@ let statusTimer = 0;
 let latestTimer = 0;
 
 const kpiDefs = [
-  { key: "total_requests", color: "--accent", format: formatNumber },
-  { key: "blocked_requests", color: "--blocked", format: formatNumber },
-  { key: "shadow_requests", color: "--recorded", format: formatNumber },
-  { key: "ratelimited_requests", color: "--ratelimited", format: formatNumber },
-  { key: "block_rate", color: "--accent", format: formatPercent },
   { key: "unique_ips", color: "--accent", format: formatNumber },
   { key: "latency_p50_ms", color: "--text-dim", format: formatLatency },
   { key: "latency_p95_ms", color: "--text-dim", format: formatLatency },
 ] as const;
+
+const heroCounters = computed(() => [
+  { key: "total", tone: "total", label: copy.overview.kpis.total_requests, value: kpiValue("total_requests", formatNumber) },
+  { key: "blocked", tone: "blocked", label: copy.overview.kpis.blocked_requests, value: kpiValue("blocked_requests", formatNumber) },
+  { key: "shadow", tone: "shadow", label: copy.overview.kpis.shadow_requests, value: kpiValue("shadow_requests", formatNumber) },
+  { key: "ratelimited", tone: "ratelimited", label: copy.overview.kpis.ratelimited_requests, value: kpiValue("ratelimited_requests", formatNumber) },
+]);
+
+const blockRateValue = computed<number | null>(() => overview.value?.kpis.block_rate?.value ?? null);
 
 const sectionState = computed<"ready" | "loading" | "error">(() => {
   if (overview.value !== null) {
@@ -237,6 +242,40 @@ watch(range, () => {
 
     <p v-if="overviewError && overview !== null" class="stale" role="status">{{ copy.common.stale }}</p>
 
+    <section class="panel" aria-label="Block rate">
+      <div class="panel-header">
+        <h2 class="panel-title">{{ copy.overview.kpis.block_rate }}</h2>
+        <span v-if="overview?.range.approximate" class="badge badge-unknown">{{ copy.overview.approximate }}</span>
+      </div>
+      <div class="panel-body hero-body">
+        <StateMessage
+          v-if="sectionState === 'loading'"
+          kind="loading"
+          :message="copy.common.loading"
+        />
+        <StateMessage
+          v-else-if="sectionState === 'error'"
+          kind="error"
+          :message="copy.common.errorTitle"
+          @retry="loadOverview"
+        />
+        <template v-else>
+          <Gauge
+            class="hero-gauge"
+            :value="blockRateValue"
+            :display="kpiValue('block_rate', formatPercent)"
+            :label="copy.overview.kpis.block_rate"
+          />
+          <dl class="hero-counters" :aria-label="copy.overview.gauge.counters">
+            <div v-for="counter in heroCounters" :key="counter.key" class="counter" :class="`counter-${counter.tone}`">
+              <dt>{{ counter.label }}</dt>
+              <dd class="mono">{{ counter.value }}</dd>
+            </div>
+          </dl>
+        </template>
+      </div>
+    </section>
+
     <section class="grid-kpi" aria-label="Key metrics">
       <KpiCard
         v-for="definition in kpiDefs"
@@ -413,6 +452,63 @@ watch(range, () => {
   margin: 0;
   color: var(--recorded);
   font-size: var(--fs-13);
+}
+
+.hero-body {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-24);
+  flex-wrap: wrap;
+}
+
+.hero-gauge {
+  flex: 1 1 240px;
+}
+
+.hero-counters {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-12);
+  flex: 2 1 300px;
+}
+
+.counter {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: var(--sp-12) var(--sp-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+.counter dt {
+  color: var(--text-dim);
+  font-size: var(--fs-13);
+}
+
+.counter dd {
+  margin: 0;
+  font-size: var(--fs-20);
+  overflow-wrap: anywhere;
+}
+
+.counter-total {
+  border-left-color: var(--accent);
+}
+
+.counter-blocked {
+  border-left-color: var(--blocked);
+}
+
+.counter-shadow {
+  border-left-color: var(--recorded);
+}
+
+.counter-ratelimited {
+  border-left-color: var(--ratelimited);
 }
 
 .site-select {
