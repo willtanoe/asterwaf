@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	访问列表 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/accesslist"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/clientip"
 	配置 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/config"
 	规则引擎 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
@@ -27,6 +28,7 @@ type U处理器 struct {
 	配置  配置.U配置
 	管线  *检查管线.U管线
 	引擎  *规则引擎.U引擎
+	访问  *访问列表.U检查器
 }
 
 type 站点 struct {
@@ -61,6 +63,11 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 		Proxy: nil,
 	}
 
+	访问表, 错误 := 访问列表.U新建(配置值.U访问列表)
+	if 错误 != nil {
+		return nil, fmt.Errorf("proxy: access lists: %w", 错误)
+	}
+
 	处理器 := &U处理器{
 		解析器: 解析器,
 		日志:  日志,
@@ -68,6 +75,7 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 		配置:  配置值,
 		管线:  检查管线.U新建(配置值.U检查头),
 		引擎:  引擎,
+		访问:  访问表,
 	}
 	for _, 站点配置 := range 配置值.U站点 {
 		上游, 错误 := url.Parse(站点配置.U上游)
@@ -123,6 +131,36 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 		_, _ = 写.Write([]byte("site configuration is inconsistent\n"))
 		return
 	}
+	客户端 := 处理器.解析器.U解析(请求)
+	访问结果 := 处理器.访问.U检查(客户端.U地址)
+	if 访问结果.U拦截 {
+		处理器.日志.Warn("request blocked",
+			"site", 站点值.主机,
+			"method", 请求.Method,
+			"path", 请求.URL.RequestURI(),
+			"mode", 站点值.模式,
+			"action", "block",
+			"category", "accesslist",
+			"rule_id", 访问结果.U规则ID,
+			"client_ip", 客户端.U地址.String(),
+			"target_category", "client_ip",
+			"target_name", "address",
+			"shadow", false,
+		)
+		写.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		写.WriteHeader(http.StatusForbidden)
+		_, _ = 写.Write([]byte("request blocked\n"))
+		return
+	}
+	if 访问结果.U白名单 {
+		处理器.日志.Debug("request allowlisted",
+			"site", 站点值.主机,
+			"path", 请求.URL.RequestURI(),
+			"rule_id", 访问结果.U规则ID,
+			"client_ip", 客户端.U地址.String(),
+		)
+	}
+
 	快照, 错误 := 处理器.管线.U读取(写, 请求, 站点值.最大请求体)
 	if 错误 != nil {
 		var 超限 *检查管线.U体过大错误
@@ -156,7 +194,9 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 			"path", 请求.URL.RequestURI(),
 			"mode", 决策.U模式,
 			"action", 决策.U动作,
+			"category", 决策.U类别,
 			"rule_id", 决策.U规则ID,
+			"client_ip", 客户端.U地址.String(),
 			"target_category", 决策.U目标.U类别,
 			"target_name", 决策.U目标.U名称,
 			"shadow", false,
@@ -172,7 +212,9 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 			"path", 请求.URL.RequestURI(),
 			"mode", 决策.U模式,
 			"action", 决策.U动作,
+			"category", 决策.U类别,
 			"rule_id", 决策.U规则ID,
+			"client_ip", 客户端.U地址.String(),
 			"target_category", 决策.U目标.U类别,
 			"target_name", 决策.U目标.U名称,
 			"shadow", true,

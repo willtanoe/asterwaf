@@ -10,8 +10,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 
+	访问列表 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/accesslist"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/clientip"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/config"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
@@ -330,4 +332,132 @@ func Test规则模式(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test访问列表优先于规则与请求体限制(t *testing.T) {
+	var 上游次数 int32
+	上游 := httptest.NewServer(http.HandlerFunc(func(写 http.ResponseWriter, _ *http.Request) {
+		atomic.AddInt32(&上游次数, 1)
+		_, _ = 写.Write([]byte("ok"))
+	}))
+	defer 上游.Close()
+
+	处理器, 日志缓冲 := 新建带日志(t, 配置.U配置{
+		U模式: "enforce",
+		U站点: []配置.U站点{{U主机: "app.example.com", U上游: 上游.URL, U最大请求体: 8}},
+		U访问列表: 访问列表.U列表{U条目: []访问列表.U条目{
+			{UID: "deny-me", U动作: "deny", U地址: "198.51.100.7", U启用: true},
+			{UID: "allow-me-too", U动作: "allow", U地址: "198.51.100.7", U启用: true},
+		}},
+	})
+
+	请求 := httptest.NewRequest("POST", "http://app.example.com/", strings.NewReader(strings.Repeat("x", 100)))
+	请求.RemoteAddr = "198.51.100.7:1234"
+	记录 := httptest.NewRecorder()
+	处理器.ServeHTTP(记录, 请求)
+	if 记录.Code != http.StatusForbidden {
+		t.Fatalf("status=%d, want 403", 记录.Code)
+	}
+	if atomic.LoadInt32(&上游次数) != 0 {
+		t.Fatal("denied request reached upstream")
+	}
+	if !strings.Contains(日志缓冲.String(), `"rule_id":"acl:deny"`) {
+		t.Fatalf("deny decision not logged: %s", 日志缓冲.String())
+	}
+	if !strings.Contains(日志缓冲.String(), `"category":"accesslist"`) {
+		t.Fatalf("accesslist category missing: %s", 日志缓冲.String())
+	}
+}
+
+func Test允许列表跳过访问列表但仍受规则约束(t *testing.T) {
+	var 上游次数 int32
+	上游 := httptest.NewServer(http.HandlerFunc(func(写 http.ResponseWriter, _ *http.Request) {
+		atomic.AddInt32(&上游次数, 1)
+		_, _ = 写.Write([]byte("ok"))
+	}))
+	defer 上游.Close()
+
+	配置值 := 配置.U配置{
+		U模式: "enforce",
+		U站点: []配置.U站点{{U主机: "app.example.com", U上游: 上游.URL}},
+		U访问列表: 访问列表.U列表{U仅允许: true, U条目: []访问列表.U条目{
+			{UID: "office", U动作: "allow", U地址: "203.0.113.0/24", U启用: true},
+		}},
+	}
+
+	处理器, 日志缓冲 := 新建带日志(t, 配置值)
+	未允许 := httptest.NewRequest("GET", "http://app.example.com/", nil)
+	未允许.RemoteAddr = "198.51.100.7:1234"
+	记录 := httptest.NewRecorder()
+	处理器.ServeHTTP(记录, 未允许)
+	if 记录.Code != http.StatusForbidden {
+		t.Fatalf("allow_only status=%d", 记录.Code)
+	}
+	if !strings.Contains(日志缓冲.String(), `"rule_id":"acl:allow-only"`) {
+		t.Fatalf("allow-only decision missing: %s", 日志缓冲.String())
+	}
+
+	日志缓冲.Reset()
+	允许正常 := httptest.NewRequest("GET", "http://app.example.com/rest/products/search?q=apple", nil)
+	允许正常.RemoteAddr = "203.0.113.7:1234"
+	记录 = httptest.NewRecorder()
+	处理器.ServeHTTP(记录, 允许正常)
+	if 记录.Code != http.StatusOK {
+		t.Fatalf("allowlisted normal status=%d", 记录.Code)
+	}
+
+	允许攻击 := httptest.NewRequest("GET", "http://app.example.com/rest/products/search?q=1%20union%20select%201", nil)
+	允许攻击.RemoteAddr = "203.0.113.7:1234"
+	记录 = httptest.NewRecorder()
+	处理器.ServeHTTP(记录, 允许攻击)
+	if 记录.Code != http.StatusForbidden {
+		t.Fatalf("allowlisted attack status=%d", 记录.Code)
+	}
+	if !strings.Contains(日志缓冲.String(), `"rule_id":"sqli.union-select"`) {
+		t.Fatalf("rule did not evaluate allowlisted request: %s", 日志缓冲.String())
+	}
+	if atomic.LoadInt32(&上游次数) != 1 {
+		t.Fatalf("upstream calls=%d, want 1", 上游次数)
+	}
+}
+
+func Test访问列表不采用伪造XFF(t *testing.T) {
+	上游 := httptest.NewServer(http.HandlerFunc(func(写 http.ResponseWriter, _ *http.Request) {
+		_, _ = 写.Write([]byte("ok"))
+	}))
+	defer 上游.Close()
+
+	处理器, _ := 新建带日志(t, 配置.U配置{
+		U模式: "enforce",
+		U站点: []配置.U站点{{U主机: "app.example.com", U上游: 上游.URL}},
+		U访问列表: 访问列表.U列表{U条目: []访问列表.U条目{
+			{UID: "deny-real", U动作: "deny", U地址: "198.51.100.7", U启用: true},
+		}},
+	})
+	请求 := httptest.NewRequest("GET", "http://app.example.com/", nil)
+	请求.RemoteAddr = "198.51.100.7:1234"
+	请求.Header.Set("X-Forwarded-For", "203.0.113.7")
+	记录 := httptest.NewRecorder()
+	处理器.ServeHTTP(记录, 请求)
+	if 记录.Code != http.StatusForbidden {
+		t.Fatalf("spoofed XFF bypassed deny: status=%d", 记录.Code)
+	}
+}
+
+func 新建带日志(t *testing.T, 配置值 配置.U配置) (*U处理器, *bytes.Buffer) {
+	t.Helper()
+	解析器, 错误 := 客户端地址.U新建(配置值.U受信代理)
+	if 错误 != nil {
+		t.Fatalf("resolver: %v", 错误)
+	}
+	引擎, 错误 := 引擎.U新建(引擎.U默认规则())
+	if 错误 != nil {
+		t.Fatalf("engine: %v", 错误)
+	}
+	var 缓冲 bytes.Buffer
+	处理器, 错误 := U新建(配置值, 解析器, 引擎, slog.New(slog.NewJSONHandler(&缓冲, nil)))
+	if 错误 != nil {
+		t.Fatalf("proxy: %v", 错误)
+	}
+	return 处理器, &缓冲
 }
