@@ -179,7 +179,7 @@ func Test迁移幂等(t *testing.T) {
 	if 错误 := 数据库.QueryRow(`SELECT MAX(version) FROM schema_migrations`).Scan(&版本); 错误 != nil {
 		t.Fatalf("version: %v", 错误)
 	}
-	if 版本 != 2 {
+	if 版本 != 3 {
 		t.Fatalf("version=%d", 版本)
 	}
 }
