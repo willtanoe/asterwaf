@@ -4,7 +4,7 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 
 | Phase | Branch | Tag | Status | Notes |
 | --- | --- | --- | --- | --- |
-| 0 repo-bootstrap | phase/0-repo-bootstrap | phase-0 | in progress | |
+| 0 repo-bootstrap | phase/0-repo-bootstrap | phase-0 | complete | make check passes; standalone build works |
 | 1 proxy-skeleton | phase/1-proxy-skeleton | phase-1 | pending | |
 | 2 inspection-pipeline | phase/2-inspection-pipeline | phase-2 | pending | |
 | 3 rule-engine | phase/3-rule-engine | phase-3 | pending | Stage A gate included |
