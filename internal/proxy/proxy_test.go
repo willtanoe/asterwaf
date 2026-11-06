@@ -3,21 +3,26 @@ package 反向代理
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	访问列表 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/accesslist"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/clientip"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/config"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
 	限流包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/ratelimit"
+	存储包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/store"
 )
 
 func Test站点路由(t *testing.T) {
@@ -211,7 +216,7 @@ func 新建处理器(t *testing.T, 配置值 配置.U配置, 受信 []string) *U
 	if 错误 != nil {
 		t.Fatalf("engine: %v", 错误)
 	}
-	处理器, 错误 := U新建(配置值, 解析器, 引擎, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	处理器, 错误 := U新建(配置值, 解析器, 引擎, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	if 错误 != nil {
 		t.Fatalf("proxy: %v", 错误)
 	}
@@ -300,7 +305,7 @@ func Test规则模式(t *testing.T) {
 			处理器, 错误 := U新建(配置.U配置{
 				U模式: 用例.模式,
 				U站点: []配置.U站点{{U主机: "app.example.com", U上游: 上游.URL, U模式: 用例.模式}},
-			}, 解析器, 引擎, 日志)
+			}, 解析器, 引擎, nil, 日志)
 			if 错误 != nil {
 				t.Fatalf("proxy: %v", 错误)
 			}
@@ -457,7 +462,7 @@ func 新建带日志(t *testing.T, 配置值 配置.U配置) (*U处理器, *byte
 		t.Fatalf("engine: %v", 错误)
 	}
 	var 缓冲 bytes.Buffer
-	处理器, 错误 := U新建(配置值, 解析器, 引擎, slog.New(slog.NewJSONHandler(&缓冲, nil)))
+	处理器, 错误 := U新建(配置值, 解析器, 引擎, nil, slog.New(slog.NewJSONHandler(&缓冲, nil)))
 	if 错误 != nil {
 		t.Fatalf("proxy: %v", 错误)
 	}
@@ -533,5 +538,124 @@ func Test白名单跳过限流(t *testing.T) {
 		if 记录.Code != http.StatusOK {
 			t.Fatalf("allowlisted request %d status=%d", 次数, 记录.Code)
 		}
+	}
+}
+
+func Test请求日志落库与脱敏(t *testing.T) {
+	路径 := filepath.Join(t.TempDir(), "waf.db")
+	存储, 错误 := 存储包.U打开(路径, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if 错误 != nil {
+		t.Fatalf("store: %v", 错误)
+	}
+
+	上游 := httptest.NewServer(http.HandlerFunc(func(写 http.ResponseWriter, _ *http.Request) {
+		_, _ = 写.Write([]byte("ok"))
+	}))
+	defer 上游.Close()
+
+	解析器, 错误 := 客户端地址.U新建(nil)
+	if 错误 != nil {
+		t.Fatalf("resolver: %v", 错误)
+	}
+	引擎, 错误 := 引擎.U新建(引擎.U默认规则())
+	if 错误 != nil {
+		t.Fatalf("engine: %v", 错误)
+	}
+	处理器, 错误 := U新建(配置.U配置{
+		U模式: "enforce",
+		U站点: []配置.U站点{{U主机: "app.example.com", U上游: 上游.URL, U模式: "enforce"}},
+	}, 解析器, 引擎, 存储, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if 错误 != nil {
+		t.Fatalf("proxy: %v", 错误)
+	}
+
+	允许 := httptest.NewRequest("POST", "http://app.example.com/login", strings.NewReader("user=bob&password=hunter2"))
+	允许.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	允许.Header.Set("Cookie", "session=secret-cookie")
+	允许.RemoteAddr = "203.0.113.10:1234"
+	允许记录 := httptest.NewRecorder()
+	处理器.ServeHTTP(允许记录, 允许)
+	if 允许记录.Code != http.StatusOK {
+		t.Fatalf("allow status=%d", 允许记录.Code)
+	}
+	允许ID := 允许记录.Header().Get("X-AsterWAF-Request-ID")
+	if len(允许ID) != 16 {
+		t.Fatalf("request id=%q", 允许ID)
+	}
+
+	拦截 := httptest.NewRequest("GET", "http://app.example.com/search?q=1%20union%20select%201", nil)
+	拦截.RemoteAddr = "203.0.113.11:1234"
+	拦截.Header.Set("User-Agent", "sqlmap/1.8")
+	拦截记录 := httptest.NewRecorder()
+	处理器.ServeHTTP(拦截记录, 拦截)
+	if 拦截记录.Code != http.StatusForbidden {
+		t.Fatalf("block status=%d", 拦截记录.Code)
+	}
+	拦截ID := 拦截记录.Header().Get("X-AsterWAF-Request-ID")
+
+	阴影 := httptest.NewRequest("POST", "http://app.example.com/search?q=1%20union%20select%201", strings.NewReader("q=x&token=top-secret"))
+	阴影.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	阴影.RemoteAddr = "203.0.113.12:1234"
+	阴影记录 := httptest.NewRecorder()
+	阴影处理器, 错误 := U新建(配置.U配置{
+		U模式: "shadow",
+		U站点: []配置.U站点{{U主机: "app.example.com", U上游: 上游.URL, U模式: "shadow"}},
+	}, 解析器, 引擎, 存储, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if 错误 != nil {
+		t.Fatalf("shadow proxy: %v", 错误)
+	}
+	阴影处理器.ServeHTTP(阴影记录, 阴影)
+	if 阴影记录.Code != http.StatusOK {
+		t.Fatalf("shadow status=%d", 阴影记录.Code)
+	}
+	阴影ID := 阴影记录.Header().Get("X-AsterWAF-Request-ID")
+
+	处理器.U关闭空闲连接()
+	阴影处理器.U关闭空闲连接()
+	上下文, 取消 := context.WithTimeout(context.Background(), 5*time.Second)
+	defer 取消()
+	if 错误 := 存储.Close(上下文); 错误 != nil {
+		t.Fatalf("close store: %v", 错误)
+	}
+
+	数据库, 错误 := sql.Open("sqlite", 路径)
+	if 错误 != nil {
+		t.Fatalf("reopen: %v", 错误)
+	}
+	defer func() { _ = 数据库.Close() }()
+
+	var 动作, 类别, 规则, 请求头, 请求体 string
+	var 影子 int
+	if 错误 := 数据库.QueryRow(`SELECT action, category, rule_id, shadow, request_headers, request_body FROM logs WHERE request_id = ?`, 允许ID).Scan(&动作, &类别, &规则, &影子, &请求头, &请求体); 错误 != nil {
+		t.Fatalf("allow row: %v", 错误)
+	}
+	if 动作 != "allow" || 影子 != 0 {
+		t.Fatalf("allow row action=%s shadow=%d", 动作, 影子)
+	}
+	if 请求头 != "" || 请求体 != "" {
+		t.Fatalf("allow request stored headers/body: %q %q", 请求头, 请求体)
+	}
+
+	if 错误 := 数据库.QueryRow(`SELECT action, category, rule_id, shadow, request_headers, request_body FROM logs WHERE request_id = ?`, 拦截ID).Scan(&动作, &类别, &规则, &影子, &请求头, &请求体); 错误 != nil {
+		t.Fatalf("block row: %v", 错误)
+	}
+	if 动作 != "block" || 类别 != "sqli" || 规则 != "sqli.union-select" || 影子 != 0 {
+		t.Fatalf("block row action=%s category=%s rule=%s shadow=%d", 动作, 类别, 规则, 影子)
+	}
+	if !strings.Contains(请求头, "sqlmap") {
+		t.Fatalf("block headers not stored: %s", 请求头)
+	}
+
+	if 错误 := 数据库.QueryRow(`SELECT action, category, rule_id, shadow, request_headers, request_body FROM logs WHERE request_id = ?`, 阴影ID).Scan(&动作, &类别, &规则, &影子, &请求头, &请求体); 错误 != nil {
+		t.Fatalf("shadow row: %v", 错误)
+	}
+	if 动作 != "shadow" || 影子 != 1 {
+		t.Fatalf("shadow row action=%s shadow=%d", 动作, 影子)
+	}
+	if strings.Contains(请求体, "top-secret") {
+		t.Fatalf("shadow body leaked token: %s", 请求体)
+	}
+	if !strings.Contains(请求体, "<redacted>") {
+		t.Fatalf("shadow body was not redacted: %s", 请求体)
 	}
 }

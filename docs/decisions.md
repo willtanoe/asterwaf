@@ -48,3 +48,10 @@ This file records choices that constrain later work. Each entry is dated and, wh
 - Buckets are in memory and reset on restart; this is acceptable for a single-node proxy and keeps the hot path lock-only.
 - IPv6 clients share a bucket per /64. Per-address buckets would be bypassed by rotating the low 64 bits.
 - The table is bounded at 100,000 entries; the least recently used bucket is evicted before insertion. A one-minute sweep removes buckets idle for ten minutes.
+
+## 2026-11-06 Async request logging
+
+- The request path only formats and enqueues a record into a 4096-slot channel. A single goroutine writes batches of up to 256 rows, one transaction per batch, at most one second apart. A full queue drops the row and increments `Dropped()`.
+- `duration_ms` is captured before the request is handed to the reverse proxy, so it measures inspection only. The UI labels it "Inspection latency".
+- Request headers and bodies are persisted only when a rule matched or the action is not `allow`; both copies are redacted and bounded (8 KiB headers, 2 KiB body). Blocked requests that never reached body inspection store empty bodies.
+- `X-AsterWAF-Request-ID` is generated before routing and re-applied on `WriteHeader`, so an upstream cannot override it.

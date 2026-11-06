@@ -10,7 +10,7 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 | 3 rule-engine | phase/3-rule-engine | phase-3 | complete | 23 default rules; Stage A: 0/40 false positives, 40/40 attacks blocked (fallback corpus) |
 | 4 access-lists | phase/4-access-lists | phase-4 | complete | deny precedence, allow-only, allow bypasses ACL |
 | 5 rate-limiting | phase/5-rate-limiting | phase-5 | complete | token bucket, IPv6 /64, cleanup, eviction, 429 |
-| 6 async-logging | phase/6-async-logging | phase-6 | pending | |
+| 6 async-logging | phase/6-async-logging | phase-6 | complete | SQLite WAL, embedded migration, 4096-slot queue, request IDs |
 | 7 stats-rollups | phase/7-stats-rollups | phase-7 | pending | |
 | 8a api-foundation | phase/8a-api-foundation | phase-8a | pending | |
 | 8b api-management | phase/8b-api-management | phase-8b | pending | |

@@ -15,6 +15,7 @@ import (
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/config"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/proxy"
+	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/store"
 )
 
 func main() {
@@ -43,7 +44,18 @@ func 运行(路径 string, 日志 *slog.Logger) error {
 	if 错误 != nil {
 		return 错误
 	}
-	处理器, 错误 := 反向代理.U新建(配置值, 解析器, 引擎, 日志)
+	存储, 错误 := 存储.U打开(配置值.U数据库, 日志)
+	if 错误 != nil {
+		return 错误
+	}
+	defer func() {
+		上下文, 取消 := context.WithTimeout(context.Background(), 5*time.Second)
+		defer 取消()
+		if 错误 := 存储.Close(上下文); 错误 != nil {
+			日志.Error("log store did not shut down cleanly", "error", 错误)
+		}
+	}()
+	处理器, 错误 := 反向代理.U新建(配置值, 解析器, 引擎, 存储, 日志)
 	if 错误 != nil {
 		return 错误
 	}
