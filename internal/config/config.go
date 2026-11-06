@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 
+	访问包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/accesslist"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -37,6 +39,7 @@ type U配置 struct {
 	U模式   string   `yaml:"mode"`
 	U受信代理 []string `yaml:"trusted_proxies"`
 	U检查头  []string `yaml:"inspect_headers"`
+	U访问列表 访问包.U列表  `yaml:"access_lists"`
 	U站点   []U站点    `yaml:"sites"`
 }
 
@@ -82,6 +85,9 @@ func (配置值 U配置) U校验() error {
 	}
 	if !U模式合法(配置值.U模式) {
 		return fmt.Errorf("config: invalid mode %q (want off, shadow or enforce)", 配置值.U模式)
+	}
+	if _, 错误 := 访问包.U新建(配置值.U访问列表); 错误 != nil {
+		return fmt.Errorf("config: access_lists: %w", 错误)
 	}
 	for 序号, 名称 := range 配置值.U检查头 {
 		if strings.TrimSpace(名称) == "" {

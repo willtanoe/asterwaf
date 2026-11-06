@@ -36,3 +36,9 @@ This file records choices that constrain later work. Each entry is dated and, wh
 - Default mode is `enforce`. The built-in rules are deliberately conservative: they target unambiguous syntax such as `union select`, `<script`, `../`, and known shell words rather than broad heuristics.
 - Rule order is priority. The first enabled rule that matches any inspected target wins; shadow mode also stops at the first match.
 - Stage A's real target, OWASP Juice Shop, is not available from npm (ETARGET for the pinned version). The gate ran against a committed 40 + 40 corpus through the actual proxy handler, not against Juice Shop. This is recorded as a known gap.
+
+## 2026-11-06 Access list precedence
+
+- Deny entries always win, even if the same address also matches an allow entry.
+- An allow match skips the access list gate and rate limiting but never the rule engine.
+- `allow_only` is a gate, not an implicit deny list: it only applies when no allow or deny entry matched.
