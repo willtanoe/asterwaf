@@ -1,12 +1,16 @@
 package 管理接口
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"io"
+	"io/fs"
 	"log/slog"
+	"mime"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -29,6 +33,7 @@ type U依赖 struct {
 	U解析器  *客户端地址.U解析器
 	U日志   *slog.Logger
 	U探测间隔 time.Duration
+	U静态   fs.FS
 }
 
 // U管理器 是管理端口的处理器，持有会话、登录限速与健康探测。
@@ -43,6 +48,7 @@ type U管理器 struct {
 	会话   *U会话管理
 	登录限制 *U登录限制
 	探测器  *U探测器
+	静态   fs.FS
 	启动时间 time.Time
 	多路   *http.ServeMux
 }
@@ -105,6 +111,7 @@ func U新建(依赖 U依赖) (*U管理器, error) {
 		会话:   U新建会话(),
 		登录限制: U新建登录限制(),
 		探测器:  U新建探测器(依赖.U配置.U站点, 间隔, 日志),
+		静态:   依赖.U静态,
 		启动时间: time.Now(),
 		多路:   http.NewServeMux(),
 	}
@@ -149,6 +156,10 @@ func (管理器 *U管理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 	}
 	if 请求.URL.Path == "/api/login" {
 		管理器.多路.ServeHTTP(写, 请求)
+		return
+	}
+	if !strings.HasPrefix(请求.URL.Path, "/api/") {
+		管理器.提供静态资源(写, 请求)
 		return
 	}
 	会话, 令牌, 可以 := 管理器.读取会话(请求)
@@ -287,6 +298,45 @@ func (管理器 *U管理器) 状态(写 http.ResponseWriter, 请求 *http.Reques
 		U丢弃日志数: 管理器.存储.U丢弃数(),
 		U站点:    管理器.探测器.U状态(),
 	})
+}
+
+func (管理器 *U管理器) 提供静态资源(写 http.ResponseWriter, 请求 *http.Request) {
+	if 请求.Method != http.MethodGet && 请求.Method != http.MethodHead {
+		写错误(写, http.StatusMethodNotAllowed, 错误请求, "only GET and HEAD are supported")
+		return
+	}
+	if 管理器.静态 == nil {
+		写错误(写, http.StatusNotFound, 错误未找到, "endpoint not found")
+		return
+	}
+	相对 := strings.TrimPrefix(path.Clean("/"+请求.URL.Path), "/")
+	写.Header().Set("X-Content-Type-Options", "nosniff")
+	写.Header().Set("Referrer-Policy", "no-referrer")
+	if 相对 != "" && 相对 != "." && !strings.Contains(相对, "..") {
+		if 信息, 错误 := fs.Stat(管理器.静态, 相对); 错误 == nil && !信息.IsDir() {
+			数据, 错误 := fs.ReadFile(管理器.静态, 相对)
+			if 错误 == nil {
+				if strings.HasPrefix(相对, "assets/") {
+					写.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+				} else {
+					写.Header().Set("Cache-Control", "no-cache")
+				}
+				if 类型 := mime.TypeByExtension(path.Ext(相对)); 类型 != "" {
+					写.Header().Set("Content-Type", 类型)
+				}
+				http.ServeContent(写, 请求, 相对, time.Time{}, bytes.NewReader(数据))
+				return
+			}
+		}
+	}
+	数据, 错误 := fs.ReadFile(管理器.静态, "index.html")
+	if 错误 != nil {
+		写错误(写, http.StatusNotFound, 错误未找到, "dashboard is not built")
+		return
+	}
+	写.Header().Set("Content-Type", "text/html; charset=utf-8")
+	写.Header().Set("Cache-Control", "no-cache")
+	_, _ = 写.Write(数据)
 }
 
 func (管理器 *U管理器) 未找到(写 http.ResponseWriter, 请求 *http.Request) {

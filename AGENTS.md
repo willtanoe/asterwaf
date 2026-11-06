@@ -47,6 +47,7 @@
 | `internal/api` | `管理接口` | 管理 HTTP API、会话、静态资源 | cmd |
 | `internal/seed` | `合成流量` | 可复现合成流量 | cmd |
 | `internal/calibration` | `校准` | 误报/漏报语料回归 | 测试 |
+| `web` | `前端` | 嵌入式仪表盘资源（`go:embed`） | cmd |
 
 ## 工具链
 

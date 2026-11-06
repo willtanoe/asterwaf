@@ -14,10 +14,21 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 | 7 stats-rollups | phase/7-stats-rollups | phase-7 | complete | minute/hour rollups, retention, seed CLI (~28.7k rows), stats CLI |
 | 8a api-foundation | phase/8a-api-foundation | phase-8a | complete | admin listener, bcrypt login, sessions, origin checks, audit, health probes |
 | 8b api-management | phase/8b-api-management | phase-8b | complete | stats, logs, rule versions, ACL/rate/site persistence |
-| 9 ui-shell-and-overview | phase/9-ui-shell-and-overview | phase-9 | pending | screenshot self-check |
+| 9 ui-shell-and-overview | phase/9-ui-shell-and-overview | phase-9 | complete | responsive shell, tokenized themes, Overview, 36 screenshots |
 | 10 ui-management | phase/10-ui-management | phase-10 | pending | |
 | 11 fp-calibration | phase/11-fp-calibration | phase-11 | pending | |
 | 12 security-review | phase/12-security-review | phase-12 | pending | |
+
+## Phase 9 self-check
+
+- Only design tokens are used for colors, font sizes, and spacing; `grep` finds no gradients, blur/backdrop filters, shadows, or emoji.
+- Semantic states (blocked, recorded, rate limited, site health) always include a text label in addition to color.
+- Contrast: every foreground/background pair used by the components was computed from `tokens.css`; the lowest ratio is 4.56:1 in dark mode and 5.40:1 in light mode, both above 4.5:1.
+- Widths 320, 768, and 1440 were checked by script for `scrollWidth > clientWidth`; all pages and both themes pass.
+- Cards and tables render loading, empty, and error states; the error state includes a Retry action.
+- Copy is literal and lives in `web/src/copy.ts`; no marketing language.
+- Screenshots for six pages, two themes, and three widths are in `docs/screenshots/`, produced by `scripts/screenshots.mjs` against the locally installed Chromium. The script adds no npm dependency.
+- The screenshot script drives the UI through the real admin API with a session cookie; the local test database contains synthetic seed traffic.
 
 ## Open items
 
