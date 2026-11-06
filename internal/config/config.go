@@ -23,6 +23,7 @@ const (
 	默认管理监听         = "127.0.0.1:9090"
 	默认模式           = "enforce"
 	默认数据库          = "data/asterwaf.db"
+	默认管理员          = "admin"
 )
 
 // U站点 是 YAML 中的站点定义，路由与上游只在配置中决定。
@@ -32,6 +33,13 @@ type U站点 struct {
 	U模式     string `yaml:"mode,omitempty"`
 	U最大请求体  int64  `yaml:"max_body_bytes"`
 	U健康检查路径 string `yaml:"health_path"`
+}
+
+// U认证配置 是单用户管理面的凭据设置。
+type U认证配置 struct {
+	U用户名      string `yaml:"username"`
+	U密码哈希     string `yaml:"password_hash"`
+	U安全Cookie bool   `yaml:"secure_cookie"`
 }
 
 // U配置 是进程的完整 YAML 配置。
@@ -44,6 +52,7 @@ type U配置 struct {
 	U访问列表 访问包.U列表  `yaml:"access_lists"`
 	U限流   限流包.U配置  `yaml:"rate_limit"`
 	U数据库  string   `yaml:"database"`
+	U认证   U认证配置    `yaml:"auth"`
 	U站点   []U站点    `yaml:"sites"`
 }
 
@@ -56,6 +65,11 @@ func U默认配置() U配置 {
 		U数据库:  默认数据库,
 		U受信代理: []string{},
 		U检查头:  []string{"User-Agent", "Referer", "X-Forwarded-For"},
+		U认证: U认证配置{
+			U用户名:      默认管理员,
+			U密码哈希:     "",
+			U安全Cookie: false,
+		},
 		U限流: 限流包.U配置{
 			U启用:  false,
 			U每分钟: 限流包.U默认每分钟请求,

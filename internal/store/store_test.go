@@ -205,3 +205,23 @@ func contains(原文, 片段 string) bool {
 	}
 	return false
 }
+
+func Test写审计(t *testing.T) {
+	存储, 错误 := U打开(filepath.Join(t.TempDir(), "audit.db"), 静默日志())
+	if 错误 != nil {
+		t.Fatalf("open: %v", 错误)
+	}
+	defer 关闭(t, 存储)
+	if 错误 := 存储.U写审计(context.Background(), U审计记录{
+		U操作者: "admin", U动作: "login_success", U客户端IP: "203.0.113.7",
+	}); 错误 != nil {
+		t.Fatalf("audit: %v", 错误)
+	}
+	var 操作者, 动作, 地址 string
+	if 错误 := 存储.数据库.QueryRow(`SELECT actor, action, client_ip FROM audit_log`).Scan(&操作者, &动作, &地址); 错误 != nil {
+		t.Fatalf("select audit: %v", 错误)
+	}
+	if 操作者 != "admin" || 动作 != "login_success" || 地址 != "203.0.113.7" {
+		t.Fatalf("audit row=%s %s %s", 操作者, 动作, 地址)
+	}
+}
