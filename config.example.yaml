@@ -18,3 +18,9 @@ sites:
     mode: shadow
     max_body_bytes: 1048576
     health_path: /
+
+# Request headers evaluated by rules. Headers not listed here are ignored.
+inspect_headers:
+  - User-Agent
+  - Referer
+  - X-Forwarded-For
