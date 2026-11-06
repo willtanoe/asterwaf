@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -19,6 +20,23 @@ import (
 )
 
 func main() {
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "stats":
+			if 错误 := 统计命令(os.Args[2:]); 错误 != nil {
+				fmt.Fprintf(os.Stderr, "asterwaf stats: %v\n", 错误)
+				os.Exit(1)
+			}
+			return
+		case "seed":
+			if 错误 := 种子命令(os.Args[2:]); 错误 != nil {
+				fmt.Fprintf(os.Stderr, "asterwaf seed: %v\n", 错误)
+				os.Exit(1)
+			}
+			return
+		}
+	}
+
 	配置路径 := flag.String("config", "config.yaml", "path to YAML configuration")
 	flag.Parse()
 
@@ -55,6 +73,10 @@ func 运行(路径 string, 日志 *slog.Logger) error {
 			日志.Error("log store did not shut down cleanly", "error", 错误)
 		}
 	}()
+	if 存储.U包含种子数据(context.Background()) {
+		日志.Warn("database contains synthetic seed data; do not treat these statistics as production traffic",
+			"database", 配置值.U数据库)
+	}
 	处理器, 错误 := 反向代理.U新建(配置值, 解析器, 引擎, 存储, 日志)
 	if 错误 != nil {
 		return 错误
