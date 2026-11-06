@@ -15,7 +15,7 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 | 8a api-foundation | phase/8a-api-foundation | phase-8a | complete | admin listener, bcrypt login, sessions, origin checks, audit, health probes |
 | 8b api-management | phase/8b-api-management | phase-8b | complete | stats, logs, rule versions, ACL/rate/site persistence |
 | 9 ui-shell-and-overview | phase/9-ui-shell-and-overview | phase-9 | complete | responsive shell, tokenized themes, Overview, 36 screenshots |
-| 10 ui-management | phase/10-ui-management | phase-10 | pending | |
+| 10 ui-management | phase/10-ui-management | phase-10 | complete | logs filters/drawer/row actions, rule editor/test/versions, ACL and rate forms, site modes |
 | 11 fp-calibration | phase/11-fp-calibration | phase-11 | pending | |
 | 12 security-review | phase/12-security-review | phase-12 | pending | |
 
@@ -29,6 +29,15 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 - Copy is literal and lives in `web/src/copy.ts`; no marketing language.
 - Screenshots for six pages, two themes, and three widths are in `docs/screenshots/`, produced by `scripts/screenshots.mjs` against the locally installed Chromium. The script adds no npm dependency.
 - The screenshot script drives the UI through the real admin API with a session cookie; the local test database contains synthetic seed traffic.
+
+## Phase 10 verification
+
+- The four management pages were exercised through the real admin API with a browser session against a seed database:
+  - Logs: action filter returned only blocked records; row click opened the drawer; Escape closed it; stored headers and body rendered as plain text (no `v-html`/`innerHTML` in `web/src`); "Allow this IP", "Deny this IP" and "Disable rule" created the corresponding access entries and rule change.
+  - Rules: created a custom rule through the form, the payload test matched, save produced version 2 with 25 rows (defaults plus custom), the rule persisted across reloads, toggle and delete produced new versions, and rollback to an earlier version restored the deleted rule as a new version.
+  - Access lists: added and deleted entries, including one created from a log row with `source_log_id` recorded; rate limit GET/PUT round-tripped.
+  - Sites: mode selector saved `shadow` and the persisted value survived reloads; upstream stayed read-only.
+- Screenshots for all six pages, both themes, and three widths were regenerated after the changes; no horizontal overflow was reported.
 
 ## Open items
 
