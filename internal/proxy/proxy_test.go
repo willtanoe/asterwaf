@@ -14,6 +14,7 @@ import (
 
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/clientip"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/config"
+	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
 )
 
 func Test站点路由(t *testing.T) {
@@ -203,7 +204,11 @@ func 新建处理器(t *testing.T, 配置值 配置.U配置, 受信 []string) *U
 	if 错误 != nil {
 		t.Fatalf("resolver: %v", 错误)
 	}
-	处理器, 错误 := U新建(配置值, 解析器, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	引擎, 错误 := 引擎.U新建(引擎.U默认规则())
+	if 错误 != nil {
+		t.Fatalf("engine: %v", 错误)
+	}
+	处理器, 错误 := U新建(配置值, 解析器, 引擎, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	if 错误 != nil {
 		t.Fatalf("proxy: %v", 错误)
 	}
@@ -258,5 +263,71 @@ func Test压缩请求体原样转发(t *testing.T) {
 	}
 	if 实际 := 记录.Header().Get("X-Seen-Sha"); 实际 != hex.EncodeToString(期望[:]) {
 		t.Fatalf("compressed body was altered in transit: %s", 实际)
+	}
+}
+
+func Test规则模式(t *testing.T) {
+	上游 := httptest.NewServer(http.HandlerFunc(func(写 http.ResponseWriter, _ *http.Request) {
+		_, _ = 写.Write([]byte("upstream ok"))
+	}))
+	defer 上游.Close()
+
+	测试用例 := []struct {
+		模式 string
+		状态 int
+		动作 string
+	}{
+		{"enforce", http.StatusForbidden, "block"},
+		{"shadow", http.StatusOK, "shadow"},
+		{"off", http.StatusOK, ""},
+	}
+	for _, 用例 := range 测试用例 {
+		t.Run(用例.模式, func(t *testing.T) {
+			解析器, 错误 := 客户端地址.U新建(nil)
+			if 错误 != nil {
+				t.Fatalf("resolver: %v", 错误)
+			}
+			引擎, 错误 := 引擎.U新建(引擎.U默认规则())
+			if 错误 != nil {
+				t.Fatalf("engine: %v", 错误)
+			}
+			var 日志缓冲 bytes.Buffer
+			日志 := slog.New(slog.NewJSONHandler(&日志缓冲, nil))
+			处理器, 错误 := U新建(配置.U配置{
+				U模式: 用例.模式,
+				U站点: []配置.U站点{{U主机: "app.example.com", U上游: 上游.URL, U模式: 用例.模式}},
+			}, 解析器, 引擎, 日志)
+			if 错误 != nil {
+				t.Fatalf("proxy: %v", 错误)
+			}
+
+			请求 := httptest.NewRequest("GET", "http://app.example.com/search?q=1%20union%20select%201", nil)
+			记录 := httptest.NewRecorder()
+			处理器.ServeHTTP(记录, 请求)
+			if 记录.Code != 用例.状态 {
+				t.Fatalf("status=%d, want %d", 记录.Code, 用例.状态)
+			}
+			if 用例.模式 == "enforce" {
+				if 记录.Body.String() != "request blocked\n" {
+					t.Fatalf("block body=%q", 记录.Body.String())
+				}
+				if strings.Contains(记录.Body.String(), "sqli") {
+					t.Fatal("block response leaked rule details")
+				}
+			}
+			if 用例.模式 == "enforce" || 用例.模式 == "shadow" {
+				if !strings.Contains(日志缓冲.String(), `"rule_id":"sqli.union-select"`) {
+					t.Fatalf("decision log missing rule id: %s", 日志缓冲.String())
+				}
+				if !strings.Contains(日志缓冲.String(), `"action":"`+用例.动作+`"`) {
+					t.Fatalf("decision log missing action: %s", 日志缓冲.String())
+				}
+			} else if strings.Contains(日志缓冲.String(), "rule_id") {
+				t.Fatalf("off mode logged a rule decision: %s", 日志缓冲.String())
+			}
+			if 用例.模式 == "shadow" && !strings.Contains(日志缓冲.String(), `"shadow":true`) {
+				t.Fatalf("shadow flag missing: %s", 日志缓冲.String())
+			}
+		})
 	}
 }

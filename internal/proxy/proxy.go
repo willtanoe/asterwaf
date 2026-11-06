@@ -15,6 +15,7 @@ import (
 
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/clientip"
 	配置 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/config"
+	规则引擎 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
 	检查管线 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/pipeline"
 )
 
@@ -25,6 +26,7 @@ type U处理器 struct {
 	站点表 map[string]*站点
 	配置  配置.U配置
 	管线  *检查管线.U管线
+	引擎  *规则引擎.U引擎
 }
 
 type 站点 struct {
@@ -32,12 +34,16 @@ type 站点 struct {
 	上游    *url.URL
 	代理    *httputil.ReverseProxy
 	最大请求体 int64
+	模式    string
 }
 
 // U新建 为每个站点建立独立的 ReverseProxy 与共享传输参数。
-func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, 日志 *slog.Logger) (*U处理器, error) {
+func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, 引擎 *规则引擎.U引擎, 日志 *slog.Logger) (*U处理器, error) {
 	if 解析器 == nil {
 		return nil, fmt.Errorf("proxy: client address resolver is required")
+	}
+	if 引擎 == nil {
+		return nil, fmt.Errorf("proxy: rule engine is required")
 	}
 	if 日志 == nil {
 		日志 = slog.Default()
@@ -61,6 +67,7 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 		站点表: make(map[string]*站点, len(配置值.U站点)),
 		配置:  配置值,
 		管线:  检查管线.U新建(配置值.U检查头),
+		引擎:  引擎,
 	}
 	for _, 站点配置 := range 配置值.U站点 {
 		上游, 错误 := url.Parse(站点配置.U上游)
@@ -72,7 +79,11 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 		if 最大请求体 <= 0 {
 			最大请求体 = 配置.U默认最大请求体
 		}
-		站点值 := &站点{主机: 主机, 上游: 上游, 最大请求体: 最大请求体}
+		模式 := 站点配置.U模式
+		if 模式 == "" {
+			模式 = 配置值.U模式
+		}
+		站点值 := &站点{主机: 主机, 上游: 上游, 最大请求体: 最大请求体, 模式: 模式}
 		站点值.代理 = &httputil.ReverseProxy{
 			Rewrite: func(请求 *httputil.ProxyRequest) {
 				重写请求(请求, 站点值.上游, 解析器)
@@ -135,6 +146,46 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 		请求.ContentLength = int64(len(快照.U体))
 	}
 	请求.TransferEncoding = nil
+
+	决策 := 处理器.引擎.U决策(站点值.模式, 快照.U目标列表())
+	switch 决策.U动作 {
+	case 规则引擎.U动作拦截:
+		处理器.日志.Warn("request blocked",
+			"site", 站点值.主机,
+			"method", 快照.U方法,
+			"path", 请求.URL.RequestURI(),
+			"mode", 决策.U模式,
+			"action", 决策.U动作,
+			"rule_id", 决策.U规则ID,
+			"target_category", 决策.U目标.U类别,
+			"target_name", 决策.U目标.U名称,
+			"shadow", false,
+		)
+		写.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		写.WriteHeader(http.StatusForbidden)
+		_, _ = 写.Write([]byte("request blocked\n"))
+		return
+	case 规则引擎.U动作记录:
+		处理器.日志.Info("request recorded",
+			"site", 站点值.主机,
+			"method", 快照.U方法,
+			"path", 请求.URL.RequestURI(),
+			"mode", 决策.U模式,
+			"action", 决策.U动作,
+			"rule_id", 决策.U规则ID,
+			"target_category", 决策.U目标.U类别,
+			"target_name", 决策.U目标.U名称,
+			"shadow", true,
+		)
+	default:
+		处理器.日志.Debug("request allowed",
+			"site", 站点值.主机,
+			"method", 快照.U方法,
+			"path", 请求.URL.RequestURI(),
+			"mode", 决策.U模式,
+			"action", 决策.U动作,
+		)
+	}
 	站点值.代理.ServeHTTP(写, 请求)
 }
 
