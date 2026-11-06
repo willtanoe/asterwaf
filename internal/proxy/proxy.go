@@ -2,6 +2,9 @@ package 反向代理
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -12,6 +15,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	访问列表 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/accesslist"
@@ -20,6 +24,7 @@ import (
 	规则引擎 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
 	检查管线 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/pipeline"
 	限流包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/ratelimit"
+	存储包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/store"
 )
 
 // U处理器 按 Host 选择站点并转发。站点列表在启动后不变，模式变更由后续阶段接管。
@@ -32,6 +37,7 @@ type U处理器 struct {
 	引擎  *规则引擎.U引擎
 	访问  *访问列表.U检查器
 	限流  *限流包.U限流器
+	存储  *存储包.U存储
 }
 
 type 站点 struct {
@@ -43,7 +49,7 @@ type 站点 struct {
 }
 
 // U新建 为每个站点建立独立的 ReverseProxy 与共享传输参数。
-func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, 引擎 *规则引擎.U引擎, 日志 *slog.Logger) (*U处理器, error) {
+func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, 引擎 *规则引擎.U引擎, 存储 *存储包.U存储, 日志 *slog.Logger) (*U处理器, error) {
 	if 解析器 == nil {
 		return nil, fmt.Errorf("proxy: client address resolver is required")
 	}
@@ -84,6 +90,7 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 		引擎:  引擎,
 		访问:  访问表,
 		限流:  限流器,
+		存储:  存储,
 	}
 	for _, 站点配置 := range 配置值.U站点 {
 		上游, 错误 := url.Parse(站点配置.U上游)
@@ -123,25 +130,56 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 
 // ServeHTTP 实现标准库接口，方法名必须保持英文。
 func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Request) {
+	请求ID := 新请求ID()
+	写.Header().Set("X-AsterWAF-Request-ID", 请求ID)
+	状态 := &状态写{ResponseWriter: 写, 请求ID: 请求ID}
+	开始 := time.Now()
+	记录 := 存储包.U记录{
+		U请求ID:  请求ID,
+		U时间:    开始.UnixMilli(),
+		U方法:    请求.Method,
+		U路径:    请求.URL.EscapedPath(),
+		U查询:    检查管线.U脱敏查询(请求.URL.RawQuery),
+		U客户端IP: "",
+		U用户代理:  检查管线.U截断文本(请求.UserAgent(), 512),
+		U动作:    "allow",
+	}
+	defer func() {
+		if 处理器.存储 == nil || 记录.USite == "" {
+			return
+		}
+		记录.U状态 = 状态.状态码()
+		处理器.存储.U加入(记录)
+	}()
+
 	主机 := 请求主机(请求)
 	站点配置, 命中 := 处理器.配置.U按主机取站点(主机)
 	if !命中 {
 		写.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		写.WriteHeader(http.StatusNotFound)
-		_, _ = 写.Write([]byte("no site configured for host\n"))
+		状态.WriteHeader(http.StatusNotFound)
+		_, _ = 状态.Write([]byte("no site configured for host\n"))
 		return
 	}
 	站点值, 存在 := 处理器.站点表[站点配置.U主机]
 	if !存在 {
 		处理器.日志.Error("route selected a site without an upstream", "host", 站点配置.U主机)
 		写.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		写.WriteHeader(http.StatusInternalServerError)
-		_, _ = 写.Write([]byte("site configuration is inconsistent\n"))
+		状态.WriteHeader(http.StatusInternalServerError)
+		_, _ = 状态.Write([]byte("site configuration is inconsistent\n"))
 		return
 	}
+	记录.USite = 站点值.主机
 	客户端 := 处理器.解析器.U解析(请求)
+	记录.U客户端IP = 客户端.U地址.String()
+
 	访问结果 := 处理器.访问.U检查(客户端.U地址)
 	if 访问结果.U拦截 {
+		记录.U动作 = "block"
+		记录.U类别 = "accesslist"
+		记录.U规则ID = 访问结果.U规则ID
+		记录.U匹配 = 匹配摘要(检查管线.U目标{U类别: "client_ip", U名称: "address", U值: 客户端.U地址.String()})
+		填写副本(请求, nil, &记录)
+		记录.U耗时毫秒 = time.Since(开始).Milliseconds()
 		处理器.日志.Warn("request blocked",
 			"site", 站点值.主机,
 			"method", 请求.Method,
@@ -156,8 +194,8 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 			"shadow", false,
 		)
 		写.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		写.WriteHeader(http.StatusForbidden)
-		_, _ = 写.Write([]byte("request blocked\n"))
+		状态.WriteHeader(http.StatusForbidden)
+		_, _ = 状态.Write([]byte("request blocked\n"))
 		return
 	}
 	if 访问结果.U白名单 {
@@ -174,6 +212,12 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 			if 重试秒 < 1 {
 				重试秒 = 1
 			}
+			记录.U动作 = "ratelimited"
+			记录.U类别 = "ratelimit"
+			记录.U规则ID = "ratelimit"
+			记录.U匹配 = 匹配摘要(检查管线.U目标{U类别: "client_ip", U名称: "address", U值: 客户端.U地址.String()})
+			填写副本(请求, nil, &记录)
+			记录.U耗时毫秒 = time.Since(开始).Milliseconds()
 			处理器.日志.Warn("request rate limited",
 				"site", 站点值.主机,
 				"method", 请求.Method,
@@ -190,25 +234,34 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 			)
 			写.Header().Set("Retry-After", strconv.Itoa(重试秒))
 			写.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			写.WriteHeader(http.StatusTooManyRequests)
-			_, _ = 写.Write([]byte("rate limit exceeded\n"))
+			状态.WriteHeader(http.StatusTooManyRequests)
+			_, _ = 状态.Write([]byte("rate limit exceeded\n"))
 			return
 		}
 	}
 
-	快照, 错误 := 处理器.管线.U读取(写, 请求, 站点值.最大请求体)
+	快照, 错误 := 处理器.管线.U读取(状态, 请求, 站点值.最大请求体)
 	if 错误 != nil {
+		记录.U动作 = "block"
+		记录.U类别 = "request"
+		记录.U匹配 = ""
 		var 超限 *检查管线.U体过大错误
 		if errors.As(错误, &超限) {
+			记录.U规则ID = "body-limit"
+			填写副本(请求, nil, &记录)
+			记录.U耗时毫秒 = time.Since(开始).Milliseconds()
 			写.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			写.WriteHeader(http.StatusRequestEntityTooLarge)
-			_, _ = 写.Write([]byte("request body too large\n"))
+			状态.WriteHeader(http.StatusRequestEntityTooLarge)
+			_, _ = 状态.Write([]byte("request body too large\n"))
 			return
 		}
+		记录.U规则ID = "body-read"
+		填写副本(请求, nil, &记录)
+		记录.U耗时毫秒 = time.Since(开始).Milliseconds()
 		处理器.日志.Warn("request body could not be read", "site", 站点值.主机, "error", 错误)
 		写.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		写.WriteHeader(http.StatusBadRequest)
-		_, _ = 写.Write([]byte("request body could not be read\n"))
+		状态.WriteHeader(http.StatusBadRequest)
+		_, _ = 状态.Write([]byte("request body could not be read\n"))
 		return
 	}
 	if len(快照.U体) == 0 && 请求.ContentLength <= 0 {
@@ -223,6 +276,12 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 	决策 := 处理器.引擎.U决策(站点值.模式, 快照.U目标列表())
 	switch 决策.U动作 {
 	case 规则引擎.U动作拦截:
+		记录.U动作 = "block"
+		记录.U类别 = 决策.U类别
+		记录.U规则ID = 决策.U规则ID
+		记录.U匹配 = 匹配摘要(决策.U目标)
+		填写副本(请求, &快照, &记录)
+		记录.U耗时毫秒 = time.Since(开始).Milliseconds()
 		处理器.日志.Warn("request blocked",
 			"site", 站点值.主机,
 			"method", 快照.U方法,
@@ -237,10 +296,17 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 			"shadow", false,
 		)
 		写.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		写.WriteHeader(http.StatusForbidden)
-		_, _ = 写.Write([]byte("request blocked\n"))
+		状态.WriteHeader(http.StatusForbidden)
+		_, _ = 状态.Write([]byte("request blocked\n"))
 		return
 	case 规则引擎.U动作记录:
+		记录.U动作 = "shadow"
+		记录.U影子 = true
+		记录.U类别 = 决策.U类别
+		记录.U规则ID = 决策.U规则ID
+		记录.U匹配 = 匹配摘要(决策.U目标)
+		填写副本(请求, &快照, &记录)
+		记录.U耗时毫秒 = time.Since(开始).Milliseconds()
 		处理器.日志.Info("request recorded",
 			"site", 站点值.主机,
 			"method", 快照.U方法,
@@ -255,6 +321,8 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 			"shadow", true,
 		)
 	default:
+		记录.U动作 = "allow"
+		记录.U耗时毫秒 = time.Since(开始).Milliseconds()
 		处理器.日志.Debug("request allowed",
 			"site", 站点值.主机,
 			"method", 快照.U方法,
@@ -263,7 +331,87 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 			"action", 决策.U动作,
 		)
 	}
-	站点值.代理.ServeHTTP(写, 请求)
+	站点值.代理.ServeHTTP(状态, 请求)
+}
+
+const 最大存储头 = 8 << 10
+
+var 请求序号 atomic.Uint64
+
+type 状态写 struct {
+	http.ResponseWriter
+	请求ID string
+	码    int
+}
+
+func (写 *状态写) WriteHeader(码 int) {
+	if 写.码 != 0 {
+		return
+	}
+	写.码 = 码
+	写.ResponseWriter.Header().Set("X-AsterWAF-Request-ID", 写.请求ID)
+	写.ResponseWriter.WriteHeader(码)
+}
+
+func (写 *状态写) Write(数据 []byte) (int, error) {
+	if 写.码 == 0 {
+		写.WriteHeader(http.StatusOK)
+	}
+	return 写.ResponseWriter.Write(数据)
+}
+
+func (写 *状态写) 状态码() int {
+	if 写.码 == 0 {
+		return http.StatusOK
+	}
+	return 写.码
+}
+
+func (写 *状态写) Unwrap() http.ResponseWriter {
+	return 写.ResponseWriter
+}
+
+func (写 *状态写) Flush() {
+	if 刷新器, 可以 := 写.ResponseWriter.(http.Flusher); 可以 {
+		if 写.码 == 0 {
+			写.WriteHeader(http.StatusOK)
+		}
+		刷新器.Flush()
+	}
+}
+
+func 填写副本(请求 *http.Request, 快照 *检查管线.U快照, 记录 *存储包.U记录) {
+	头 := 检查管线.U脱敏头(请求.Header)
+	头.Set("Host", 请求.Host)
+	if 数据, 错误 := json.Marshal(头); 错误 == nil {
+		if len(数据) <= 最大存储头 {
+			记录.U请求头 = string(数据)
+		} else {
+			记录.U请求头 = `{"truncated":"request headers exceeded 8 KiB"}`
+		}
+	}
+	if 快照 == nil || len(快照.U检查体) == 0 {
+		return
+	}
+	记录.U请求体 = string(检查管线.U脱敏体(快照.U内容类型, 快照.U检查体))
+}
+
+func 匹配摘要(目标 检查管线.U目标) string {
+	if 检查管线.U敏感名称(目标.U名称) {
+		目标.U值 = "<redacted>"
+	}
+	if 数据, 错误 := json.Marshal(目标); 错误 == nil && len(数据) <= 检查管线.U匹配列上限 {
+		return string(数据)
+	}
+	return 检查管线.U截断文本(目标.U类别+"."+目标.U名称, 检查管线.U匹配列上限)
+}
+
+func 新请求ID() string {
+	var 随机 [8]byte
+	if _, 错误 := rand.Read(随机[:]); 错误 == nil {
+		return hex.EncodeToString(随机[:])
+	}
+	return fmt.Sprintf("%016x", uint64(time.Now().UnixNano())^请求序号.Add(1))
 }
 
 func 请求主机(请求 *http.Request) string {

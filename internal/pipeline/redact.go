@@ -67,7 +67,7 @@ func U脱敏查询(原始 string) string {
 			列表[下标] = "<redacted>"
 		}
 	}
-	return 值.Encode()
+	return 还原红acted(值.Encode())
 }
 
 // U脱敏体 生成用于落库的请求体副本，上限 2 KiB。
@@ -153,5 +153,9 @@ func 脱敏表单(体 []byte) []byte {
 			列表[下标] = "<redacted>"
 		}
 	}
-	return []byte(U截断文本(值.Encode(), U存储体上限))
+	return []byte(U截断文本(还原红acted(值.Encode()), U存储体上限))
+}
+
+func 还原红acted(编码 string) string {
+	return strings.ReplaceAll(编码, "%3Credacted%3E", "<redacted>")
 }
