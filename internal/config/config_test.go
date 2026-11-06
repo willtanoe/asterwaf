@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	访问包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/accesslist"
+	限流包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/ratelimit"
 
 	"gopkg.in/yaml.v3"
 )
@@ -18,6 +19,7 @@ func Test配置往返(t *testing.T) {
 		U模式:   "shadow",
 		U受信代理: []string{"10.0.0.0/8", "192.168.1.0/24"},
 		U检查头:  []string{"User-Agent", "X-Custom"},
+		U限流:   限流包.U配置{U启用: true, U每分钟: 120, U突发: 20},
 		U访问列表: 访问包.U列表{
 			U仅允许: false,
 			U条目: []访问包.U条目{
@@ -71,6 +73,9 @@ sites:
 	if 站点.U健康检查路径 != 默认健康路径 {
 		t.Fatalf("health path default = %q", 站点.U健康检查路径)
 	}
+	if 配置值.U限流.U启用 || 配置值.U限流.U每分钟 != 限流包.U默认每分钟请求 || 配置值.U限流.U突发 != 限流包.U默认突发 {
+		t.Fatalf("rate limit defaults not applied: %+v", 配置值.U限流)
+	}
 	if 站点.U模式 != "enforce" {
 		t.Fatalf("site mode did not inherit global: %q", 站点.U模式)
 	}
@@ -117,8 +122,14 @@ func Test校验拒绝无效配置(t *testing.T) {
 		},
 		"bad access list": {
 			U监听: "127.0.0.1:8080", U管理监听: "127.0.0.1:9091", U模式: "enforce",
+			U限流:   限流包.U配置{U启用: true, U每分钟: 120, U突发: 20},
 			U访问列表: 访问包.U列表{U条目: []访问包.U条目{{UID: "x", U动作: "block", U地址: "10.0.0.1", U启用: true}}},
 			U站点:   []U站点{{U主机: "a.example.com", U上游: "http://127.0.0.1:1"}},
+		},
+		"bad rate limit": {
+			U监听: "127.0.0.1:8080", U管理监听: "127.0.0.1:9091", U模式: "enforce",
+			U限流: 限流包.U配置{U启用: true, U每分钟: 0, U突发: 0},
+			U站点: []U站点{{U主机: "a.example.com", U上游: "http://127.0.0.1:1"}},
 		},
 		"bad trusted proxy": {
 			U监听: "127.0.0.1:8080", U管理监听: "127.0.0.1:9091", U模式: "enforce",
