@@ -13,6 +13,7 @@ make bootstrap   # download Go and Node, verified against toolchain.env
 make tools       # fixed golangci-lint and govulncheck
 make check       # formatting, vet, lint, vulnerability scan, race tests
 make build       # build dashboard and bin/asterwaf
+make calibrate   # false-positive/detection regression corpus (build tag calibration)
 ```
 
 ## Run
@@ -23,7 +24,7 @@ Copy `config.example.yaml` to `config.yaml`, set upstreams, then:
 make run
 ```
 
-The proxy listens on `listen` and the admin API on `admin_listen` (default `127.0.0.1:9090`). On first start, if no bcrypt hash is configured, a 20-character admin password is generated and written to `data/first-run-admin-password` with mode `0600`; its path is printed to stderr once.
+The proxy listens on `listen`; the dashboard and admin API listen on `admin_listen` (default `127.0.0.1:9090`). Open `http://127.0.0.1:9090/` after signing in. On first start, if no bcrypt hash is configured, a 20-character admin password is generated and written to `data/first-run-admin-password` with mode `0600`; its path is printed to stderr once.
 
 ```sh
 ./bin/asterwaf stats -config config.yaml
