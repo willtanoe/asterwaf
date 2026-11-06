@@ -149,7 +149,7 @@ func 内置运行(t *testing.T, 语料值 语料) ([]结果, []结果) {
 		U站点: []配置.U站点{{
 			U主机: "stage-a.test", U上游: 上游.URL, U模式: "enforce", U最大请求体: 1 << 20,
 		}},
-	}, 解析器, 引擎, 日志)
+	}, 解析器, 引擎, nil, 日志)
 	if 错误 != nil {
 		t.Fatalf("proxy: %v", 错误)
 	}
