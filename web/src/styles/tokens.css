@@ -37,6 +37,7 @@
   --sp-24: 24px;
   --sp-32: 32px;
   --radius: 4px;
+  --overlay: rgba(0, 0, 0, 0.55);
 }
 
 :root[data-theme="light"] {
@@ -62,4 +63,5 @@
   --ok: #1a7f37;
   --ok-soft: #dcf3e2;
   --focus: #8a5a00;
+  --overlay: rgba(15, 23, 32, 0.35);
 }

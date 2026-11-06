@@ -325,10 +325,20 @@ async function main() {
           const metrics = await send("Runtime.evaluate", {
             expression: `(() => {
               const root = document.documentElement;
-              const wide = [...document.querySelectorAll("body *")].filter((el) => {
-                const r = el.getBoundingClientRect();
-                return r.width > 0 && r.right > root.clientWidth + 1;
-              }).slice(0, 5).map((el) => el.tagName.toLowerCase() + "." + (el.className || "").toString().slice(0, 40));
+              const wide = [...document.querySelectorAll("body *")]
+                .map((el) => {
+                  const r = el.getBoundingClientRect();
+                  return {
+                    name: el.tagName.toLowerCase() + "." + (el.className || "").toString().slice(0, 30),
+                    width: Math.round(r.width),
+                    right: Math.round(r.right),
+                    scrollWidth: el.scrollWidth,
+                    overflowX: getComputedStyle(el).overflowX,
+                  };
+                })
+                .filter((item) => item.width > 0 && item.right > root.clientWidth + 1)
+                .sort((a, b) => b.right - a.right)
+                .slice(0, 8);
               return JSON.stringify({
                 scrollWidth: root.scrollWidth,
                 clientWidth: root.clientWidth,
@@ -342,7 +352,7 @@ async function main() {
           const info = JSON.parse(metrics.result.value);
           if (info.scrollWidth > info.clientWidth + 1) {
             problems.push(
-              `${name}: horizontal overflow scrollWidth=${info.scrollWidth} clientWidth=${info.clientWidth} ${info.wide.join(", ")}`,
+              `${name}: horizontal overflow scrollWidth=${info.scrollWidth} clientWidth=${info.clientWidth} ${JSON.stringify(info.wide)}`,
             );
           }
           if (info.theme !== theme) {
@@ -360,8 +370,25 @@ async function main() {
     cdp.close();
   } finally {
     child.kill("SIGTERM");
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    await rm(profile, { recursive: true, force: true });
+    await new Promise((resolve) => {
+      if (child.exitCode !== null) {
+        resolve();
+        return;
+      }
+      const timer = setTimeout(resolve, 3000);
+      child.once("exit", () => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      try {
+        await rm(profile, { recursive: true, force: true });
+        break;
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+    }
   }
   if (problems.length > 0) {
     console.error("screenshot checks failed:");
