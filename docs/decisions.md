@@ -85,3 +85,11 @@ This file records choices that constrain later work. Each entry is dated and, wh
 - KPIs compare the selected window with the immediately preceding window of equal length. `delta_pct` is null when the previous value is zero.
 - p50/p95 come from 12 histogram buckets and every response includes the note. Ranges over 24 hours mark unique IPs approximate and read them from `rollup_hour_ip`; shorter ranges count distinct IPs in raw logs.
 - Top IP/path tables use raw logs up to 24 hours and hourly rollups beyond that.
+
+## 2026-11-06 Security review outcomes
+
+- The rate limiter reads its configuration under the same mutex that guards the bucket table; `PUT /api/rate-limit` can no longer race with live traffic.
+- `scripts/lint.sh` prepends the pinned toolchain to `PATH` itself, so invoking it directly uses the same Go as the build.
+- The struct-tag audit parses files individually instead of using the deprecated `parser.ParseDir`.
+- `golang.org/x/crypto` v0.58.0 carries advisory GO-2026-5932 for the unused `openpgp` package. Nothing imports it; the only fix is an untagged pseudo-version, so it is left as debt to recheck on the next tagged release.
+- `auth.secure_cookie` defaults to `false` because the admin listener is plain HTTP on loopback. Any deployment terminating TLS in front of the admin port must enable it.

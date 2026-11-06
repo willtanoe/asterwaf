@@ -17,7 +17,7 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 | 9 ui-shell-and-overview | phase/9-ui-shell-and-overview | phase-9 | complete | responsive shell, tokenized themes, Overview, 36 screenshots |
 | 10 ui-management | phase/10-ui-management | phase-10 | complete | logs filters/drawer/row actions, rule editor/test/versions, ACL and rate forms, site modes |
 | 11 fp-calibration | phase/11-fp-calibration | phase-11 | complete | 300 normal / 150 attack; 0.00% FP, 98.00% detection |
-| 12 security-review | phase/12-security-review | phase-12 | pending | |
+| 12 security-review | phase/12-security-review | phase-12 | complete | 3 fixed (rate limit race, lint toolchain, deprecated parser); 4 documented gaps |
 
 ## Phase 9 self-check
 
@@ -55,3 +55,9 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 
 - Juice Shop is not published on npm: `npm install juice-shop@19.2.0` fails with ETARGET. The Stage A harness therefore ran the committed 40 normal / 40 attack corpus in-process behind the real proxy handler.
 - Real Juice Shop integration remains a gap; the upstream path used by the harness is an in-process HTTP server.
+
+## Phase 12 summary
+
+- Fixed: a real data race between `U限流器.U允许` and `U修改配置`; `scripts/lint.sh` resolving the system Go when invoked directly; a deprecated `go/parser.ParseDir` call in the tag audit.
+- Verified with new tests: body/decompression/JSON-depth limits, RE2 timing on 64 KiB adversarial inputs, rule size caps, session minting and non-persistence, cookie attributes, Origin checks on writes, login throttling including spoofed `X-Forwarded-For`, password file permissions, loopback-only admin default, unauthenticated write rejection, SQL dimension allowlist, no credentials in logs/audit/responses, rollup consistency across drops and restarts, queue drain on shutdown, `import-defaults` preserving custom rules, static asset traversal, and no HTML rendering of log content.
+- Not fixed and recorded in `docs/security-review.md`: `golang.org/x/crypto` openpgp advisory (package not imported; only an untagged pseudo-version fixes it), `secure_cookie` default depends on deployment, fixed per-site timeouts, in-memory session/rate state.
