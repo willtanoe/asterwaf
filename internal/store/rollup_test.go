@@ -2,6 +2,7 @@ package 存储
 
 import (
 	"context"
+	"database/sql"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -164,5 +165,70 @@ func 聚合记录(时间 int64, 路径, 地址, 动作 string, 耗时 int64) U�
 		U客户端IP: 地址,
 		U耗时毫秒:  耗时,
 		U请求头:   "{}",
+	}
+}
+
+// 被丢弃的行不会写入日志，也不应出现在任何聚合里。
+func Test丢弃的行不进聚合(t *testing.T) {
+	存储, 错误 := U打开(filepath.Join(t.TempDir(), "dropped.db"), 静默日志())
+	if 错误 != nil {
+		t.Fatalf("open: %v", 错误)
+	}
+	defer 关闭(t, 存储)
+	记录 := 聚合记录(time.Now().UnixMilli(), "/kept", "203.0.113.5", "allow", 2)
+	if 错误 := 存储.U直接写入([]U记录{记录}); 错误 != nil {
+		t.Fatalf("write: %v", 错误)
+	}
+	// 模拟队列丢弃：只递增计数，不写入任何表。
+	存储.丢弃.Add(5)
+
+	var 原始, 聚合 int64
+	if 错误 := 存储.数据库.QueryRow(`SELECT COUNT(*) FROM logs`).Scan(&原始); 错误 != nil {
+		t.Fatalf("logs: %v", 错误)
+	}
+	if 错误 := 存储.数据库.QueryRow(`SELECT COALESCE(SUM(requests),0) FROM rollup_minute`).Scan(&聚合); 错误 != nil {
+		t.Fatalf("rollup: %v", 错误)
+	}
+	if 原始 != 1 || 聚合 != 1 {
+		t.Fatalf("logs=%d rollup=%d; dropped rows must not appear in either", 原始, 聚合)
+	}
+	if 存储.U丢弃数() != 5 {
+		t.Fatalf("dropped counter=%d", 存储.U丢弃数())
+	}
+}
+
+// 重启后聚合仍与原始日志一致：重启不会重放或丢失已有行。
+func Test重启后聚合一致(t *testing.T) {
+	路径 := filepath.Join(t.TempDir(), "restart.db")
+	写入 := func() {
+		存储, 错误 := U打开(路径, 静默日志())
+		if 错误 != nil {
+			t.Fatalf("open: %v", 错误)
+		}
+		基准 := time.Now().UnixMilli()
+		for 序号 := 0; 序号 < 10; 序号++ {
+			if 错误 := 存储.U直接写入([]U记录{聚合记录(基准-int64(序号)*1000, "/restart", "203.0.113.6", "block", 3)}); 错误 != nil {
+				t.Fatalf("write: %v", 错误)
+			}
+		}
+		关闭(t, 存储)
+	}
+	写入()
+	写入()
+
+	数据库, 错误 := sql.Open("sqlite", 数据源(路径))
+	if 错误 != nil {
+		t.Fatalf("reopen: %v", 错误)
+	}
+	defer func() { _ = 数据库.Close() }()
+	var 原始, 聚合 int64
+	if 错误 := 数据库.QueryRow(`SELECT COUNT(*) FROM logs`).Scan(&原始); 错误 != nil {
+		t.Fatalf("logs: %v", 错误)
+	}
+	if 错误 := 数据库.QueryRow(`SELECT COALESCE(SUM(requests),0) FROM rollup_minute`).Scan(&聚合); 错误 != nil {
+		t.Fatalf("rollup: %v", 错误)
+	}
+	if 原始 != 20 || 聚合 != 20 {
+		t.Fatalf("after restart logs=%d rollup=%d, want 20 each", 原始, 聚合)
 	}
 }

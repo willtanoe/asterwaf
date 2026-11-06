@@ -193,3 +193,35 @@ func 查询审计(t *testing.T, 存储 *U存储, 动作 string) int {
 	}
 	return 数量
 }
+
+func Test分布维度白名单(t *testing.T) {
+	存储, 错误 := U打开(filepath.Join(t.TempDir(), "dim.db"), 静默日志())
+	if 错误 != nil {
+		t.Fatalf("open: %v", 错误)
+	}
+	defer 关闭(t, 存储)
+	上下文 := context.Background()
+
+	for _, 维度 := range []string{"category", "rule", "action", "site"} {
+		if _, 错误 := 存储.U分布统计(上下文, 0, 1, "", 维度, 5); 错误 != nil {
+			t.Fatalf("dimension %s rejected: %v", 维度, 错误)
+		}
+	}
+	恶意 := []string{
+		"category; DROP TABLE logs",
+		"1=1",
+		"action) UNION SELECT password FROM users --",
+		"site, (SELECT 1)",
+	}
+	for _, 维度 := range 恶意 {
+		if _, 错误 := 存储.U分布统计(上下文, 0, 1, "", 维度, 5); 错误 == nil {
+			t.Fatalf("dimension %q was accepted", 维度)
+		}
+	}
+
+	// 表仍然存在，说明注入式维度没有进入 SQL。
+	var 名称 string
+	if 错误 := 存储.数据库.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='logs'`).Scan(&名称); 错误 != nil {
+		t.Fatalf("logs table missing after rejected dimensions: %v", 错误)
+	}
+}

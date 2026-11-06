@@ -2,10 +2,13 @@ package 访问列表
 
 import (
 	"encoding/json"
+	"net/http/httptest"
 	"net/netip"
 	"reflect"
 	"strings"
 	"testing"
+
+	客户端地址 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/clientip"
 
 	"gopkg.in/yaml.v3"
 )
@@ -147,5 +150,26 @@ func Test访问列表序列化往返(t *testing.T) {
 	}
 	if !reflect.DeepEqual(原始, JSON还原) {
 		t.Fatalf("json round trip mismatch: %+v", JSON还原)
+	}
+}
+
+// 登录限速与管理接口都依赖 clientip；不受信对端伪造 XFF 不能改变判定。
+func Test访问列表不受伪造XFF影响(t *testing.T) {
+	检查器, 错误 := U新建(U列表{U条目: []U条目{
+		{UID: "deny-one", U动作: "deny", U地址: "198.51.100.7", U启用: true},
+	}})
+	if 错误 != nil {
+		t.Fatalf("new: %v", 错误)
+	}
+	解析器, 错误 := 客户端地址.U新建(nil)
+	if 错误 != nil {
+		t.Fatalf("resolver: %v", 错误)
+	}
+	请求 := httptest.NewRequest("GET", "http://app.example.com/", nil)
+	请求.RemoteAddr = "198.51.100.7:5555"
+	请求.Header.Set("X-Forwarded-For", "203.0.113.200, 10.0.0.1")
+	结果 := 解析器.U解析(请求)
+	if 检查 := 检查器.U检查(结果.U地址); !检查.U拦截 {
+		t.Fatalf("spoofed X-Forwarded-For bypassed deny: client=%s result=%+v", 结果.U地址, 检查)
 	}
 }

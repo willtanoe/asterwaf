@@ -90,18 +90,24 @@ func (限流器 *U限流器) U启用() bool {
 
 // U允许 消耗一个令牌；拒绝时返回建议的 Retry-After。
 func (限流器 *U限流器) U允许(地址 netip.Addr) (bool, time.Duration) {
-	if !限流器.配置.U启用 {
-		return true, 0
-	}
 	键, 有效 := 桶键(地址)
 	if !有效 {
 		return true, 0
 	}
 	现在 := 限流器.时钟()
-	速率 := float64(限流器.配置.U每分钟) / 60.0
 
 	限流器.互斥.Lock()
 	defer 限流器.互斥.Unlock()
+
+	// 配置可在运行时替换，必须与写入方共用同一把锁。
+	配置值 := 限流器.配置
+	if !配置值.U启用 {
+		return true, 0
+	}
+	速率 := float64(配置值.U每分钟) / 60.0
+	if 速率 <= 0 {
+		return true, 0
+	}
 
 	元素, 存在 := 限流器.桶表[键]
 	if !存在 {
@@ -109,7 +115,7 @@ func (限流器 *U限流器) U允许(地址 netip.Addr) (bool, time.Duration) {
 			限流器.淘汰最旧()
 		}
 		桶值 := &桶{
-			令牌:   float64(限流器.配置.U突发),
+			令牌:   float64(配置值.U突发),
 			上次补充: 现在,
 			最后访问: 现在,
 			键:    键,
@@ -123,7 +129,7 @@ func (限流器 *U限流器) U允许(地址 netip.Addr) (bool, time.Duration) {
 	桶值 := 元素.Value.(*桶)
 	经过 := 现在.Sub(桶值.上次补充).Seconds()
 	if 经过 > 0 {
-		桶值.令牌 = math.Min(float64(限流器.配置.U突发), 桶值.令牌+经过*速率)
+		桶值.令牌 = math.Min(float64(配置值.U突发), 桶值.令牌+经过*速率)
 		桶值.上次补充 = 现在
 	}
 	桶值.最后访问 = 现在

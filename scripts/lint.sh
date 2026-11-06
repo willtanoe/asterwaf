@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TOOLCHAIN="$ROOT/.toolchain"
 
+# 直接执行本脚本时也必须使用固定工具链，否则 golangci-lint 会调用系统 Go 并因版本不符失败。
+export PATH="$TOOLCHAIN/go/bin:$TOOLCHAIN/bin:$PATH"
 export GOTOOLCHAIN=local
 export GOLANGCI_LINT_CACHE="$TOOLCHAIN/cache/golangci-lint"
 export GOCACHE="$TOOLCHAIN/cache/go-build"
