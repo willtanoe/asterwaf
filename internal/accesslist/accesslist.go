@@ -13,11 +13,12 @@ var 合法标识 = regexp.MustCompile(`^[a-z0-9._-]+$`)
 
 // U条目 是一条允许或拒绝规则。地址可以是单个 IP 或 CIDR。
 type U条目 struct {
-	UID string `yaml:"id" json:"id"`
-	U动作 string `yaml:"action" json:"action"`
-	U地址 string `yaml:"address" json:"address"`
-	U备注 string `yaml:"note,omitempty" json:"note,omitempty"`
-	U启用 bool   `yaml:"enabled" json:"enabled"`
+	UID     string `yaml:"id" json:"id"`
+	U动作     string `yaml:"action" json:"action"`
+	U地址     string `yaml:"address" json:"address"`
+	U备注     string `yaml:"note,omitempty" json:"note,omitempty"`
+	U启用     bool   `yaml:"enabled" json:"enabled"`
+	U来源日志ID int64  `yaml:"source_log_id,omitempty" json:"source_log_id,omitempty"`
 }
 
 // U列表 是完整的访问列表配置。allow_only 打开时只放行明确允许的地址。
