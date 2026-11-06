@@ -55,3 +55,10 @@ This file records choices that constrain later work. Each entry is dated and, wh
 - `duration_ms` is captured before the request is handed to the reverse proxy, so it measures inspection only. The UI labels it "Inspection latency".
 - Request headers and bodies are persisted only when a rule matched or the action is not `allow`; both copies are redacted and bounded (8 KiB headers, 2 KiB body). Blocked requests that never reached body inspection store empty bodies.
 - `X-AsterWAF-Request-ID` is generated before routing and re-applied on `WriteHeader`, so an upstream cannot override it.
+
+## 2026-11-06 Statistics rollups
+
+- Minute rollups keep 12 fixed latency buckets (1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500 ms, overflow). p50/p95 are estimated from those buckets and must be labelled approximate.
+- Log insert and all three rollup upserts share one transaction, so a dropped row never reaches aggregates.
+- Retention runs hourly: raw logs 14 days, minute rollups 30 days, hourly rollups 180 days, audit log 365 days. Raw and audit deletes are batched 1000 rows at a time.
+- `asterwaf seed` writes a separate `data/asterwaf-seed.db` with about 29,000 deterministic rows over 14 days. Timestamps are anchored to the run time, so the shape is reproducible but the absolute times move. The server warns loudly when seed rows are present.
