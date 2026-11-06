@@ -5,20 +5,23 @@ package 引擎
 func U默认规则() []U规则 {
 	return []U规则{
 		{UID: "sqli.union-select", U名称: "SQL union select", U类别: "sqli", U正则: `(?i)\bunion\s+(all\s+)?select\b`, U启用: true, UScore: 50},
-		{UID: "sqli.boolean", U名称: "SQL boolean tautology", U类别: "sqli", U正则: `(?i)(\bor\b|\band\b)\s+['"]?\d+['"]?\s*=\s*['"]?\d+`, U启用: true, UScore: 50},
+		{UID: "sqli.boolean", U名称: "SQL boolean tautology", U类别: "sqli", U正则: `(?i)(\bor\b|\band\b)\s+['"]?\d+['"]?\s*(=|>|<)\s*['"]?\d+`, U启用: true, UScore: 50},
+		{UID: "sqli.subquery", U名称: "SQL subquery", U类别: "sqli", U正则: `(?i)\(\s*select\b[\s\S]{0,80}\bfrom\b`, U启用: true, UScore: 50},
+		{UID: "sqli.error-based", U名称: "SQL error based probe", U类别: "sqli", U正则: `(?i)\b(extractvalue|updatexml|geometrycollection)\s*\(`, U启用: true, UScore: 45},
 		{UID: "sqli.time", U名称: "SQL time delay", U类别: "sqli", U正则: `(?i)\b(sleep|benchmark|pg_sleep)\s*\(\s*\d+`, U启用: true, UScore: 50},
 		{UID: "sqli.stacked", U名称: "SQL stacked statement", U类别: "sqli", U正则: `(?i);\s*(drop|alter|insert|update|delete)\s+`, U启用: true, UScore: 50},
 		{UID: "sqli.comment", U名称: "SQL comment terminator", U类别: "sqli", U正则: `(?i)(--|#|/\*)\s*$`, U启用: true, UScore: 40},
 		{UID: "sqli.schema", U名称: "SQL system catalog", U类别: "sqli", U正则: `(?i)\b(information_schema|sysobjects|pg_catalog)\b`, U启用: true, UScore: 40},
 
 		{UID: "xss.script", U名称: "Script tag", U类别: "xss", U正则: `(?i)<\s*script\b`, U启用: true, UScore: 50},
-		{UID: "xss.event", U名称: "Inline event handler", U类别: "xss", U正则: `(?i)\bon(click|error|load|mouseover|focus|submit|toggle)\s*=`, U启用: true, UScore: 40},
+		{UID: "xss.event", U名称: "Inline event handler", U类别: "xss", U正则: `(?i)\bon(click|error|load|start|begin|toggle|mouseover|mouseenter|focus|submit|pointerover)\s*=`, U启用: true, UScore: 40},
+		{UID: "xss.legacy-tag", U名称: "Legacy embed tag", U类别: "xss", U正则: `(?i)<\s*(vml:|marquee|object|embed)\b`, U启用: true, UScore: 40},
 		{UID: "xss.javascript-uri", U名称: "JavaScript URI", U类别: "xss", U正则: `(?i)javascript\s*:`, U启用: true, UScore: 40},
 		{UID: "xss.iframe", U名称: "Iframe injection", U类别: "xss", U正则: `(?i)<\s*iframe\b`, U启用: true, UScore: 40},
 		{UID: "xss.svg-event", U名称: "SVG event handler", U类别: "xss", U正则: `(?i)<\s*svg\b[\s\S]{0,80}\bon[a-z]{3,15}\s*=`, U启用: true, UScore: 40},
 
-		{UID: "traversal.dotdot", U名称: "Path traversal", U类别: "traversal", U正则: `(?i)(^|[/\\])\.\.([/\\]|$)`, U启用: true, UScore: 50},
-		{UID: "traversal.encoded", U名称: "Encoded path traversal", U类别: "traversal", U正则: `(?i)(%2e%2e|%252e%252e)(/|%2f|\\|%5c|%252f|%255c)`, U启用: true, UScore: 50},
+		{UID: "traversal.dotdot", U名称: "Path traversal", U类别: "traversal", U正则: `(?i)(^|[/\\])\.\.([/\\;]|$)`, U启用: true, UScore: 50},
+		{UID: "traversal.encoded", U名称: "Encoded path traversal", U类别: "traversal", U正则: `(?i)(\.\.|%2e%2e|%252e%252e)(%2f|%5c|%252f|%255c|%c0%af|%c1%9c)`, U启用: true, UScore: 50},
 		{UID: "traversal.sensitive", U名称: "Sensitive file path", U类别: "traversal", U正则: `(?i)(/etc/passwd|/etc/shadow|boot\.ini|win\.ini)`, U启用: true, UScore: 50},
 		{UID: "traversal.null", U名称: "Null byte injection", U类别: "traversal", U正则: `(?i)(%00|\x00)`, U启用: true, UScore: 40},
 
@@ -28,7 +31,7 @@ func U默认规则() []U规则 {
 		{UID: "rce.shell-name", U名称: "Shell binary invocation", U类别: "rce", U正则: `(?i)(\bcmd\.exe\b|/bin/(ba)?sh\b|\bpowershell(\.exe)?\b)`, U启用: true, UScore: 50},
 
 		{UID: "scanner.user-agent", U名称: "Scanner user agent", U类别: "scanner", U正则: `(?i)(sqlmap|nikto|nmap|masscan|acunetix|nessus|burpsuite|zgrab|nuclei)`, U启用: true, UScore: 30},
-		{UID: "scanner.path", U名称: "Scanner path probe", U类别: "scanner", U正则: `(?i)(/\.git/|/\.svn/|/\.env\b|/wp-admin/|/phpmyadmin/)`, U启用: true, UScore: 30},
+		{UID: "scanner.path", U名称: "Scanner path probe", U类别: "scanner", U正则: `(?i)(/\.git/|/\.svn/|/\.env\b|/wp-admin/|/wp-login\.php|/xmlrpc\.php|/phpmyadmin/)`, U启用: true, UScore: 30},
 		{UID: "scanner.secret", U名称: "Secret file probe", U类别: "scanner", U正则: `(?i)(/\.aws/credentials|/\.ssh/id_rsa|/server-status|/actuator/env)`, U启用: true, UScore: 30},
 	}
 }

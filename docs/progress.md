@@ -16,7 +16,7 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 | 8b api-management | phase/8b-api-management | phase-8b | complete | stats, logs, rule versions, ACL/rate/site persistence |
 | 9 ui-shell-and-overview | phase/9-ui-shell-and-overview | phase-9 | complete | responsive shell, tokenized themes, Overview, 36 screenshots |
 | 10 ui-management | phase/10-ui-management | phase-10 | complete | logs filters/drawer/row actions, rule editor/test/versions, ACL and rate forms, site modes |
-| 11 fp-calibration | phase/11-fp-calibration | phase-11 | pending | |
+| 11 fp-calibration | phase/11-fp-calibration | phase-11 | complete | 300 normal / 150 attack; 0.00% FP, 98.00% detection |
 | 12 security-review | phase/12-security-review | phase-12 | pending | |
 
 ## Phase 9 self-check
@@ -38,6 +38,14 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   - Access lists: added and deleted entries, including one created from a log row with `source_log_id` recorded; rate limit GET/PUT round-tripped.
   - Sites: mode selector saved `shadow` and the persisted value survived reloads; upstream stayed read-only.
 - Screenshots for all six pages, both themes, and three widths were regenerated after the changes; no horizontal overflow was reported.
+
+## Phase 11 numbers
+
+- Corpus: 300 normal, 150 labelled attacks (30 each for sqli, xss, traversal, rce, scanner), in-process through the real inspection pipeline.
+- False positive rate: 0.00% (0 of 300). Per-rule false positives: none.
+- Detection rate: 98.00% (147 of 150). Thresholds: FP <= 0.5%, detection >= 95%.
+- One rule-adjustment round was needed (93.33% -> 98.00%). The three remaining misses are explained in `docs/calibration.md`; they are parser limits or deliberate non-goals, not silent gaps.
+- `make calibrate` runs the gate. Rule changes for the round were applied through `asterwaf rules import-defaults`, which reported 3 inserted defaults, 0 updated defaults, and 22 custom rules skipped (the local test database had edited rules).
 
 ## Open items
 
