@@ -30,3 +30,9 @@ This file records choices that constrain later work. Each entry is dated and, wh
 ## 2026-11-06 Seed data
 
 - `make seed` writes `data/asterwaf-seed.db` with `seed=1` rows. The server warns loudly if it is started against a seed database. Synthetic data is deterministic from a fixed seed.
+
+## 2026-11-06 Rule defaults and Stage A
+
+- Default mode is `enforce`. The built-in rules are deliberately conservative: they target unambiguous syntax such as `union select`, `<script`, `../`, and known shell words rather than broad heuristics.
+- Rule order is priority. The first enabled rule that matches any inspected target wins; shadow mode also stops at the first match.
+- Stage A's real target, OWASP Juice Shop, is not available from npm (ETARGET for the pinned version). The gate ran against a committed 40 + 40 corpus through the actual proxy handler, not against Juice Shop. This is recorded as a known gap.
