@@ -71,3 +71,17 @@ This file records choices that constrain later work. Each entry is dated and, wh
 - Session tokens are 32 random bytes in an HttpOnly, SameSite=Strict cookie with a 12-hour absolute expiry. Restarts invalidate all sessions.
 - Write requests with an `Origin` header must match the request Host. Requests without Origin are allowed for scripted clients.
 - Health probes request each site's `health_path` with the site Host header every 5 seconds, do not follow redirects, and mark a site down after 3 consecutive failures (status < 500 is healthy).
+
+## 2026-11-06 Database authority and rule versions
+
+- On startup, YAML seeds only empty policy tables: access settings/entries, rate limit, and site modes. Existing rows are never overwritten. Site modes use `INSERT OR IGNORE`.
+- Rules are seeded from the built-in set only when the rules table is empty. Every rule save, toggle, delete or rollback rewrites the ordered rule set, writes a full snapshot into `ruleset_versions`, writes the audit row, and commits in one transaction. The engine then installs that version so `/api/status` reports the database version.
+- Editing a default rule marks it `custom`; `asterwaf rules import-defaults` updates only rows still marked `default`, keeps their enabled flag, inserts missing defaults, and leaves custom rules untouched. The CLI writes a new version; a running server needs a restart to pick it up.
+- Rule order is the stored position and therefore priority. The first matching rule wins.
+
+## 2026-11-06 Overview statistics API
+
+- Buckets are aligned to their own boundaries; `auto` resolves to 1m up to one hour, 5m up to six hours, 15m up to a day, 1h up to three days, otherwise 6h. A bucket producing more than 2000 points is rejected.
+- KPIs compare the selected window with the immediately preceding window of equal length. `delta_pct` is null when the previous value is zero.
+- p50/p95 come from 12 histogram buckets and every response includes the note. Ranges over 24 hours mark unique IPs approximate and read them from `rollup_hour_ip`; shorter ranges count distinct IPs in raw logs.
+- Top IP/path tables use raw logs up to 24 hours and hourly rollups beyond that.

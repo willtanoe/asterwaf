@@ -115,7 +115,7 @@ func Test访问列表序列化往返(t *testing.T) {
 	原始 := U列表{
 		U仅允许: true,
 		U条目: []U条目{
-			{UID: "office", U动作: "allow", U地址: "203.0.113.0/24", U备注: "office", U启用: true},
+			{UID: "office", U动作: "allow", U地址: "203.0.113.0/24", U备注: "office", U启用: true, U来源日志ID: 42},
 			{UID: "bad", U动作: "deny", U地址: "198.51.100.9", U启用: false},
 		},
 	}

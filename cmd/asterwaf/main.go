@@ -35,6 +35,12 @@ func main() {
 				os.Exit(1)
 			}
 			return
+		case "rules":
+			if 错误 := 规则命令(os.Args[2:]); 错误 != nil {
+				fmt.Fprintf(os.Stderr, "asterwaf rules: %v\n", 错误)
+				os.Exit(1)
+			}
+			return
 		}
 	}
 
@@ -59,10 +65,6 @@ func 运行(路径 string, 日志 *slog.Logger) error {
 	if 错误 != nil {
 		return 错误
 	}
-	引擎, 错误 := 引擎.U新建(引擎.U默认规则())
-	if 错误 != nil {
-		return 错误
-	}
 	存储, 错误 := 存储.U打开(配置值.U数据库, 日志)
 	if 错误 != nil {
 		return 错误
@@ -78,10 +80,65 @@ func 运行(路径 string, 日志 *slog.Logger) error {
 		日志.Warn("database contains synthetic seed data; do not treat these statistics as production traffic",
 			"database", 配置值.U数据库)
 	}
+
+	初始化上下文, 取消初始化 := context.WithTimeout(context.Background(), 15*time.Second)
+	defer 取消初始化()
+	种子模式 := make(map[string]string, len(配置值.U站点))
+	for _, 站点值 := range 配置值.U站点 {
+		种子模式[站点值.U主机] = 站点值.U模式
+	}
+	if 错误 := 存储.U种子配置(初始化上下文, 配置值.U访问列表, 配置值.U限流, 种子模式); 错误 != nil {
+		return 错误
+	}
+	规则版本, 错误 := 存储.U种子规则(初始化上下文, 引擎.U默认规则())
+	if 错误 != nil {
+		return 错误
+	}
+	规则行, 错误 := 存储.U读取规则(初始化上下文)
+	if 错误 != nil {
+		return 错误
+	}
+	规则列表 := make([]引擎.U规则, 0, len(规则行))
+	for _, 行 := range 规则行 {
+		规则列表 = append(规则列表, 行.U转为规则())
+	}
+	规则引擎, 错误 := 引擎.U新建(规则列表)
+	if 错误 != nil {
+		return 错误
+	}
+	if 错误 := 规则引擎.U安装(规则列表, 规则版本); 错误 != nil {
+		return 错误
+	}
+	访问配置, 错误 := 存储.U读取访问列表(初始化上下文)
+	if 错误 != nil {
+		return 错误
+	}
+	限流配置, 错误 := 存储.U读取限流(初始化上下文)
+	if 错误 != nil {
+		return 错误
+	}
+	模式表, 错误 := 存储.U读取站点模式(初始化上下文)
+	if 错误 != nil {
+		return 错误
+	}
+	生效配置 := 配置值
+	生效配置.U访问列表 = 访问配置
+	生效配置.U限流 = 限流配置
+	for 下标 := range 生效配置.U站点 {
+		if 模式, 存在 := 模式表[生效配置.U站点[下标].U主机]; 存在 {
+			生效配置.U站点[下标].U模式 = 模式
+		}
+	}
+
+	处理器, 错误 := 反向代理.U新建(生效配置, 解析器, 规则引擎, 存储, 日志)
+	if 错误 != nil {
+		return 错误
+	}
 	管理器, 错误 := 管理接口.U新建(管理接口.U依赖{
-		U配置:  配置值,
+		U配置:  生效配置,
 		U存储:  存储,
-		U引擎:  引擎,
+		U引擎:  规则引擎,
+		U代理:  处理器,
 		U解析器: 解析器,
 		U日志:  日志,
 	})
@@ -90,10 +147,6 @@ func 运行(路径 string, 日志 *slog.Logger) error {
 	}
 	defer 管理器.Close()
 
-	处理器, 错误 := 反向代理.U新建(配置值, 解析器, 引擎, 存储, 日志)
-	if 错误 != nil {
-		return 错误
-	}
 	代理服务器 := &http.Server{
 		Addr:              配置值.U监听,
 		Handler:           处理器,

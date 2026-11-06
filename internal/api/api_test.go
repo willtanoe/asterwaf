@@ -19,6 +19,7 @@ import (
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/clientip"
 	配置 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/config"
 	规则引擎 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
+	反向代理 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/proxy"
 	存储包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/store"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -253,10 +254,26 @@ func 新建测试服务(t *testing.T, 安全Cookie bool) (*httptest.Server, *存
 	配置值.U站点 = []配置.U站点{{
 		U主机: "app.example.com", U上游: "http://127.0.0.1:1", U模式: "enforce",
 	}}
+	版本, 错误 := 存储.U种子规则(context.Background(), 规则引擎.U默认规则())
+	if 错误 != nil {
+		t.Fatalf("seed rules: %v", 错误)
+	}
+	if 错误 := 引擎.U安装(规则引擎.U默认规则(), 版本); 错误 != nil {
+		t.Fatalf("install rules: %v", 错误)
+	}
+	模式种子 := map[string]string{"app.example.com": "enforce"}
+	if 错误 := 存储.U种子配置(context.Background(), 配置值.U访问列表, 配置值.U限流, 模式种子); 错误 != nil {
+		t.Fatalf("seed config: %v", 错误)
+	}
+	代理, 错误 := 反向代理.U新建(配置值, 解析器, 引擎, 存储, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if 错误 != nil {
+		t.Fatalf("proxy: %v", 错误)
+	}
 	管理器, 错误 := U新建(U依赖{
 		U配置:   配置值,
 		U存储:   存储,
 		U引擎:   引擎,
+		U代理:   代理,
 		U解析器:  解析器,
 		U日志:   slog.New(slog.NewTextHandler(io.Discard, nil)),
 		U探测间隔: -1,
@@ -267,6 +284,7 @@ func 新建测试服务(t *testing.T, 安全Cookie bool) (*httptest.Server, *存
 	}
 	服务 := httptest.NewServer(管理器)
 	t.Cleanup(func() {
+		代理.U关闭空闲连接()
 		_ = 存储.Close(context.Background())
 	})
 	return 服务, 存储, 管理器, 路径

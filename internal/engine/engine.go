@@ -11,6 +11,8 @@ import (
 )
 
 const (
+	U默认规则版本 int = 1
+
 	U动作允许 = "allow"
 	U动作拦截 = "block"
 	U动作记录 = "shadow"
@@ -84,6 +86,17 @@ func (引擎 *U引擎) U替换(规则 []U规则) error {
 		return 错误
 	}
 	版本 := 引擎.版本计数.Add(1)
+	引擎.当前.Store(&U规则集{U版本: 版本, 规则: 编译后})
+	return nil
+}
+
+// U安装 用显式版本替换规则集，使内存版本与数据库版本一致。
+func (引擎 *U引擎) U安装(规则 []U规则, 版本 int64) error {
+	编译后, 错误 := 编译(规则)
+	if 错误 != nil {
+		return 错误
+	}
+	引擎.版本计数.Store(版本)
 	引擎.当前.Store(&U规则集{U版本: 版本, 规则: 编译后})
 	return nil
 }

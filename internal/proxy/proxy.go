@@ -45,7 +45,15 @@ type 站点 struct {
 	上游    *url.URL
 	代理    *httputil.ReverseProxy
 	最大请求体 int64
-	模式    string
+	模式    atomic.Value
+}
+
+func (站点值 *站点) 当前模式() string {
+	值, _ := 站点值.模式.Load().(string)
+	if 值 == "" {
+		return "enforce"
+	}
+	return 值
 }
 
 // U新建 为每个站点建立独立的 ReverseProxy 与共享传输参数。
@@ -106,7 +114,8 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 		if 模式 == "" {
 			模式 = 配置值.U模式
 		}
-		站点值 := &站点{主机: 主机, 上游: 上游, 最大请求体: 最大请求体, 模式: 模式}
+		站点值 := &站点{主机: 主机, 上游: 上游, 最大请求体: 最大请求体}
+		站点值.模式.Store(模式)
 		站点值.代理 = &httputil.ReverseProxy{
 			Rewrite: func(请求 *httputil.ProxyRequest) {
 				重写请求(请求, 站点值.上游, 解析器)
@@ -169,6 +178,7 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 		return
 	}
 	记录.USite = 站点值.主机
+	站点模式 := 站点值.当前模式()
 	客户端 := 处理器.解析器.U解析(请求)
 	记录.U客户端IP = 客户端.U地址.String()
 
@@ -184,7 +194,7 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 			"site", 站点值.主机,
 			"method", 请求.Method,
 			"path", 请求.URL.RequestURI(),
-			"mode", 站点值.模式,
+			"mode", 站点模式,
 			"action", "block",
 			"category", "accesslist",
 			"rule_id", 访问结果.U规则ID,
@@ -222,7 +232,7 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 				"site", 站点值.主机,
 				"method", 请求.Method,
 				"path", 请求.URL.RequestURI(),
-				"mode", 站点值.模式,
+				"mode", 站点模式,
 				"action", "ratelimited",
 				"category", "ratelimit",
 				"rule_id", "ratelimit",
@@ -273,7 +283,7 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 	}
 	请求.TransferEncoding = nil
 
-	决策 := 处理器.引擎.U决策(站点值.模式, 快照.U目标列表())
+	决策 := 处理器.引擎.U决策(站点模式, 快照.U目标列表())
 	switch 决策.U动作 {
 	case 规则引擎.U动作拦截:
 		记录.U动作 = "block"
@@ -442,6 +452,29 @@ func 重写请求(请求 *httputil.ProxyRequest, 上游 *url.URL, 解析器 *客
 	头.Set("X-Forwarded-For", 结果.U地址.String())
 	头.Set("X-Real-IP", 结果.U地址.String())
 	头.Set("X-Forwarded-Proto", 结果.U协议)
+}
+
+// U更新站点模式 原子切换运行时模式；持久化由 API 在同一流程内完成。
+func (处理器 *U处理器) U更新站点模式(主机, 模式 string) error {
+	if 模式 != "off" && 模式 != "shadow" && 模式 != "enforce" {
+		return fmt.Errorf("proxy: invalid site mode %q", 模式)
+	}
+	站点值, 存在 := 处理器.站点表[主机]
+	if !存在 {
+		return fmt.Errorf("proxy: unknown site %q", 主机)
+	}
+	站点值.模式.Store(模式)
+	return nil
+}
+
+// U更新访问列表 替换运行时检查器。
+func (处理器 *U处理器) U更新访问列表(列表 访问列表.U列表) error {
+	return 处理器.访问.U替换(列表)
+}
+
+// U更新限流 替换运行时限流参数。
+func (处理器 *U处理器) U更新限流(配置值 限流包.U配置) error {
+	return 处理器.限流.U修改配置(配置值)
 }
 
 // U关闭空闲连接 在进程退出前释放上游连接。
