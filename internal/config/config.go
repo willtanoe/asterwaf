@@ -14,11 +14,11 @@ import (
 
 const (
 	// 1 MiB 足够覆盖表单与 API 请求，超出上限的请求会在读取前被拒绝。
-	默认最大请求体 int64 = 1 << 20
-	默认健康路径        = "/"
-	默认监听          = "127.0.0.1:8080"
-	默认管理监听        = "127.0.0.1:9090"
-	默认模式          = "enforce"
+	U默认最大请求体 int64 = 1 << 20
+	默认健康路径         = "/"
+	默认监听           = "127.0.0.1:8080"
+	默认管理监听         = "127.0.0.1:9090"
+	默认模式           = "enforce"
 )
 
 // U站点 是 YAML 中的站点定义，路由与上游只在配置中决定。
@@ -36,6 +36,7 @@ type U配置 struct {
 	U管理监听 string   `yaml:"admin_listen"`
 	U模式   string   `yaml:"mode"`
 	U受信代理 []string `yaml:"trusted_proxies"`
+	U检查头  []string `yaml:"inspect_headers"`
 	U站点   []U站点    `yaml:"sites"`
 }
 
@@ -46,6 +47,7 @@ func U默认配置() U配置 {
 		U管理监听: 默认管理监听,
 		U模式:   默认模式,
 		U受信代理: []string{},
+		U检查头:  []string{"User-Agent", "Referer", "X-Forwarded-For"},
 		U站点:   []U站点{},
 	}
 }
@@ -81,6 +83,11 @@ func (配置值 U配置) U校验() error {
 	if !U模式合法(配置值.U模式) {
 		return fmt.Errorf("config: invalid mode %q (want off, shadow or enforce)", 配置值.U模式)
 	}
+	for 序号, 名称 := range 配置值.U检查头 {
+		if strings.TrimSpace(名称) == "" {
+			return fmt.Errorf("config: inspect_headers[%d] must not be empty", 序号)
+		}
+	}
 	for 序号, 地址 := range 配置值.U受信代理 {
 		if _, 错误 := netip.ParsePrefix(地址); 错误 != nil {
 			return fmt.Errorf("config: trusted_proxies[%d]: %w", 序号, 错误)
@@ -102,7 +109,7 @@ func (配置值 U配置) U校验() error {
 		已见[站点.U主机] = struct{}{}
 
 		if 站点.U最大请求体 == 0 {
-			站点.U最大请求体 = 默认最大请求体
+			站点.U最大请求体 = U默认最大请求体
 		}
 		if 站点.U最大请求体 < 0 {
 			return fmt.Errorf("config: sites[%d].max_body_bytes must be positive", 序号)

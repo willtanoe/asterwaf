@@ -15,6 +15,7 @@ func Test配置往返(t *testing.T) {
 		U管理监听: "127.0.0.1:9090",
 		U模式:   "shadow",
 		U受信代理: []string{"10.0.0.0/8", "192.168.1.0/24"},
+		U检查头:  []string{"User-Agent", "X-Custom"},
 		U站点: []U站点{
 			{
 				U主机:     "app.example.com",
@@ -55,7 +56,7 @@ sites:
 	if 站点.U主机 != "app.example.com" {
 		t.Fatalf("host not normalized: %q", 站点.U主机)
 	}
-	if 站点.U最大请求体 != 默认最大请求体 {
+	if 站点.U最大请求体 != U默认最大请求体 {
 		t.Fatalf("max body default = %d", 站点.U最大请求体)
 	}
 	if 站点.U健康检查路径 != 默认健康路径 {

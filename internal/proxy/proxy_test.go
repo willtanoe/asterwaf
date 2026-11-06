@@ -2,6 +2,7 @@ package 反向代理
 
 import (
 	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
@@ -207,4 +208,55 @@ func 新建处理器(t *testing.T, 配置值 配置.U配置, 受信 []string) *U
 		t.Fatalf("proxy: %v", 错误)
 	}
 	return 处理器
+}
+
+func Test请求体超过站点上限返回413(t *testing.T) {
+	上游 := httptest.NewServer(http.HandlerFunc(func(写 http.ResponseWriter, _ *http.Request) {
+		t.Error("upstream must not be called for an oversized body")
+	}))
+	defer 上游.Close()
+
+	处理器 := 新建处理器(t, 配置.U配置{
+		U模式: "enforce",
+		U站点: []配置.U站点{{U主机: "app.example.com", U上游: 上游.URL, U最大请求体: 8}},
+	}, nil)
+
+	请求 := httptest.NewRequest("POST", "http://app.example.com/", strings.NewReader("0123456789"))
+	记录 := httptest.NewRecorder()
+	处理器.ServeHTTP(记录, 请求)
+	if 记录.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("status=%d", 记录.Code)
+	}
+}
+
+func Test压缩请求体原样转发(t *testing.T) {
+	var 压缩 bytes.Buffer
+	写器 := gzip.NewWriter(&压缩)
+	_, _ = 写器.Write([]byte("user=admin&password=abc"))
+	_ = 写器.Close()
+	期望 := sha256.Sum256(压缩.Bytes())
+
+	上游 := httptest.NewServer(http.HandlerFunc(func(写 http.ResponseWriter, 请求 *http.Request) {
+		体, _ := io.ReadAll(请求.Body)
+		和 := sha256.Sum256(体)
+		写.Header().Set("X-Seen-Sha", hex.EncodeToString(和[:]))
+	}))
+	defer 上游.Close()
+
+	处理器 := 新建处理器(t, 配置.U配置{
+		U模式: "enforce",
+		U站点: []配置.U站点{{U主机: "app.example.com", U上游: 上游.URL, U最大请求体: 1 << 20}},
+	}, nil)
+
+	请求 := httptest.NewRequest("POST", "http://app.example.com/login", bytes.NewReader(压缩.Bytes()))
+	请求.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	请求.Header.Set("Content-Encoding", "gzip")
+	记录 := httptest.NewRecorder()
+	处理器.ServeHTTP(记录, 请求)
+	if 记录.Code != http.StatusOK {
+		t.Fatalf("status=%d", 记录.Code)
+	}
+	if 实际 := 记录.Header().Get("X-Seen-Sha"); 实际 != hex.EncodeToString(期望[:]) {
+		t.Fatalf("compressed body was altered in transit: %s", 实际)
+	}
 }

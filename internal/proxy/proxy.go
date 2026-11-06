@@ -1,7 +1,10 @@
 package 反向代理
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -12,6 +15,7 @@ import (
 
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/clientip"
 	配置 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/config"
+	检查管线 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/pipeline"
 )
 
 // U处理器 按 Host 选择站点并转发。站点列表在启动后不变，模式变更由后续阶段接管。
@@ -20,12 +24,14 @@ type U处理器 struct {
 	日志  *slog.Logger
 	站点表 map[string]*站点
 	配置  配置.U配置
+	管线  *检查管线.U管线
 }
 
 type 站点 struct {
-	主机 string
-	上游 *url.URL
-	代理 *httputil.ReverseProxy
+	主机    string
+	上游    *url.URL
+	代理    *httputil.ReverseProxy
+	最大请求体 int64
 }
 
 // U新建 为每个站点建立独立的 ReverseProxy 与共享传输参数。
@@ -54,6 +60,7 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 		日志:  日志,
 		站点表: make(map[string]*站点, len(配置值.U站点)),
 		配置:  配置值,
+		管线:  检查管线.U新建(配置值.U检查头),
 	}
 	for _, 站点配置 := range 配置值.U站点 {
 		上游, 错误 := url.Parse(站点配置.U上游)
@@ -61,7 +68,11 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 			return nil, fmt.Errorf("proxy: site %s upstream: %w", 站点配置.U主机, 错误)
 		}
 		主机 := 站点配置.U主机
-		站点值 := &站点{主机: 主机, 上游: 上游}
+		最大请求体 := 站点配置.U最大请求体
+		if 最大请求体 <= 0 {
+			最大请求体 = 配置.U默认最大请求体
+		}
+		站点值 := &站点{主机: 主机, 上游: 上游, 最大请求体: 最大请求体}
 		站点值.代理 = &httputil.ReverseProxy{
 			Rewrite: func(请求 *httputil.ProxyRequest) {
 				重写请求(请求, 站点值.上游, 解析器)
@@ -101,6 +112,29 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 		_, _ = 写.Write([]byte("site configuration is inconsistent\n"))
 		return
 	}
+	快照, 错误 := 处理器.管线.U读取(写, 请求, 站点值.最大请求体)
+	if 错误 != nil {
+		var 超限 *检查管线.U体过大错误
+		if errors.As(错误, &超限) {
+			写.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			写.WriteHeader(http.StatusRequestEntityTooLarge)
+			_, _ = 写.Write([]byte("request body too large\n"))
+			return
+		}
+		处理器.日志.Warn("request body could not be read", "site", 站点值.主机, "error", 错误)
+		写.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		写.WriteHeader(http.StatusBadRequest)
+		_, _ = 写.Write([]byte("request body could not be read\n"))
+		return
+	}
+	if len(快照.U体) == 0 && 请求.ContentLength <= 0 {
+		请求.Body = http.NoBody
+		请求.ContentLength = 0
+	} else {
+		请求.Body = io.NopCloser(bytes.NewReader(快照.U体))
+		请求.ContentLength = int64(len(快照.U体))
+	}
+	请求.TransferEncoding = nil
 	站点值.代理.ServeHTTP(写, 请求)
 }
 
