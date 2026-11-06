@@ -2,7 +2,10 @@ package 管理接口
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+
+	存储包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/store"
 )
 
 const (
@@ -32,4 +35,21 @@ func 写JSON(写 http.ResponseWriter, 状态 int, 值 any) {
 
 func 写错误(写 http.ResponseWriter, 状态 int, 代码, 消息 string) {
 	写JSON(写, 状态, U错误响应{U错误: U错误详情{U代码: 代码, U消息: 消息}})
+}
+
+// 读取JSON 限制体积并拒绝未知字段，失败时已写响应。
+func 读取JSON(写 http.ResponseWriter, 请求 *http.Request, 目标 any, 上限 int64) bool {
+	请求.Body = http.MaxBytesReader(写, 请求.Body, 上限)
+	解码器 := json.NewDecoder(请求.Body)
+	解码器.DisallowUnknownFields()
+	if 错误 := 解码器.Decode(目标); 错误 != nil {
+		写错误(写, http.StatusBadRequest, 错误请求, "body must be a valid JSON object")
+		return false
+	}
+	return true
+}
+
+func 是未找到(错误 error) bool {
+	var 目标 存储包.U未找到错误
+	return errors.As(错误, &目标)
 }

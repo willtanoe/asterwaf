@@ -14,6 +14,7 @@ import (
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/clientip"
 	配置 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/config"
 	规则引擎 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
+	反向代理 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/proxy"
 	存储包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/store"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -24,6 +25,7 @@ type U依赖 struct {
 	U配置   配置.U配置
 	U存储   *存储包.U存储
 	U引擎   *规则引擎.U引擎
+	U代理   *反向代理.U处理器
 	U解析器  *客户端地址.U解析器
 	U日志   *slog.Logger
 	U探测间隔 time.Duration
@@ -34,6 +36,7 @@ type U管理器 struct {
 	配置   配置.U配置
 	存储   *存储包.U存储
 	引擎   *规则引擎.U引擎
+	代理   *反向代理.U处理器
 	解析器  *客户端地址.U解析器
 	日志   *slog.Logger
 	哈希   []byte
@@ -95,6 +98,7 @@ func U新建(依赖 U依赖) (*U管理器, error) {
 		配置:   依赖.U配置,
 		存储:   依赖.U存储,
 		引擎:   依赖.U引擎,
+		代理:   依赖.U代理,
 		解析器:  依赖.U解析器,
 		日志:   日志,
 		哈希:   凭据.U哈希,
@@ -120,6 +124,16 @@ func (管理器 *U管理器) 注册路由() {
 	管理器.多路.HandleFunc("/api/logout", 管理器.登出)
 	管理器.多路.HandleFunc("/api/me", 管理器.当前用户)
 	管理器.多路.HandleFunc("/api/status", 管理器.状态)
+	管理器.多路.HandleFunc("/api/stats/overview", 管理器.概览)
+	管理器.多路.HandleFunc("/api/logs", 管理器.日志列表)
+	管理器.多路.HandleFunc("/api/logs/", 管理器.日志路由)
+	管理器.多路.HandleFunc("/api/rules", 管理器.规则集合)
+	管理器.多路.HandleFunc("/api/rules/", 管理器.规则路由)
+	管理器.多路.HandleFunc("/api/access-lists", 管理器.访问列表集合)
+	管理器.多路.HandleFunc("/api/access-lists/", 管理器.访问列表路由)
+	管理器.多路.HandleFunc("/api/rate-limit", 管理器.限流设置)
+	管理器.多路.HandleFunc("/api/sites", 管理器.站点集合)
+	管理器.多路.HandleFunc("/api/sites/", 管理器.站点路由)
 	管理器.多路.HandleFunc("/", 管理器.未找到)
 }
 
