@@ -83,7 +83,11 @@ func 打开(路径 string, 队列容量 int, 日志 *slog.Logger) (*U存储, err
 			return nil, fmt.Errorf("store: create data directory: %w", 错误)
 		}
 	}
-	数据库, 错误 := sql.Open("sqlite", 数据源(路径))
+	源, 错误 := 数据源(路径)
+	if 错误 != nil {
+		return nil, 错误
+	}
+	数据库, 错误 := sql.Open("sqlite", 源)
 	if 错误 != nil {
 		return nil, fmt.Errorf("store: open database: %w", 错误)
 	}
@@ -251,9 +255,16 @@ func (存储 *U存储) U包含种子数据(上下文 context.Context) bool {
 	return 错误 == nil && 存在 == 1
 }
 
-func 数据源(路径 string) string {
-	值 := url.URL{Scheme: "file", Path: 路径}
-	return 值.String() + "?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)&_pragma=foreign_keys(1)"
+// 数据源 组装 modernc.org/sqlite 的连接串。路径必须先归一化为绝对路径：
+// url.URL.String() 在 Path 非空时固定输出 "//"，相对路径的首段会被 SQLite
+// 当作 URI authority（file://data/x.db 中的 "data"）而解析失败。
+func 数据源(路径 string) (string, error) {
+	绝对, 错误 := filepath.Abs(路径)
+	if 错误 != nil {
+		return "", fmt.Errorf("store: resolve database path: %w", 错误)
+	}
+	值 := url.URL{Scheme: "file", Path: 绝对}
+	return 值.String() + "?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)&_pragma=foreign_keys(1)", nil
 }
 
 func 迁移(数据库 *sql.DB) error {

@@ -216,7 +216,11 @@ func Test重启后聚合一致(t *testing.T) {
 	写入()
 	写入()
 
-	数据库, 错误 := sql.Open("sqlite", 数据源(路径))
+	源, 错误 := 数据源(路径)
+	if 错误 != nil {
+		t.Fatalf("reopen: %v", 错误)
+	}
+	数据库, 错误 := sql.Open("sqlite", 源)
 	if 错误 != nil {
 		t.Fatalf("reopen: %v", 错误)
 	}

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"io"
 	"log/slog"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -49,6 +50,20 @@ func Test打开应用SQLite参数(t *testing.T) {
 	}
 }
 
+// 相对路径曾被组装成 file://data/test.db，SQLite 把首段当成 authority 而拒绝连接。
+func Test打开相对路径(t *testing.T) {
+	工作目录 := t.TempDir()
+	t.Chdir(工作目录)
+	存储, 错误 := U打开("data/test.db", 静默日志())
+	if 错误 != nil {
+		t.Fatalf("open: %v", 错误)
+	}
+	defer 关闭(t, 存储)
+	if _, 错误 := os.Stat(filepath.Join(工作目录, "data", "test.db")); 错误 != nil {
+		t.Fatalf("database file: %v", 错误)
+	}
+}
+
 func Test异步日志落库(t *testing.T) {
 	路径 := filepath.Join(t.TempDir(), "logs.db")
 	存储, 错误 := U打开(路径, 静默日志())
@@ -78,7 +93,11 @@ func Test异步日志落库(t *testing.T) {
 	存储.U加入(记录)
 	关闭(t, 存储)
 
-	数据库, 错误 := sql.Open("sqlite", 数据源(路径))
+	源, 错误 := 数据源(路径)
+	if 错误 != nil {
+		t.Fatalf("reopen: %v", 错误)
+	}
+	数据库, 错误 := sql.Open("sqlite", 源)
 	if 错误 != nil {
 		t.Fatalf("reopen: %v", 错误)
 	}
@@ -123,7 +142,11 @@ func Test批量写入与关闭排空(t *testing.T) {
 	}
 	关闭(t, 存储)
 
-	数据库, 错误 := sql.Open("sqlite", 数据源(路径))
+	源, 错误 := 数据源(路径)
+	if 错误 != nil {
+		t.Fatalf("reopen: %v", 错误)
+	}
+	数据库, 错误 := sql.Open("sqlite", 源)
 	if 错误 != nil {
 		t.Fatalf("reopen: %v", 错误)
 	}
@@ -170,7 +193,11 @@ func Test迁移幂等(t *testing.T) {
 		}
 		关闭(t, 存储)
 	}
-	数据库, 错误 := sql.Open("sqlite", 数据源(路径))
+	源, 错误 := 数据源(路径)
+	if 错误 != nil {
+		t.Fatalf("reopen: %v", 错误)
+	}
+	数据库, 错误 := sql.Open("sqlite", 源)
 	if 错误 != nil {
 		t.Fatalf("reopen: %v", 错误)
 	}
@@ -239,7 +266,11 @@ func Test关闭时排空未满批次(t *testing.T) {
 	})
 	关闭(t, 存储)
 
-	数据库, 错误 := sql.Open("sqlite", 数据源(路径))
+	源, 错误 := 数据源(路径)
+	if 错误 != nil {
+		t.Fatalf("reopen: %v", 错误)
+	}
+	数据库, 错误 := sql.Open("sqlite", 源)
 	if 错误 != nil {
 		t.Fatalf("reopen: %v", 错误)
 	}
