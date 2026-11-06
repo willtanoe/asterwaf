@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	配置 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/config"
 	规则引擎 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
 	检查管线 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/pipeline"
+	限流包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/ratelimit"
 )
 
 // U处理器 按 Host 选择站点并转发。站点列表在启动后不变，模式变更由后续阶段接管。
@@ -29,6 +31,7 @@ type U处理器 struct {
 	管线  *检查管线.U管线
 	引擎  *规则引擎.U引擎
 	访问  *访问列表.U检查器
+	限流  *限流包.U限流器
 }
 
 type 站点 struct {
@@ -67,6 +70,10 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 	if 错误 != nil {
 		return nil, fmt.Errorf("proxy: access lists: %w", 错误)
 	}
+	限流器, 错误 := 限流包.U新建(配置值.U限流)
+	if 错误 != nil {
+		return nil, fmt.Errorf("proxy: rate limit: %w", 错误)
+	}
 
 	处理器 := &U处理器{
 		解析器: 解析器,
@@ -76,6 +83,7 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 		管线:  检查管线.U新建(配置值.U检查头),
 		引擎:  引擎,
 		访问:  访问表,
+		限流:  限流器,
 	}
 	for _, 站点配置 := range 配置值.U站点 {
 		上游, 错误 := url.Parse(站点配置.U上游)
@@ -159,6 +167,33 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 			"rule_id", 访问结果.U规则ID,
 			"client_ip", 客户端.U地址.String(),
 		)
+	} else if 处理器.限流.U启用() {
+		放行, 等待 := 处理器.限流.U允许(客户端.U地址)
+		if !放行 {
+			重试秒 := int(等待 / time.Second)
+			if 重试秒 < 1 {
+				重试秒 = 1
+			}
+			处理器.日志.Warn("request rate limited",
+				"site", 站点值.主机,
+				"method", 请求.Method,
+				"path", 请求.URL.RequestURI(),
+				"mode", 站点值.模式,
+				"action", "ratelimited",
+				"category", "ratelimit",
+				"rule_id", "ratelimit",
+				"client_ip", 客户端.U地址.String(),
+				"retry_after_seconds", 重试秒,
+				"target_category", "client_ip",
+				"target_name", "address",
+				"shadow", false,
+			)
+			写.Header().Set("Retry-After", strconv.Itoa(重试秒))
+			写.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			写.WriteHeader(http.StatusTooManyRequests)
+			_, _ = 写.Write([]byte("rate limit exceeded\n"))
+			return
+		}
 	}
 
 	快照, 错误 := 处理器.管线.U读取(写, 请求, 站点值.最大请求体)
@@ -263,6 +298,7 @@ func 重写请求(请求 *httputil.ProxyRequest, 上游 *url.URL, 解析器 *客
 
 // U关闭空闲连接 在进程退出前释放上游连接。
 func (处理器 *U处理器) U关闭空闲连接() {
+	_ = 处理器.限流.Close()
 	for _, 站点值 := range 处理器.站点表 {
 		if 传输, 可以 := 站点值.代理.Transport.(*http.Transport); 可以 {
 			传输.CloseIdleConnections()

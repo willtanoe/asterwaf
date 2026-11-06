@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	访问包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/accesslist"
+	限流包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/ratelimit"
 
 	"gopkg.in/yaml.v3"
 )
@@ -40,6 +41,7 @@ type U配置 struct {
 	U受信代理 []string `yaml:"trusted_proxies"`
 	U检查头  []string `yaml:"inspect_headers"`
 	U访问列表 访问包.U列表  `yaml:"access_lists"`
+	U限流   限流包.U配置  `yaml:"rate_limit"`
 	U站点   []U站点    `yaml:"sites"`
 }
 
@@ -51,7 +53,12 @@ func U默认配置() U配置 {
 		U模式:   默认模式,
 		U受信代理: []string{},
 		U检查头:  []string{"User-Agent", "Referer", "X-Forwarded-For"},
-		U站点:   []U站点{},
+		U限流: 限流包.U配置{
+			U启用:  false,
+			U每分钟: 限流包.U默认每分钟请求,
+			U突发:  限流包.U默认突发,
+		},
+		U站点: []U站点{},
 	}
 }
 
@@ -88,6 +95,9 @@ func (配置值 U配置) U校验() error {
 	}
 	if _, 错误 := 访问包.U新建(配置值.U访问列表); 错误 != nil {
 		return fmt.Errorf("config: access_lists: %w", 错误)
+	}
+	if 配置值.U限流.U启用 && (配置值.U限流.U每分钟 <= 0 || 配置值.U限流.U突发 <= 0) {
+		return errors.New("config: rate_limit requires positive requests_per_minute and burst")
 	}
 	for 序号, 名称 := range 配置值.U检查头 {
 		if strings.TrimSpace(名称) == "" {

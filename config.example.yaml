@@ -38,3 +38,9 @@ access_lists:
       action: deny
       address: 198.51.100.9
       enabled: true
+
+# Per-IP token bucket. IPv6 addresses are grouped by /64. Restarts clear buckets.
+rate_limit:
+  enabled: false
+  requests_per_minute: 600
+  burst: 100
