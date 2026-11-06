@@ -225,3 +225,42 @@ func Test写审计(t *testing.T) {
 		t.Fatalf("audit row=%s %s %s", 操作者, 动作, 地址)
 	}
 }
+
+func Test关闭时排空未满批次(t *testing.T) {
+	路径 := filepath.Join(t.TempDir(), "drain.db")
+	存储, 错误 := U打开(路径, 静默日志())
+	if 错误 != nil {
+		t.Fatalf("open: %v", 错误)
+	}
+	// 只放 1 条，不足 256 行也不足 1 秒，Close 必须主动排空。
+	存储.U加入(U记录{
+		U请求ID: "drain-1", U时间: 1, USite: "app.example.com", U方法: "GET",
+		U路径: "/", U状态: 200, U动作: "allow", U客户端IP: "203.0.113.1", U请求头: "{}",
+	})
+	关闭(t, 存储)
+
+	数据库, 错误 := sql.Open("sqlite", 数据源(路径))
+	if 错误 != nil {
+		t.Fatalf("reopen: %v", 错误)
+	}
+	defer func() { _ = 数据库.Close() }()
+	var 数量 int
+	if 错误 := 数据库.QueryRow(`SELECT COUNT(*) FROM logs WHERE request_id = 'drain-1'`).Scan(&数量); 错误 != nil {
+		t.Fatalf("count: %v", 错误)
+	}
+	if 数量 != 1 {
+		t.Fatalf("drained rows=%d, want 1", 数量)
+	}
+}
+
+func Test关闭后队列不再接收(t *testing.T) {
+	存储, 错误 := U打开(filepath.Join(t.TempDir(), "closed2.db"), 静默日志())
+	if 错误 != nil {
+		t.Fatalf("open: %v", 错误)
+	}
+	关闭(t, 存储)
+	存储.U加入(U记录{U请求ID: "late"})
+	if 存储.U丢弃数() != 1 {
+		t.Fatalf("dropped=%d, want 1", 存储.U丢弃数())
+	}
+}
