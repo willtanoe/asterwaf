@@ -1,0 +1,11 @@
+.toolchain/
+bin/
+data/
+.stage-a/
+web/node_modules/
+config.yaml
+*.db
+*.db-shm
+*.db-wal
+*.part
+coverage.out
