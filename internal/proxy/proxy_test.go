@@ -17,6 +17,7 @@ import (
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/clientip"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/config"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
+	限流包 "git.asteriaxlabs.com/willtanoe/asterwaf/internal/ratelimit"
 )
 
 func Test站点路由(t *testing.T) {
@@ -214,6 +215,7 @@ func 新建处理器(t *testing.T, 配置值 配置.U配置, 受信 []string) *U
 	if 错误 != nil {
 		t.Fatalf("proxy: %v", 错误)
 	}
+	t.Cleanup(处理器.U关闭空闲连接)
 	return 处理器
 }
 
@@ -459,5 +461,77 @@ func 新建带日志(t *testing.T, 配置值 配置.U配置) (*U处理器, *byte
 	if 错误 != nil {
 		t.Fatalf("proxy: %v", 错误)
 	}
+	t.Cleanup(处理器.U关闭空闲连接)
 	return 处理器, &缓冲
+}
+
+func Test限流返回429(t *testing.T) {
+	上游 := httptest.NewServer(http.HandlerFunc(func(写 http.ResponseWriter, _ *http.Request) {
+		_, _ = 写.Write([]byte("ok"))
+	}))
+	defer 上游.Close()
+
+	处理器, 日志缓冲 := 新建带日志(t, 配置.U配置{
+		U模式: "enforce",
+		U站点: []配置.U站点{{U主机: "app.example.com", U上游: 上游.URL, U最大请求体: 8}},
+		U限流: 限流包.U配置{U启用: true, U每分钟: 1, U突发: 1},
+	})
+
+	第一次 := httptest.NewRequest("GET", "http://app.example.com/", nil)
+	第一次.RemoteAddr = "203.0.113.7:1234"
+	记录 := httptest.NewRecorder()
+	处理器.ServeHTTP(记录, 第一次)
+	if 记录.Code != http.StatusOK {
+		t.Fatalf("first status=%d", 记录.Code)
+	}
+
+	第二次 := httptest.NewRequest("POST", "http://app.example.com/", strings.NewReader(strings.Repeat("x", 100)))
+	第二次.RemoteAddr = "203.0.113.7:1234"
+	记录 = httptest.NewRecorder()
+	处理器.ServeHTTP(记录, 第二次)
+	if 记录.Code != http.StatusTooManyRequests {
+		t.Fatalf("second status=%d, want 429", 记录.Code)
+	}
+	if 记录.Header().Get("Retry-After") == "" {
+		t.Fatal("Retry-After header missing")
+	}
+	if !strings.Contains(日志缓冲.String(), `"action":"ratelimited"`) {
+		t.Fatalf("rate limit decision not logged: %s", 日志缓冲.String())
+	}
+	if !strings.Contains(日志缓冲.String(), `"rule_id":"ratelimit"`) {
+		t.Fatalf("rate limit rule id missing: %s", 日志缓冲.String())
+	}
+
+	其他 := httptest.NewRequest("GET", "http://app.example.com/", nil)
+	其他.RemoteAddr = "203.0.113.8:1234"
+	记录 = httptest.NewRecorder()
+	处理器.ServeHTTP(记录, 其他)
+	if 记录.Code != http.StatusOK {
+		t.Fatalf("other address status=%d", 记录.Code)
+	}
+}
+
+func Test白名单跳过限流(t *testing.T) {
+	上游 := httptest.NewServer(http.HandlerFunc(func(写 http.ResponseWriter, _ *http.Request) {
+		_, _ = 写.Write([]byte("ok"))
+	}))
+	defer 上游.Close()
+
+	处理器, _ := 新建带日志(t, 配置.U配置{
+		U模式: "enforce",
+		U站点: []配置.U站点{{U主机: "app.example.com", U上游: 上游.URL}},
+		U限流: 限流包.U配置{U启用: true, U每分钟: 1, U突发: 1},
+		U访问列表: 访问列表.U列表{U条目: []访问列表.U条目{
+			{UID: "trusted", U动作: "allow", U地址: "203.0.113.8", U启用: true},
+		}},
+	})
+	for 次数 := 0; 次数 < 2; 次数++ {
+		请求 := httptest.NewRequest("GET", "http://app.example.com/", nil)
+		请求.RemoteAddr = "203.0.113.8:1234"
+		记录 := httptest.NewRecorder()
+		处理器.ServeHTTP(记录, 请求)
+		if 记录.Code != http.StatusOK {
+			t.Fatalf("allowlisted request %d status=%d", 次数, 记录.Code)
+		}
+	}
 }
