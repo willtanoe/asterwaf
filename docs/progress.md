@@ -9,7 +9,7 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 | 2 inspection-pipeline | phase/2-inspection-pipeline | phase-2 | complete | bounded body read, gzip/deflate copy, target extraction, redaction |
 | 3 rule-engine | phase/3-rule-engine | phase-3 | complete | 23 default rules; Stage A: 0/40 false positives, 40/40 attacks blocked (fallback corpus) |
 | 4 access-lists | phase/4-access-lists | phase-4 | complete | deny precedence, allow-only, allow bypasses ACL |
-| 5 rate-limiting | phase/5-rate-limiting | phase-5 | pending | |
+| 5 rate-limiting | phase/5-rate-limiting | phase-5 | complete | token bucket, IPv6 /64, cleanup, eviction, 429 |
 | 6 async-logging | phase/6-async-logging | phase-6 | pending | |
 | 7 stats-rollups | phase/7-stats-rollups | phase-7 | pending | |
 | 8a api-foundation | phase/8a-api-foundation | phase-8a | pending | |

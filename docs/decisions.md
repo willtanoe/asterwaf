@@ -42,3 +42,9 @@ This file records choices that constrain later work. Each entry is dated and, wh
 - Deny entries always win, even if the same address also matches an allow entry.
 - An allow match skips the access list gate and rate limiting but never the rule engine.
 - `allow_only` is a gate, not an implicit deny list: it only applies when no allow or deny entry matched.
+
+## 2026-11-06 Rate limiting
+
+- Buckets are in memory and reset on restart; this is acceptable for a single-node proxy and keeps the hot path lock-only.
+- IPv6 clients share a bucket per /64. Per-address buckets would be bypassed by rotating the low 64 bits.
+- The table is bounded at 100,000 entries; the least recently used bucket is evicted before insertion. A one-minute sweep removes buckets idle for ten minutes.
