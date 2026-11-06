@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
@@ -18,6 +19,7 @@ import (
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/engine"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/proxy"
 	"git.asteriaxlabs.com/willtanoe/asterwaf/internal/store"
+	"git.asteriaxlabs.com/willtanoe/asterwaf/web"
 )
 
 func main() {
@@ -130,6 +132,10 @@ func 运行(路径 string, 日志 *slog.Logger) error {
 		}
 	}
 
+	静态文件, 错误 := fs.Sub(前端.DistFS, "dist")
+	if 错误 != nil {
+		return 错误
+	}
 	处理器, 错误 := 反向代理.U新建(生效配置, 解析器, 规则引擎, 存储, 日志)
 	if 错误 != nil {
 		return 错误
@@ -141,6 +147,7 @@ func 运行(路径 string, 日志 *slog.Logger) error {
 		U代理:  处理器,
 		U解析器: 解析器,
 		U日志:  日志,
+		U静态:  静态文件,
 	})
 	if 错误 != nil {
 		return 错误
