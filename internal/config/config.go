@@ -22,6 +22,7 @@ const (
 	默认监听           = "127.0.0.1:8080"
 	默认管理监听         = "127.0.0.1:9090"
 	默认模式           = "enforce"
+	默认数据库          = "data/asterwaf.db"
 )
 
 // U站点 是 YAML 中的站点定义，路由与上游只在配置中决定。
@@ -42,6 +43,7 @@ type U配置 struct {
 	U检查头  []string `yaml:"inspect_headers"`
 	U访问列表 访问包.U列表  `yaml:"access_lists"`
 	U限流   限流包.U配置  `yaml:"rate_limit"`
+	U数据库  string   `yaml:"database"`
 	U站点   []U站点    `yaml:"sites"`
 }
 
@@ -51,6 +53,7 @@ func U默认配置() U配置 {
 		U监听:   默认监听,
 		U管理监听: 默认管理监听,
 		U模式:   默认模式,
+		U数据库:  默认数据库,
 		U受信代理: []string{},
 		U检查头:  []string{"User-Agent", "Referer", "X-Forwarded-For"},
 		U限流: 限流包.U配置{

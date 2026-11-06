@@ -73,6 +73,9 @@ sites:
 	if 站点.U健康检查路径 != 默认健康路径 {
 		t.Fatalf("health path default = %q", 站点.U健康检查路径)
 	}
+	if 配置值.U数据库 != 默认数据库 {
+		t.Fatalf("database default = %q", 配置值.U数据库)
+	}
 	if 配置值.U限流.U启用 || 配置值.U限流.U每分钟 != 限流包.U默认每分钟请求 || 配置值.U限流.U突发 != 限流包.U默认突发 {
 		t.Fatalf("rate limit defaults not applied: %+v", 配置值.U限流)
 	}
