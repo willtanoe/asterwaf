@@ -62,3 +62,12 @@ This file records choices that constrain later work. Each entry is dated and, wh
 - Log insert and all three rollup upserts share one transaction, so a dropped row never reaches aggregates.
 - Retention runs hourly: raw logs 14 days, minute rollups 30 days, hourly rollups 180 days, audit log 365 days. Raw and audit deletes are batched 1000 rows at a time.
 - `asterwaf seed` writes a separate `data/asterwaf-seed.db` with about 29,000 deterministic rows over 14 days. Timestamps are anchored to the run time, so the shape is reproducible but the absolute times move. The server warns loudly when seed rows are present.
+
+## 2026-11-06 Admin authentication
+
+- The admin listener is separate and defaults to `127.0.0.1:9090`. Only `GET /healthz` is unauthenticated.
+- With an empty `auth.password_hash`, the first start generates a 20-character password in `first-run-admin-password` next to the database (mode 0600). Only the path is printed, to stderr; the password and hash never enter slog.
+- Login attempts are limited to 5 per IP and 10 per username in a 15-minute fixed window. Counters are in memory and reset on success.
+- Session tokens are 32 random bytes in an HttpOnly, SameSite=Strict cookie with a 12-hour absolute expiry. Restarts invalidate all sessions.
+- Write requests with an `Origin` header must match the request Host. Requests without Origin are allowed for scripted clients.
+- Health probes request each site's `health_path` with the site Host header every 5 seconds, do not follow redirects, and mark a site down after 3 consecutive failures (status < 500 is healthy).
