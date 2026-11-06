@@ -13,7 +13,7 @@ export GOCACHE := $(TOOLCHAIN)/cache/go-build
 export GOMODCACHE := $(TOOLCHAIN)/cache/go-mod
 export npm_config_cache := $(TOOLCHAIN)/cache/npm
 
-.PHONY: bootstrap tools fmt lint vet test check build web-build run seed stage-a clean
+.PHONY: bootstrap tools fmt lint vet test check build web-build run seed stage-a calibrate clean
 
 bootstrap:
 	bash scripts/bootstrap.sh
@@ -60,6 +60,9 @@ seed: bootstrap
 
 stage-a: bootstrap
 	bash scripts/stage-a.sh
+
+calibrate: bootstrap
+	$(GO) test -tags calibration ./internal/calibration -count=1 -v
 
 clean:
 	rm -rf bin

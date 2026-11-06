@@ -17,6 +17,14 @@ func 默认规则样本() map[string]规则样本 {
 			恶意: []string{"' OR 1=1--", "admin' AND 1=1#", "1 or 1 = 1"},
 			正常: []string{"version 2 and build 3", "member 12 or 13"},
 		},
+		"sqli.subquery": {
+			恶意: []string{"1 AND (SELECT COUNT(*) FROM users)>0", "id=(select password from users limit 1)"},
+			正常: []string{"the query planner picks an index", "read the select from the menu"},
+		},
+		"sqli.error-based": {
+			恶意: []string{"1 AND EXTRACTVALUE(1,CONCAT(0x7e,version()))", "1 AND UPDATEXML(1,1,1)"},
+			正常: []string{"extract values from the report", "update the xml template"},
+		},
 		"sqli.time": {
 			恶意: []string{"1' AND SLEEP(5)--", "id=1;SELECT BENCHMARK(1000000,MD5('x'))", "1 AND pg_sleep(3)"},
 			正常: []string{"healthy sleep habits", "benchmark results for 2026"},
@@ -39,11 +47,15 @@ func 默认规则样本() map[string]规则样本 {
 		},
 		"xss.event": {
 			恶意: []string{"<img src=x onerror=alert(1)>", `" onmouseover="alert(document.cookie)`},
-			正常: []string{"onclick handler documentation", "event load balancing"},
+			正常: []string{"click handler documentation", "event load balancing"},
 		},
 		"xss.javascript-uri": {
 			恶意: []string{"javascript:alert(document.cookie)", "JaVaScRiPt:alert(1)"},
 			正常: []string{"ECMAScript syntax guide", "javascript frameworks"},
+		},
+		"xss.legacy-tag": {
+			恶意: []string{"<marquee onstart=alert(1)>", "<vml:oval>", "<object data=x>"},
+			正常: []string{"object storage documentation", "marquee lights at the venue"},
 		},
 		"xss.iframe": {
 			恶意: []string{"<iframe src=//evil.test></iframe>"},
