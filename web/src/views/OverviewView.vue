@@ -7,9 +7,13 @@ import BreakdownList from "../components/BreakdownList.vue";
 import CopyButton from "../components/CopyButton.vue";
 import KpiCard from "../components/KpiCard.vue";
 import Select from "../components/Select.vue";
+import Sparkline from "../components/Sparkline.vue";
 import StateMessage from "../components/StateMessage.vue";
 import StatusBar from "../components/StatusBar.vue";
+import StackedCategoryChart from "../components/StackedCategoryChart.vue";
 import TrafficChart from "../components/TrafficChart.vue";
+import TwoSeriesChart from "../components/TwoSeriesChart.vue";
+import WeekHeatmap from "../components/WeekHeatmap.vue";
 import { copy } from "../copy";
 import {
   actionClass,
@@ -20,6 +24,7 @@ import {
   formatNumber,
   formatPercent,
   formatRangeTime,
+  formatUptime,
 } from "../format";
 
 const ranges = ["15m", "1h", "24h", "7d"] as const;
@@ -40,6 +45,41 @@ const siteOptions = computed(() => [
 const detectionsTotal = computed(() =>
   (overview.value?.breakdowns.categories ?? []).reduce((sum, item) => sum + item.count, 0),
 );
+
+const latestEvents = ref<LogEntry[]>([]);
+const eventsFilter = ref<"all" | "block" | "shadow">("all");
+let eventsInFlight = false;
+
+const filteredEvents = computed(() =>
+  eventsFilter.value === "all"
+    ? latestEvents.value
+    : latestEvents.value.filter((row) => row.action === eventsFilter.value),
+);
+
+async function loadEvents(): Promise<void> {
+  if (eventsInFlight) {
+    return;
+  }
+  eventsInFlight = true;
+  try {
+    const [blocked, shadow] = await Promise.all([
+      api.logs(new URLSearchParams({ action: "block", limit: "8" }).toString()),
+      api.logs(new URLSearchParams({ action: "shadow", limit: "8" }).toString()),
+    ]);
+    const merged = [...blocked.items, ...shadow.items];
+    merged.sort((left, right) => right.ts - left.ts);
+    latestEvents.value = merged.slice(0, 12);
+  } catch {
+    // Biarkan feed lama tampil; summary bar sudah melaporkan kegagalan lain.
+  } finally {
+    eventsInFlight = false;
+  }
+}
+
+watch(eventsFilter, () => {
+  void loadEvents();
+});
+
 const overview = ref<OverviewResponse | null>(null);
 const overviewLoading = ref(true);
 const overviewError = ref(false);
@@ -72,6 +112,41 @@ const seriesData = computed(() => overview.value?.series ?? []);
 const rangeInfo = computed(() => overview.value?.range ?? null);
 const topIps = computed(() => overview.value?.tables.top_ips ?? []);
 const topPaths = computed(() => overview.value?.tables.top_paths ?? []);
+
+const rangeFromMs = computed(() => overview.value ? Date.parse(overview.value.range.from) : 0);
+const rangeToMs = computed(() => overview.value ? Date.parse(overview.value.range.to) : 0);
+const BUCKET_MS: Record<string, number> = { "1m": 60_000, "5m": 300_000, "15m": 900_000, "1h": 3_600_000, "6h": 21_600_000, "1d": 86_400_000 };
+const bucketMs = computed(() => BUCKET_MS[overview.value?.range.bucket ?? "1m"] ?? 60_000);
+
+const latencyPoints = computed(() =>
+  (overview.value?.latency_series ?? []).map((point) => ({ ts: point.ts, a: point.p50, b: point.p95 })),
+);
+
+const bytePoints = computed(() =>
+  (overview.value?.bytes_series ?? []).map((point) => ({ ts: point.ts, a: point["in"], b: point.out })),
+);
+
+const statusItems = computed(() =>
+  (overview.value?.status_series ?? []).map((item) => ({ key: item.key, count: item.points.reduce((sum, point) => sum + point.count, 0) })),
+);
+
+function formatMib(bytes: number): string {
+  return `${(bytes / 1048576).toFixed(bytes % 1048576 === 0 ? 0 : 1)} MiB`;
+}
+
+function formatBytesShort(value: number): string {
+  if (value >= 1048576) {
+    return `${(value / 1048576).toFixed(1)} MiB`;
+  }
+  if (value >= 1024) {
+    return `${(value / 1024).toFixed(1)} KiB`;
+  }
+  return `${Math.round(value)} B`;
+}
+
+function blockedRate(blocked: number, requests: number): string {
+  return requests > 0 ? `${((blocked / requests) * 100).toFixed(1)}%` : "—";
+}
 
 const chartEmpty = computed(() => {
   const data = seriesData.value;
@@ -285,9 +360,11 @@ onMounted(() => {
   void loadOverview();
   void loadStatus();
   void loadLatest();
+  void loadEvents();
   overviewTimer = window.setInterval(() => {
     if (!document.hidden) {
       void loadOverview();
+      void loadEvents();
     }
   }, OVERVIEW_INTERVAL);
   latestTimer = window.setInterval(() => {
@@ -369,6 +446,28 @@ async function loadSites(): Promise<void> {
 
     <StatusBar :status="status" :loading="statusLoading" :error="statusError" />
 
+    <div v-if="overview !== null" class="system-strip" aria-label="System">
+      <span class="system-item"><span class="system-label">{{ copy.overview.system.ruleset }}</span><span class="mono">v{{ status?.ruleset_version ?? "—" }}</span></span>
+      <span class="system-item"><span class="system-label">{{ copy.overview.system.uptime }}</span><span class="mono">{{ status ? formatUptime(status.uptime_seconds) : "—" }}</span></span>
+      <span class="system-item"><span class="system-label">{{ copy.overview.system.dbSize }}</span><span class="mono">{{ formatMib(overview.system.db_size_bytes) }}</span></span>
+      <span class="system-item">
+        <span class="system-label">{{ copy.overview.system.retention }}</span>
+        <span class="mono">{{ overview.system.retention_days.raw_days }}d / {{ overview.system.retention_days.minute_rollups }}d / {{ overview.system.retention_days.hour_rollups }}d / {{ overview.system.retention_days.audit_days }}d</span>
+      </span>
+      <span class="system-item">
+        <span class="system-label">{{ copy.overview.system.rateLimit }}</span>
+        <span class="mono">
+          {{ overview.rate_limit_enabled
+            ? `${overview.system.rate_limit.requests_per_minute}/min burst ${overview.system.rate_limit.burst}, ${overview.system.rate_limit.buckets} ${copy.overview.system.buckets}`
+            : "off" }}
+        </span>
+      </span>
+      <span class="system-item">
+        <span class="system-label">{{ copy.overview.system.dropped }}</span>
+        <span class="mono" :class="{ 'system-warn': (status?.dropped_logs ?? 0) > 0 }">{{ formatNumber(status?.dropped_logs ?? 0) }}</span>
+      </span>
+    </div>
+
     <p v-if="overviewError && overview !== null" class="stale" role="status">{{ copy.common.stale }}</p>
 
     <section class="hero-row">
@@ -403,6 +502,205 @@ async function loadSites(): Promise<void> {
           :link="definition.link !== undefined ? definition.link() : undefined"
           :state="sectionState"
         />
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="panel">
+        <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections2.detections }}</h2></div>
+        <div class="panel-body">
+          <StateMessage v-if="sectionState === 'loading'" kind="loading" :message="copy.common.loading" />
+          <StateMessage v-else-if="sectionState === 'error'" kind="error" :message="copy.common.errorTitle" @retry="loadOverview" />
+          <StateMessage v-else-if="(overview?.detections_series ?? []).length === 0" kind="empty" :message="copy.overview.empty.breakdown" />
+          <StackedCategoryChart
+            v-else
+            :series="overview?.detections_series ?? []"
+            :from="rangeFromMs"
+            :to="rangeToMs"
+            :bucket-ms="bucketMs"
+          />
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections2.latency }}</h2></div>
+        <div class="panel-body">
+          <StateMessage v-if="sectionState === 'loading'" kind="loading" :message="copy.common.loading" />
+          <StateMessage v-else-if="sectionState === 'error'" kind="error" :message="copy.common.errorTitle" @retry="loadOverview" />
+          <TwoSeriesChart
+            v-else
+            :points="latencyPoints"
+            :label-a="copy.overview.kpis.latency_p50_ms"
+            :label-b="copy.overview.kpis.latency_p95_ms"
+            color-a="var(--accent)"
+            color-b="var(--ratelimited)"
+            :format="formatLatency"
+            :chart-label="copy.overview.sections2.latency"
+            :height="220"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-3">
+      <div class="panel">
+        <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections2.status }}</h2></div>
+        <div class="panel-body">
+          <StateMessage v-if="sectionState === 'loading'" kind="loading" :message="copy.common.loading" />
+          <p v-else-if="overview?.status_series === null || overview === null" class="muted">{{ copy.overview.rawOnlyNote }}</p>
+          <BreakdownList
+            v-else
+            :title="copy.overview.sections2.status"
+            :items="statusItems"
+            :loading="false"
+            :error="false"
+            :empty-message="copy.overview.empty.traffic"
+          />
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections2.methods }}</h2></div>
+        <div class="panel-body">
+          <StateMessage v-if="sectionState === 'loading'" kind="loading" :message="copy.common.loading" />
+          <p v-else-if="overview?.methods === null || overview === null" class="muted">{{ copy.overview.rawOnlyNote }}</p>
+          <BreakdownList
+            v-else
+            :title="copy.overview.sections2.methods"
+            :items="overview.methods"
+            :loading="false"
+            :error="false"
+            :empty-message="copy.overview.empty.traffic"
+          />
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections2.throughput }}</h2></div>
+        <div class="panel-body">
+          <StateMessage v-if="sectionState === 'loading'" kind="loading" :message="copy.common.loading" />
+          <p v-else-if="overview?.bytes_series === null || overview === null" class="muted">{{ copy.overview.rawOnlyNote }}</p>
+          <TwoSeriesChart
+            v-else
+            :points="bytePoints"
+            label-a="In"
+            label-b="Out"
+            color-a="var(--accent)"
+            color-b="var(--ok)"
+            :format="formatBytesShort"
+            :chart-label="copy.overview.sections2.throughput"
+            :height="200"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections2.perSite }}</h2></div>
+      <StateMessage v-if="sectionState === 'loading'" kind="loading" :message="copy.common.loading" />
+      <StateMessage v-else-if="sectionState === 'error'" kind="error" :message="copy.common.errorTitle" @retry="loadOverview" />
+      <StateMessage v-else-if="(overview?.per_site ?? []).length === 0" kind="empty" :message="copy.overview.empty.traffic" />
+      <div v-else class="table-scroll">
+        <table class="overview-table">
+          <thead>
+            <tr>
+              <th scope="col">{{ copy.overview.tables.site }}</th>
+              <th scope="col" class="numeric">{{ copy.overview.perSite.requests }}</th>
+              <th scope="col" class="numeric">{{ copy.overview.perSite.blocked }}</th>
+              <th scope="col" class="numeric">{{ copy.overview.perSite.blockRate }}</th>
+              <th scope="col" class="numeric">{{ copy.overview.perSite.p95 }}</th>
+              <th scope="col">{{ copy.overview.perSite.trend }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="row in overview?.per_site ?? []"
+              :key="row.site"
+              class="clickable"
+              tabindex="0"
+              @click="site = row.site"
+              @keydown.enter="site = row.site"
+            >
+              <td class="mono">
+                <span class="cell-copy">
+                  <span class="truncate" :title="row.site">{{ row.site }}</span>
+                  <CopyButton :value="row.site" :subject="copy.overview.tables.site" />
+                </span>
+              </td>
+              <td class="numeric mono">{{ formatNumber(row.requests) }}</td>
+              <td class="numeric mono">{{ formatNumber(row.blocked) }}</td>
+              <td class="numeric mono">{{ row.block_rate.toFixed(1) }}%</td>
+              <td class="numeric mono">{{ formatLatency(row.p95) }}</td>
+              <td>
+                <Sparkline v-if="row.series && row.series.length > 1" :values="row.series" color="--accent" :label="row.site" class="site-spark" />
+                <span v-else class="muted">—</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="panel">
+        <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections2.topRules }}</h2></div>
+        <StateMessage v-if="sectionState === 'loading'" kind="loading" :message="copy.common.loading" />
+        <StateMessage v-else-if="(overview?.top_rules ?? []).length === 0" kind="empty" :message="copy.overview.empty.breakdown" />
+        <div v-else class="table-scroll">
+          <table class="overview-table">
+            <thead>
+              <tr>
+                <th scope="col">{{ copy.overview.topRules.rule }}</th>
+                <th scope="col">{{ copy.overview.topRules.category }}</th>
+                <th scope="col" class="numeric">{{ copy.overview.topRules.hits }}</th>
+                <th scope="col" class="numeric">{{ copy.overview.topRules.blocked }}</th>
+                <th scope="col" class="numeric">{{ copy.overview.topRules.recorded }}</th>
+                <th scope="col">{{ copy.overview.topRules.lastSeen }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in overview?.top_rules ?? []" :key="row.rule_id">
+                <td class="mono"><span class="truncate block-cell" :title="row.rule_id">{{ row.rule_id }}</span></td>
+                <td class="mono">{{ row.category }}</td>
+                <td class="numeric mono">{{ formatNumber(row.hits) }}</td>
+                <td class="numeric mono">{{ formatNumber(row.blocked) }}</td>
+                <td class="numeric mono">{{ formatNumber(row.recorded) }}</td>
+                <td class="mono">{{ formatDayTime(row.last_seen) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections2.topAgents }}</h2></div>
+        <StateMessage v-if="sectionState === 'loading'" kind="loading" :message="copy.common.loading" />
+        <p v-else-if="overview?.top_user_agents === null || overview === null" class="muted panel-pad">{{ copy.overview.rawOnlyNote }}</p>
+        <StateMessage v-else-if="overview.top_user_agents.length === 0" kind="empty" :message="copy.overview.empty.traffic" />
+        <div v-else class="table-scroll">
+          <table class="overview-table">
+            <thead>
+              <tr>
+                <th scope="col">{{ copy.overview.topAgents.agent }}</th>
+                <th scope="col" class="numeric">{{ copy.overview.topAgents.requests }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in overview.top_user_agents" :key="row.key">
+                <td class="mono"><span class="truncate block-cell" :title="row.key">{{ row.key }}</span></td>
+                <td class="numeric mono">{{ formatNumber(row.count) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">{{ copy.overview.sections2.heatmap }}</h2>
+      </div>
+      <div class="panel-body">
+        <StateMessage v-if="sectionState === 'loading'" kind="loading" :message="copy.common.loading" />
+        <p v-else-if="overview?.heatmap === null || overview === undefined" class="muted">{{ copy.overview.rawOnlyNote }}</p>
+        <StateMessage v-else-if="overview?.heatmap === undefined || overview?.heatmap.length === 0" kind="empty" :message="copy.overview.empty.traffic" />
+        <WeekHeatmap v-else-if="overview" :points="overview.heatmap" />
       </div>
     </section>
 
@@ -497,6 +795,7 @@ async function loadSites(): Promise<void> {
                 <th scope="col" class="numeric" :aria-sort="ariaSort(ipSort, 'blocked')">
                   <button type="button" class="sort-btn" @click="ipSort = toggleSort(ipSort, 'blocked')">{{ copy.overview.tables.blocked }}</button>
                 </th>
+                <th scope="col" class="numeric" aria-sort="none">{{ copy.overview.tables.blockedRate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -509,6 +808,7 @@ async function loadSites(): Promise<void> {
                 </td>
                 <td class="numeric mono">{{ formatNumber(row.requests) }}</td>
                 <td class="numeric mono">{{ formatNumber(row.blocked) }}</td>
+                <td class="numeric mono">{{ blockedRate(row.blocked, row.requests) }}</td>
               </tr>
             </tbody>
           </table>
@@ -533,6 +833,7 @@ async function loadSites(): Promise<void> {
                 <th scope="col" class="numeric" :aria-sort="ariaSort(pathSort, 'blocked')">
                   <button type="button" class="sort-btn" @click="pathSort = toggleSort(pathSort, 'blocked')">{{ copy.overview.tables.blocked }}</button>
                 </th>
+                <th scope="col" class="numeric" aria-sort="none">{{ copy.overview.tables.blockedRate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -545,6 +846,7 @@ async function loadSites(): Promise<void> {
                 </td>
                 <td class="numeric mono">{{ formatNumber(row.requests) }}</td>
                 <td class="numeric mono">{{ formatNumber(row.blocked) }}</td>
+                <td class="numeric mono">{{ blockedRate(row.blocked, row.requests) }}</td>
               </tr>
             </tbody>
           </table>
@@ -554,10 +856,17 @@ async function loadSites(): Promise<void> {
     </section>
 
     <section class="panel">
-      <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections.latestBlocked }}</h2></div>
-        <StateMessage v-if="latestLoading && latest.length === 0" kind="loading" :message="copy.common.loading" />
-        <StateMessage v-else-if="latestError && latest.length === 0" kind="error" :message="copy.common.errorTitle" @retry="loadLatest" />
-        <StateMessage v-else-if="latest.length === 0" kind="empty" :message="copy.overview.empty.blocked" />
+      <div class="panel-header">
+        <h2 class="panel-title">{{ copy.overview.sections.latestBlocked }}</h2>
+        <div class="segmented" role="group" :aria-label="copy.overview.sections.latestBlocked">
+          <button type="button" :aria-pressed="eventsFilter === 'all'" @click="eventsFilter = 'all'">{{ copy.overview.events.all }}</button>
+          <button type="button" :aria-pressed="eventsFilter === 'block'" @click="eventsFilter = 'block'">{{ copy.overview.events.blockedOnly }}</button>
+          <button type="button" :aria-pressed="eventsFilter === 'shadow'" @click="eventsFilter = 'shadow'">{{ copy.overview.events.recordedOnly }}</button>
+        </div>
+      </div>
+        <StateMessage v-if="latestLoading && latest.length === 0 && filteredEvents.length === 0" kind="loading" :message="copy.common.loading" />
+        <StateMessage v-else-if="latestError && filteredEvents.length === 0" kind="error" :message="copy.common.errorTitle" @retry="loadLatest" />
+        <StateMessage v-else-if="filteredEvents.length === 0" kind="empty" :message="copy.overview.empty.blocked" />
         <div v-else class="table-scroll">
           <table class="overview-table">
             <thead>
@@ -571,7 +880,7 @@ async function loadSites(): Promise<void> {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in latest" :key="row.id">
+              <tr v-for="row in filteredEvents" :key="row.id">
                 <td class="mono">{{ formatDayTime(row.ts) }}</td>
                 <td><span :class="actionClass(row.action)">{{ actionLabel(row.action) }}</span></td>
                 <td class="mono"><span class="truncate block-cell" :title="row.rule_id">{{ row.rule_id }}</span></td>
@@ -599,6 +908,46 @@ async function loadSites(): Promise<void> {
 <style scoped>
 .overview-table td {
   white-space: nowrap;
+}
+
+.system-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4) var(--sp-24);
+  padding: var(--sp-8) var(--sp-12);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: var(--fs-12);
+}
+
+.system-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  white-space: nowrap;
+}
+
+.system-label {
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.system-warn {
+  color: var(--blocked);
+}
+
+.site-spark {
+  width: 90px;
+  height: 24px;
+  display: block;
+}
+
+.panel-pad {
+  margin: 0;
+  padding: var(--sp-16);
 }
 
 .hero-row {

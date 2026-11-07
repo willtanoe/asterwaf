@@ -167,6 +167,15 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   link on Rate limited when throttling is disabled; the sites table spans
   the full width again.
 
+- Density round part B: the overview grew a system strip (ruleset, uptime,
+  log DB size, retention windows, rate-limit state with active buckets,
+  dropped logs), a second chart row (detections over time stacked by
+  category, inspection latency p50/p95), status-class and method panels,
+  throughput in/out, a per-site table with sparklines and click-to-filter,
+  top rules and user agents, a weekday-hour heatmap, blocked-rate columns on
+  the top tables, and a latest-events feed with All/Blocked/Recorded
+  filters. Raw-log dimensions are marked and only served up to 24h.
+
 ## Open items
 
 - None yet.
