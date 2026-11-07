@@ -36,9 +36,9 @@ type 探测状态 struct {
 
 // 探测样本 是一次探测的历史记录；每个站点只保留最近 60 条。
 type 探测样本 struct {
-	时刻   int64  `json:"ts"`
-	状态   string `json:"status"`
-	延迟毫秒 int64  `json:"latency_ms"`
+	U时刻   int64  `json:"ts"`
+	U状态   string `json:"status"`
+	U延迟毫秒 int64  `json:"latency_ms"`
 }
 
 const 探测历史上限 = 60
@@ -153,7 +153,7 @@ func (探测器 *U探测器) 记录(主机 string, 健康 bool, 延迟 int64) {
 			状态.状态 = "down"
 		}
 	}
-	样本 := 探测样本{时刻: 状态.最后检查, 延迟毫秒: 延迟, 状态: 状态.状态}
+	样本 := 探测样本{U时刻: 状态.最后检查, U延迟毫秒: 延迟, U状态: 状态.状态}
 	历史 := append(探测器.历史表[主机], 样本)
 	if len(历史) > 探测历史上限 {
 		历史 = 历史[len(历史)-探测历史上限:]

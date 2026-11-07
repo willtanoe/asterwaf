@@ -14,14 +14,16 @@ import (
 func 填充v2夹具(t *testing.T, 存储 *U存储) {
 	t.Helper()
 	现在 := time.Now().UnixMilli()
-	存储.U直接写入([]U记录{
+	if 错误 := 存储.U直接写入([]U记录{
 		{U请求ID: "v2-1", U时间: 现在 - 60_000, USite: "app.test", U方法: "GET", U路径: "/a",
 			U状态: 403, U动作: "block", U类别: "sqli", U规则ID: "sqli.union-select",
 			U客户端IP: "203.0.113.9", U耗时毫秒: 3, U请求头: "{}", U字节入: 120, U字节出: 340},
 		{U请求ID: "v2-2", U时间: 现在 - 30_000, USite: "api.test", U方法: "POST", U路径: "/b",
 			U状态: 200, U动作: "shadow", U类别: "xss", U规则ID: "xss.event",
 			U客户端IP: "203.0.113.9", U耗时毫秒: 30, U请求头: "{}", U字节入: 50, U字节出: 900},
-	})
+	}); 错误 != nil {
+		t.Fatalf("write fixture: %v", 错误)
+	}
 }
 
 func 打开v2存储(t *testing.T) *U存储 {

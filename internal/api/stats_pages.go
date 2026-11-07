@@ -299,15 +299,3 @@ func 日志查询参数(请求 *http.Request) 存储包.U日志查询 {
 		U状态:   状态,
 	}
 }
-
-func 解析整数参数(请求 *http.Request, 名称 string, 默认 int) (int, error) {
-	值 := 请求.URL.Query().Get(名称)
-	if 值 == "" {
-		return 默认, nil
-	}
-	数, 错误 := strconv.Atoi(值)
-	if 错误 != nil {
-		return 0, 错误
-	}
-	return 数, nil
-}
