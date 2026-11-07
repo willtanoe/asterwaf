@@ -441,7 +441,7 @@ async function main() {
             );
             await send("Page.navigate", { url: baseUrl + page.route });
             await loaded;
-            await new Promise((resolve) => setTimeout(resolve, 1600));
+            await new Promise((resolve) => setTimeout(resolve, 2600));
 
             const metrics = await send("Runtime.evaluate", {
               expression: `(() => {
@@ -483,9 +483,22 @@ async function main() {
             for (const line of consoleMessages) {
               problems.push(`${name}: console ${line}`);
             }
+            // captureBeyondViewport blanks freshly-drawn canvases; grow the
+            // viewport to the document height instead and capture normally.
+            const metricsNow = await send("Runtime.evaluate", {
+              expression: "document.documentElement.scrollHeight",
+              returnByValue: true,
+            });
+            await send("Emulation.setDeviceMetricsOverride", {
+              width,
+              height: Math.min(Math.max(metricsNow.result.value, 900), 6000),
+              deviceScaleFactor: 1,
+              mobile: false,
+            });
+            await new Promise((resolve) => setTimeout(resolve, 300));
             const shot = await send("Page.captureScreenshot", {
               format: "png",
-              captureBeyondViewport: true,
+              captureBeyondViewport: false,
             });
             await writeFile(path.join(outDir, `${name}.png`), Buffer.from(shot.data, "base64"));
             console.log(`captured ${name}.png (${info.title || "no h1"})`);

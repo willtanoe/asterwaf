@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { api } from "../api/client";
 import type { LogEntry, OverviewResponse, SiteView, StatusResponse } from "../api/types";
+import ActionDonut from "../components/ActionDonut.vue";
 import BreakdownList from "../components/BreakdownList.vue";
 import CopyButton from "../components/CopyButton.vue";
 import KpiCard from "../components/KpiCard.vue";
@@ -355,20 +356,36 @@ async function loadSites(): Promise<void> {
 
     <p v-if="overviewError && overview !== null" class="stale" role="status">{{ copy.common.stale }}</p>
 
-    <section class="grid-kpi" aria-label="Key metrics">
-      <KpiCard
-        v-for="definition in kpiDefs"
-        :key="definition.key"
-        :label="copy.overview.kpis[definition.key]"
-        :value="kpiValue(definition.key, definition.format)"
-        :delta="kpiDelta(definition.key)"
-        :series="kpiSeries(definition.key)"
-        :color="definition.color"
-        :note="kpiNote(definition.key)"
-        :flag="overview !== null && definition.flag !== undefined ? definition.flag() : undefined"
-        :secondary="overview !== null && definition.secondary !== undefined ? definition.secondary() : undefined"
-        :state="sectionState"
-      />
+    <section class="hero-row">
+      <div class="panel donut-panel" :aria-label="copy.overview.donut.title">
+        <div class="panel-header">
+          <h2 class="panel-title">{{ copy.overview.donut.title }}</h2>
+        </div>
+        <div class="panel-body donut-body">
+          <ActionDonut
+            :actions="overview?.breakdowns.actions ?? []"
+            :total="overview?.kpis.total_requests?.value ?? 0"
+            :block-rate="kpiValue('block_rate', formatPercent)"
+            :state="sectionState"
+            @retry="loadOverview"
+          />
+        </div>
+      </div>
+      <div class="grid-kpi" aria-label="Key metrics">
+        <KpiCard
+          v-for="definition in kpiDefs"
+          :key="definition.key"
+          :label="copy.overview.kpis[definition.key]"
+          :value="kpiValue(definition.key, definition.format)"
+          :delta="kpiDelta(definition.key)"
+          :series="kpiSeries(definition.key)"
+          :color="definition.color"
+          :note="kpiNote(definition.key)"
+          :flag="overview !== null && definition.flag !== undefined ? definition.flag() : undefined"
+          :secondary="overview !== null && definition.secondary !== undefined ? definition.secondary() : undefined"
+          :state="sectionState"
+        />
+      </div>
     </section>
 
     <section class="grid-2">
@@ -564,6 +581,42 @@ async function loadSites(): Promise<void> {
 <style scoped>
 .overview-table td {
   white-space: nowrap;
+}
+
+.hero-row {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: stretch;
+}
+
+.donut-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.donut-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+
+.donut-body > :deep(.donut) {
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .hero-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .donut-panel {
+    order: -1;
+  }
+
+  .donut-body {
+    max-height: 200px;
+  }
 }
 
 .stale {

@@ -150,6 +150,16 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   focus rings at 3:1 in both themes. The derivation is recorded in
   docs/design-system.md.
 
+- Overview radial hero: an ActionDonut doughnut (72% cutout) shows the
+  action split from breakdowns.actions with the request total and block rate
+  in the center, a keyboard-focusable legend with label, count and percentage
+  (zero-count entries stay in the legend and out of the ring), skeleton,
+  empty and error states, and no refresh animation (initial render respects
+  prefers-reduced-motion). It sits left of the KPI row at 300px and stacks
+  above it under 768px. The screenshot loop grew the viewport to the document
+  height before capturing because captureBeyondViewport blanked freshly drawn
+  canvases.
+
 ## Open items
 
 - None yet.

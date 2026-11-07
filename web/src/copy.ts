@@ -127,6 +127,13 @@ export const copy = {
     approximate: "Approximate values",
     deltaUp: "up",
     deltaDown: "down",
+    donut: {
+      title: "Action split",
+      aria: "Action split doughnut",
+      empty: "No requests in this range",
+      blockRate: "Block rate",
+      total: "Total requests",
+    },
   },
   pages: {
     logs: {
