@@ -27,6 +27,28 @@ This file records choices that constrain later work. Each entry is dated and, wh
 - `duration_ms` measures inspection time only, not upstream latency. The UI labels it "Inspection latency" so it is not mistaken for request duration.
 - Rollup percentiles are histogram estimates from 12 buckets, not exact quantiles. The API marks them `approximate`.
 
+## 2026-11-07 scanner.path false-positive review
+
+- Source: production logs filtered by `rule_id=scanner.path` (214 hits, 209
+  distinct paths, window covering the last days of traffic on this host).
+- Every hit came from bot probing: 203 `.env` variants (`/.env.backup`,
+  `/config/.env`, `/api/v1/.env`, ...), VCS metadata (`/.git/config`,
+  `/.git/HEAD`, `/.svn/entries`, `/.svn/wc.db`, `/.svn/format`), and
+  `/wp-admin/phpinfo.php`. Three source IPs; one (34.97.248.170) accounts for
+  205 hits.
+- All hits landed on the dashboard site (`waf.asteriaxlabs.com`, shadow mode),
+  so nothing was blocked and no legitimate request was affected. The 200
+  responses are the SPA catch-all serving unknown paths; the 401s are probes
+  that reached the admin API.
+- False-positive candidates from the expected list — `wp-admin` login posts,
+  `robots.txt`, `/.well-known/*` — did not occur in this window. No rule
+  change is made. Patterns to watch if they ever appear: `/.well-known/*`
+  (ACME HTTP-01 and security.txt traffic is legitimate; nginx serves the ACME
+  location before the WAF on this host, but a site without such a location
+  would expose it), plain `/wp-admin/` navigation, and `robots.txt`.
+- Action: keep the rule as-is; revisit only if a legitimate path shows up in
+  future logs.
+
 ## 2026-11-06 Seed data
 
 - `make seed` writes `data/asterwaf-seed.db` with `seed=1` rows. The server warns loudly if it is started against a seed database. Synthetic data is deterministic from a fixed seed.
