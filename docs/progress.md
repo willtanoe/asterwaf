@@ -195,6 +195,9 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   unique IPs and the time span for the current filter, with a small
   rows/blocked histogram of the same filter served by /api/logs/summary.
 
+- Decisions: the raw-log vs rollup query split is recorded in
+  docs/decisions.md; design-system.md lists the new components.
+
 ## Open items
 
 - None yet.

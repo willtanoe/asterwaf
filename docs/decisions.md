@@ -27,6 +27,22 @@ This file records choices that constrain later work. Each entry is dated and, wh
 - `duration_ms` measures inspection time only, not upstream latency. The UI labels it "Inspection latency" so it is not mistaken for request duration.
 - Rollup percentiles are histogram estimates from 12 buckets, not exact quantiles. The API marks them `approximate`.
 
+## 2026-11-07 Raw-log statistics windows
+
+- The statistics v2 queries split into two tiers. Rollup-backed dimensions
+  (requests, actions, categories, rules, per-site aggregates, latency
+  percentiles from the b0-b11 histograms) serve every window up to 7 days
+  from rollup_minute.
+- Raw-log dimensions (status classes, methods, user agents, bytes in/out)
+  scan the logs table. They are served only for windows up to 24 hours and
+  the overview API returns raw_available=false with a literal note beyond
+  that. Recording per-hour status-class and method rollups would require a
+  migration of the rollup writer plus storage growth for every request; if
+  7-day throughput or status-class views become necessary, extend
+  rollup_hour with those columns then.
+- All new queries are covered by Test概览扩展查询走索引, which fails on any
+  plan that scans logs or rollup_minute without an index.
+
 ## 2026-11-07 scanner.path false-positive review
 
 - Source: production logs filtered by `rule_id=scanner.path` (214 hits, 209

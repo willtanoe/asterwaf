@@ -66,6 +66,17 @@ Only `--sp-4`, `--sp-8`, `--sp-12`, `--sp-16`, `--sp-24`, `--sp-32` are used. Pa
 
 | Component | File | States |
 | --- | --- | --- |
+| `ActionDonut` | `web/src/components/ActionDonut.vue` | detections doughnut: loading skeleton, empty muted ring, error retry; action bar above the legend |
+| `StackedCategoryChart` | `web/src/components/StackedCategoryChart.vue` | stacked per-category bars, tooltip with bucket time |
+| `TwoSeriesChart` | `web/src/components/TwoSeriesChart.vue` | stepped two-line chart used for latency and throughput |
+| `WeekHeatmap` | `web/src/components/WeekHeatmap.vue` | weekday-hour grid, accent color-mix shading, count legend |
+| `ConfirmDialog` | `web/src/components/ConfirmDialog.vue` | focus-trapped alert dialog for destructive actions |
+| `Gauge` | removed | replaced by ActionDonut and the KPI row |
+
+## Color tokens
+
+| Component | File | States |
+| --- | --- | --- |
 | `AppShell` | `web/src/components/AppShell.vue` | skip link, brand logo, navigation, theme toggle, sign out |
 | `Gauge` | `web/src/components/Gauge.vue` | SVG speedometer for the block rate: track arc, progress arc, ticks, animated needle |
 | `StatusBar` | `web/src/components/StatusBar.vue` | loading, error, runtime status with site health |
