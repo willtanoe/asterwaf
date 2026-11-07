@@ -192,11 +192,7 @@ onBeforeUnmount(() => {
 }
 
 @media (min-width: 1900px) {
-  /* Very wide displays spread the columns into unreadable gaps. */
-  .sites-table {
-    max-width: 1500px;
-  }
-
+  /* Keep cells tight on very wide displays; the table spans the full width. */
   .sites-table th,
   .sites-table td {
     padding-inline: var(--sp-8);

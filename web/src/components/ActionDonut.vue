@@ -2,14 +2,17 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { Chart } from "chart.js";
 import { token } from "../charts";
-import { actionLabel, formatNumber } from "../format";
+import { formatNumber } from "../format";
 import { theme } from "../theme";
 import type { CountItem } from "../api/types";
 import { copy } from "../copy";
 
 const props = defineProps<{
+  /** Detections (non-allowed decisions) grouped by rule category. */
+  categories: CountItem[];
+  /** Action split for the range, drawn as the thin bar above the legend. */
   actions: CountItem[];
-  total: number;
+  detections: number;
   blockRate: string;
   state: "ready" | "loading" | "error";
 }>();
@@ -19,15 +22,28 @@ const emit = defineEmits<{ retry: [] }>();
 const canvas = ref<HTMLCanvasElement | null>(null);
 let chart: Chart<"doughnut"> | null = null;
 
-interface Segment {
-  key: string;
-  label: string;
-  count: number;
-  share: number;
-  color: string;
-}
+const categoryColor = (key: string): string => {
+  switch (key) {
+    case "sqli":
+      return token("--accent");
+    case "xss":
+      return token("--blocked");
+    case "traversal":
+      return token("--recorded");
+    case "rce":
+      return token("--ratelimited");
+    case "scanner":
+      return token("--ok");
+    case "accesslist":
+      return token("--text-dim");
+    case "ratelimit":
+      return token("--border-strong");
+    default:
+      return token("--text-dim");
+  }
+};
 
-const colorFor = (key: string): string => {
+const actionColor = (key: string): string => {
   switch (key) {
     case "block":
       return token("--blocked");
@@ -40,25 +56,20 @@ const colorFor = (key: string): string => {
   }
 };
 
-const listed = ["allow", "shadow", "block", "ratelimited"];
+const segments = computed(() =>
+  [...props.categories]
+    .sort((left, right) => right.count - left.count)
+    .map((item) => ({ ...item, color: categoryColor(item.key) })),
+);
 
-const allSegments = computed<Segment[]>(() =>
-  listed.map((key) => {
+const actionSegments = computed(() =>
+  ["allow", "shadow", "block", "ratelimited"].map((key) => {
     const item = props.actions.find((action) => action.key === key);
-    const count = item?.count ?? 0;
-    return {
-      key,
-      label: actionLabel(key),
-      count,
-      share: props.total > 0 ? (count / props.total) * 100 : 0,
-      color: colorFor(key),
-    };
+    return { key, count: item?.count ?? 0, color: actionColor(key) };
   }),
 );
 
-// The donut drops zero segments so no empty arc renders; the legend keeps
-// every entry so the meaning of each color is always spelled out.
-const segments = computed<Segment[]>(() => allSegments.value.filter((segment) => segment.count > 0));
+const actionTotal = computed(() => actionSegments.value.reduce((sum, item) => sum + item.count, 0));
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -66,22 +77,18 @@ function render(): void {
   if (canvas.value === null) {
     return;
   }
-  const text = token("--text-dim");
   const data = segments.value;
   if (chart !== null) {
-    chart.data.labels = data.map((segment) => segment.label);
+    chart.data.labels = data.map((segment) => segment.key);
     chart.data.datasets[0].data = data.map((segment) => segment.count);
     chart.data.datasets[0].backgroundColor = data.map((segment) => segment.color);
-    chart.data.datasets[0].borderColor = token("--bg-panel");
-    chart.options.plugins!.legend!.labels!.color = text;
-    // Refreshes never animate; only the initial mount may.
     chart.update("none");
     return;
   }
   chart = new Chart<"doughnut", number[], string>(canvas.value, {
     type: "doughnut",
     data: {
-      labels: data.map((segment) => segment.label),
+      labels: data.map((segment) => segment.key),
       datasets: [
         {
           data: data.map((segment) => segment.count),
@@ -93,7 +100,6 @@ function render(): void {
     },
     options: {
       cutout: "72%",
-      // Respect the OS setting; otherwise animate once on mount only.
       animation: reducedMotion ? false : { duration: 400 },
       responsive: true,
       maintainAspectRatio: false,
@@ -104,7 +110,8 @@ function render(): void {
           callbacks: {
             label: (item) => {
               const segment = data[item.dataIndex];
-              return `${segment.label}: ${formatNumber(segment.count)} (${segment.share.toFixed(0)}%)`;
+              const share = props.detections > 0 ? (segment.count / props.detections) * 100 : 0;
+              return `${segment.key}: ${formatNumber(segment.count)} (${share.toFixed(0)}%)`;
             },
           },
         },
@@ -114,15 +121,14 @@ function render(): void {
 }
 
 onMounted(render);
-// flush "post": the canvas only enters the DOM once the loading state
-// resolves, so the render must run after the template update.
-watch([() => props.actions, () => props.total, theme], render, { deep: true, flush: "post" });
+// flush "post": the canvas only enters the DOM once the loading state resolves.
+watch([() => props.categories, () => props.detections, theme], render, { deep: true, flush: "post" });
 onBeforeUnmount(() => {
   chart?.destroy();
   chart = null;
 });
 
-function focusSegment(segment: Segment): void {
+function focusSegment(segment: { key: string; count: number }): void {
   const index = segments.value.findIndex((item) => item.key === segment.key);
   if (chart === null || index < 0) {
     return;
@@ -148,21 +154,30 @@ function blurSegment(): void {
       <span>{{ copy.common.errorTitle }}</span>
       <button type="button" class="btn btn-small" @click="emit('retry')">{{ copy.common.retry }}</button>
     </div>
-    <div v-else-if="total === 0" class="donut-state">
+    <div v-else-if="detections === 0" class="donut-state">
       <span class="donut-empty-ring" aria-hidden="true" />
       <span class="muted">{{ copy.overview.donut.empty }}</span>
     </div>
     <template v-else>
       <div class="donut-stage">
-        <canvas ref="canvas" role="img" :aria-label="`${copy.overview.donut.aria}: ${blockRate}`" />
+        <canvas ref="canvas" role="img" :aria-label="`${copy.overview.donut.aria}: ${formatNumber(detections)}`" />
         <p class="donut-center">
-          <span class="donut-total mono">{{ formatNumber(total) }}</span>
-          <span class="donut-caption">{{ copy.overview.donut.total }}</span>
-          <span class="donut-rate mono">{{ blockRate }} {{ copy.overview.donut.blockRate }}</span>
+          <span class="donut-total mono">{{ formatNumber(detections) }}</span>
+          <span class="donut-caption">{{ copy.overview.donut.detections }}</span>
+          <span class="donut-rate mono">{{ blockRate }}</span>
+          <span class="donut-caption">{{ copy.overview.donut.blockRate }}</span>
         </p>
       </div>
+      <div class="donut-bar" role="img" :aria-label="copy.overview.donut.actionBar">
+        <span
+          v-for="segment in actionSegments"
+          :key="segment.key"
+          class="donut-bar-segment"
+          :style="{ background: segment.color, width: `${actionTotal > 0 ? (segment.count / actionTotal) * 100 : 0}%` }"
+        />
+      </div>
       <ul class="donut-legend">
-        <li v-for="segment in allSegments" :key="segment.key">
+        <li v-for="segment in segments" :key="segment.key">
           <button
             type="button"
             class="donut-legend-item"
@@ -170,9 +185,9 @@ function blurSegment(): void {
             @blur="blurSegment"
           >
             <span class="donut-swatch" :style="{ background: segment.color }" aria-hidden="true" />
-            <span class="donut-legend-label">{{ segment.label }}</span>
+            <span class="donut-legend-label">{{ segment.key }}</span>
             <span class="mono donut-legend-value">
-              {{ formatNumber(segment.count) }} ({{ segment.share.toFixed(0) }}%)
+              {{ formatNumber(segment.count) }} ({{ props.detections > 0 ? ((segment.count / props.detections) * 100).toFixed(0) : 0 }}%)
             </span>
           </button>
         </li>
@@ -192,8 +207,8 @@ function blurSegment(): void {
 
 .donut-stage {
   position: relative;
-  flex: 1 1 auto;
-  min-height: 190px;
+  flex: none;
+  height: 150px;
 }
 
 .donut-center {
@@ -203,7 +218,6 @@ function blurSegment(): void {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
   margin: 0;
   pointer-events: none;
 }
@@ -223,35 +237,47 @@ function blurSegment(): void {
   font-size: var(--fs-12);
 }
 
+.donut-bar {
+  display: flex;
+  height: 8px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-raised);
+}
+
+.donut-bar-segment {
+  display: block;
+  height: 100%;
+}
+
 .donut-legend {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-4) var(--sp-12);
+  gap: var(--sp-4) var(--sp-8);
 }
 
+.donut-legend-entry,
 .donut-legend-item {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-4);
+  font-size: var(--fs-12);
+  color: var(--text-dim);
+}
+
+.donut-legend-item {
   padding: var(--sp-4) var(--sp-8);
   background: transparent;
   border: 0;
   border-radius: var(--radius);
-  color: var(--text-dim);
-  font-size: var(--fs-12);
   cursor: default;
-}
-
-.donut-legend-label {
-  color: var(--text-dim);
 }
 
 .donut-legend-value {
   font-variant-numeric: tabular-nums;
-  color: var(--text-dim);
 }
 
 .donut-swatch {
@@ -269,8 +295,8 @@ function blurSegment(): void {
 }
 
 .donut-skeleton-ring {
-  width: 160px;
-  height: 160px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
 }
 
@@ -286,8 +312,8 @@ function blurSegment(): void {
 }
 
 .donut-empty-ring {
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   border: 10px solid var(--border);
 }

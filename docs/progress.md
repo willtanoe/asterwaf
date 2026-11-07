@@ -160,6 +160,13 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   height before capturing because captureBeyondViewport blanked freshly drawn
   canvases.
 
+- Density round, part A: the detections hero replaces the allowed-dominated
+  donut (non-allowed decisions by category, thin action bar, compact 150px
+  ring) with a 240px panel cap; KPI cards are fixed at 112px with nowrap
+  values, "new"/"n/a" delta states, a sparkline on Unique IPs and an "Off"
+  link on Rate limited when throttling is disabled; the sites table spans
+  the full width again.
+
 ## Open items
 
 - None yet.

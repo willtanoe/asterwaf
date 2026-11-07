@@ -138,6 +138,26 @@ func (存储 *U存储) U唯一IP数(上下文 context.Context, 从, 到 int64, �
 	return 数量, nil
 }
 
+// U唯一IP序列 按桶统计去重客户端数；仅用于原始日志可用的短窗口。
+func (存储 *U存储) U唯一IP序列(上下文 context.Context, 从, 到 int64, 站点 string, 桶毫秒 int64) ([]UIP序列点, error) {
+	行列表, 错误 := 存储.数据库.QueryContext(上下文, `SELECT (ts / ?) * ? AS bucket, COUNT(DISTINCT client_ip)
+		FROM logs WHERE ts >= ? AND ts < ? AND (? = '' OR site = ?)
+		GROUP BY bucket ORDER BY bucket`, 桶毫秒, 桶毫秒, 从, 到, 站点, 站点)
+	if 错误 != nil {
+		return nil, fmt.Errorf("store: unique ip series: %w", 错误)
+	}
+	defer func() { _ = 行列表.Close() }()
+	结果 := make([]UIP序列点, 0, 64)
+	for 行列表.Next() {
+		var 点 UIP序列点
+		if 错误 := 行列表.Scan(&点.U桶, &点.U数量); 错误 != nil {
+			return nil, fmt.Errorf("store: scan unique ip series: %w", 错误)
+		}
+		结果 = append(结果, 点)
+	}
+	return 结果, nil
+}
+
 // U分布统计 的维度必须在白名单内，避免把请求参数拼进 SQL。
 func (存储 *U存储) U分布统计(上下文 context.Context, 从, 到 int64, 站点, 维度 string, 限制 int) ([]U计数, error) {
 	var 列 string
@@ -170,6 +190,11 @@ func (存储 *U存储) U分布统计(上下文 context.Context, 从, 到 int64, 
 		结果 = append(结果, 项)
 	}
 	return 结果, nil
+}
+
+type UIP序列点 struct {
+	U桶  int64
+	U数量 int64
 }
 
 type UIP计数 struct {

@@ -36,6 +36,10 @@ const siteOptions = computed(() => [
   { value: "", label: copy.common.allSites },
   ...sites.value.map((item) => ({ value: item.host, label: item.host })),
 ]);
+
+const detectionsTotal = computed(() =>
+  (overview.value?.breakdowns.categories ?? []).reduce((sum, item) => sum + item.count, 0),
+);
 const overview = ref<OverviewResponse | null>(null);
 const overviewLoading = ref(true);
 const overviewError = ref(false);
@@ -107,6 +111,8 @@ interface KpiDef {
   format: (value: number) => string;
   secondary?: () => { label: string; value: string } | undefined;
   flag?: () => string | undefined;
+  link?: () => { to: string; label: string } | undefined;
+  value?: () => string;
 }
 
 const kpiDefs: KpiDef[] = [
@@ -121,7 +127,16 @@ const kpiDefs: KpiDef[] = [
         : { label: copy.overview.kpis.shadow_requests, value: kpiValue("shadow_requests", formatNumber) },
   },
   { key: "block_rate", color: "--accent", format: formatPercent },
-  { key: "ratelimited_requests", color: "--ratelimited", format: formatNumber },
+  {
+    key: "ratelimited_requests",
+    color: "--ratelimited",
+    format: formatNumber,
+    value: () => (overview.value?.rate_limit_enabled === false ? "Off" : ""),
+    link: () =>
+      overview.value?.rate_limit_enabled === false
+        ? { to: "/access-lists", label: copy.overview.rateLimitOff }
+        : undefined,
+  },
   {
     key: "unique_ips",
     color: "--accent",
@@ -363,8 +378,9 @@ async function loadSites(): Promise<void> {
         </div>
         <div class="panel-body donut-body">
           <ActionDonut
+            :categories="overview?.breakdowns.categories ?? []"
             :actions="overview?.breakdowns.actions ?? []"
-            :total="overview?.kpis.total_requests?.value ?? 0"
+            :detections="detectionsTotal"
             :block-rate="kpiValue('block_rate', formatPercent)"
             :state="sectionState"
             @retry="loadOverview"
@@ -376,13 +392,15 @@ async function loadSites(): Promise<void> {
           v-for="definition in kpiDefs"
           :key="definition.key"
           :label="copy.overview.kpis[definition.key]"
-          :value="kpiValue(definition.key, definition.format)"
+          :value="definition.value !== undefined && definition.value() !== '' ? definition.value() : kpiValue(definition.key, definition.format)"
           :delta="kpiDelta(definition.key)"
           :series="kpiSeries(definition.key)"
           :color="definition.color"
           :note="kpiNote(definition.key)"
           :flag="overview !== null && definition.flag !== undefined ? definition.flag() : undefined"
           :secondary="overview !== null && definition.secondary !== undefined ? definition.secondary() : undefined"
+          :is-new="overview !== null && overview.kpis[definition.key] !== undefined && overview.kpis[definition.key].previous === 0 && overview.kpis[definition.key].value > 0"
+          :link="definition.link !== undefined ? definition.link() : undefined"
           :state="sectionState"
         />
       </div>
@@ -587,12 +605,36 @@ async function loadSites(): Promise<void> {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);
   gap: var(--sp-12);
-  align-items: stretch;
+  align-items: start;
+}
+
+.donut-panel {
+  max-height: 260px;
+}
+
+@media (max-width: 767px) {
+  .donut-panel {
+    max-height: 220px;
+  }
+
+  .donut-body {
+    max-height: 200px;
+  }
+
+  .donut-body :deep(.donut-stage) {
+    height: 110px;
+  }
+}
+
+.grid-kpi .kpi-card {
+  align-self: start;
+  height: 112px;
 }
 
 .donut-panel {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .donut-body {
@@ -603,6 +645,7 @@ async function loadSites(): Promise<void> {
 
 .donut-body > :deep(.donut) {
   width: 100%;
+  height: 100%;
 }
 
 @media (max-width: 767px) {

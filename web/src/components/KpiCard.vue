@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import Sparkline from "./Sparkline.vue";
 import { copy } from "../copy";
 
-defineProps<{
+const props = defineProps<{
   label: string;
   value: string;
   delta: number | null;
@@ -14,8 +15,17 @@ defineProps<{
   flag?: string;
   /** Secondary figure shown under the value, e.g. Recorded on the Blocked card. */
   secondary?: { label: string; value: string };
+  /** In-place link instead of the delta line, e.g. the Rate limited card when off. */
+  link?: { to: string; label: string };
+  /** Previous window counted 0 while the current window has traffic. */
+  isNew?: boolean;
   state?: "ready" | "loading" | "error";
 }>();
+
+// The formatted value may carry a unit; strip everything after the first space
+// so "new" detection works on the raw number.
+const numericValue = computed(() => Number.parseFloat(props.value));
+const isNewValue = computed(() => props.isNew === true && Number.isFinite(numericValue.value) && numericValue.value > 0);
 </script>
 
 <template>
@@ -30,7 +40,7 @@ defineProps<{
     </template>
     <template v-else>
       <div class="kpi-main">
-        <span class="kpi-value">{{ state === "error" ? "—" : value }}</span>
+        <span class="kpi-value kpi-nowrap">{{ state === "error" ? "—" : value }}</span>
         <Sparkline
           v-if="state !== 'error' && series !== undefined && series.length > 1"
           :values="series"
@@ -40,13 +50,26 @@ defineProps<{
         />
       </div>
       <p v-if="state === 'error'" class="kpi-meta kpi-error">{{ copy.common.errorTitle }}</p>
+      <template v-else-if="link !== undefined">
+        <p class="kpi-meta">
+          <RouterLink :to="link.to">{{ link.label }}</RouterLink>
+        </p>
+        <p v-if="delta !== null" class="kpi-meta">
+          <span class="kpi-delta">{{ delta >= 0 ? "+" : "−" }}{{ Math.abs(delta).toFixed(1) }}%</span>
+          {{ copy.common.vsPrevious }}
+        </p>
+      </template>
+      <p v-else-if="isNewValue" class="kpi-meta">
+        <span class="kpi-delta">{{ copy.overview.deltaNew }}</span>
+        {{ copy.common.vsPrevious }}
+      </p>
       <p v-else-if="delta !== null" class="kpi-meta">
         <span class="kpi-delta" :aria-label="`${delta >= 0 ? copy.overview.deltaUp : copy.overview.deltaDown} ${Math.abs(delta).toFixed(1)}%`">
           {{ delta >= 0 ? "+" : "−" }}{{ Math.abs(delta).toFixed(1) }}%
         </span>
         {{ copy.common.vsPrevious }}
       </p>
-      <p v-else class="kpi-meta">{{ copy.common.noPrevious }}</p>
+      <p v-else class="kpi-meta">{{ copy.overview.deltaNA }}</p>
       <p v-if="secondary !== undefined && state !== 'error'" class="kpi-secondary">
         {{ secondary.label }} <span class="mono">{{ secondary.value }}</span>
       </p>
@@ -115,6 +138,14 @@ defineProps<{
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
+}
+
+.kpi-nowrap {
+  white-space: nowrap;
+}
+
+.kpi-meta .kpi-delta {
+  white-space: nowrap;
 }
 
 .kpi-spark {

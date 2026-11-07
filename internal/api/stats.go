@@ -61,11 +61,12 @@ type U范围信息 struct {
 }
 
 type U概览响应 struct {
-	U范围  U范围信息            `json:"range"`
-	UKPI map[string]UKPI值 `json:"kpis"`
-	U序列  []U时间点           `json:"series"`
-	U分布  U分布              `json:"breakdowns"`
-	U表格  U表格              `json:"tables"`
+	U范围      U范围信息            `json:"range"`
+	UKPI     map[string]UKPI值 `json:"kpis"`
+	U序列      []U时间点           `json:"series"`
+	U分布      U分布              `json:"breakdowns"`
+	U表格      U表格              `json:"tables"`
+	U限流已启用   bool             `json:"rate_limit_enabled"`
 }
 
 type 桶统计 struct {
@@ -120,13 +121,24 @@ func (管理器 *U管理器) 概览(写 http.ResponseWriter, 请求 *http.Reques
 		return
 	}
 
+	当前IP序列, 错误 := 管理器.存储.U唯一IP序列(上下文, 范围.从, 范围.到, 站点, 范围.桶毫秒)
+	if 错误 != nil {
+		管理器.日志.Error("unique ip series failed", "error", 错误)
+		写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
+		return
+	}
+	IP序列表 := make(map[int64]int64, len(当前IP序列))
+	for _, 点 := range 当前IP序列 {
+		IP序列表[点.U桶] = 点.U数量
+	}
+
 	KPI := map[string]UKPI值{
 		"total_requests":       {U值: float64(当前合计.请求), U上一值: float64(上一合计.请求), U变化百分比: 变化(float64(当前合计.请求), float64(上一合计.请求)), U序列: 序列字段(序列, "requests")},
 		"blocked_requests":     {U值: float64(当前合计.拦截), U上一值: float64(上一合计.拦截), U变化百分比: 变化(float64(当前合计.拦截), float64(上一合计.拦截)), U序列: 序列字段(序列, "blocked")},
 		"shadow_requests":      {U值: float64(当前合计.记录), U上一值: float64(上一合计.记录), U变化百分比: 变化(float64(当前合计.记录), float64(上一合计.记录)), U序列: 序列字段(序列, "shadow")},
 		"ratelimited_requests": {U值: float64(当前合计.限流), U上一值: float64(上一合计.限流), U变化百分比: 变化(float64(当前合计.限流), float64(上一合计.限流)), U序列: 序列字段(序列, "ratelimited")},
 		"block_rate":           {U值: 比率(当前合计.拦截, 当前合计.请求), U上一值: 比率(上一合计.拦截, 上一合计.请求), U变化百分比: 变化(比率(当前合计.拦截, 当前合计.请求), 比率(上一合计.拦截, 上一合计.请求)), U序列: 比率序列(序列)},
-		"unique_ips":           {U值: float64(当前IP), U上一值: float64(上一IP), U变化百分比: 变化(float64(当前IP), float64(上一IP))},
+		"unique_ips":           {U值: float64(当前IP), U上一值: float64(上一IP), U变化百分比: 变化(float64(当前IP), float64(上一IP)), U序列: 唯一IP序列字段(序列, IP序列表)},
 		"latency_p50_ms":       {U值: 存储包.U估算百分位(当前合计.延迟, 0.50), U上一值: 存储包.U估算百分位(上一合计.延迟, 0.50), U变化百分比: 变化(存储包.U估算百分位(当前合计.延迟, 0.50), 存储包.U估算百分位(上一合计.延迟, 0.50)), U序列: 百分位序列(序列, 桶表, 0.50)},
 		"latency_p95_ms":       {U值: 存储包.U估算百分位(当前合计.延迟, 0.95), U上一值: 存储包.U估算百分位(上一合计.延迟, 0.95), U变化百分比: 变化(存储包.U估算百分位(当前合计.延迟, 0.95), 存储包.U估算百分位(上一合计.延迟, 0.95)), U序列: 百分位序列(序列, 桶表, 0.95)},
 	}
@@ -141,7 +153,13 @@ func (管理器 *U管理器) 概览(写 http.ResponseWriter, 请求 *http.Reques
 		写错误(写, http.StatusInternalServerError, 错误内部, "could not read tables")
 		return
 	}
+	限流配置, 错误 := 管理器.存储.U读取限流(上下文)
+	if 错误 != nil {
+		写错误(写, http.StatusInternalServerError, 错误内部, "could not read rate limit")
+		return
+	}
 	写JSON(写, http.StatusOK, U概览响应{
+		U限流已启用: 限流配置.U启用,
 		U范围: U范围信息{
 			U从:  范围.时间从.UTC().Format(time.RFC3339),
 			U到:  范围.时间到.UTC().Format(time.RFC3339),
@@ -387,6 +405,14 @@ func 序列字段(序列 []U时间点, 字段 string) []float64 {
 		case "ratelimited":
 			结果 = append(结果, float64(点.U限流))
 		}
+	}
+	return 结果
+}
+
+func 唯一IP序列字段(序列 []U时间点, 桶表 map[int64]int64) []float64 {
+	结果 := make([]float64, 0, len(序列))
+	for _, 点 := range 序列 {
+		结果 = append(结果, float64(桶表[点.U时间]))
 	}
 	return 结果
 }

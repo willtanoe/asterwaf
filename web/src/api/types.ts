@@ -53,6 +53,7 @@ export interface LogEntry {
 }
 
 export interface OverviewResponse {
+  rate_limit_enabled: boolean;
   range: {
     from: string;
     to: string;
