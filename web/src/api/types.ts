@@ -135,6 +135,20 @@ export interface RulesResponse {
   version: number;
 }
 
+export interface RuleMatch {
+  rule_id: string;
+  category: string;
+  name: string;
+  match: string;
+}
+
+export interface RuleTestResponse {
+  matched: boolean;
+  rule_id?: string;
+  category?: string;
+  matches?: RuleMatch[];
+}
+
 export interface RuleVersion {
   id: number;
   created_at: number;

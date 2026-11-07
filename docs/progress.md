@@ -79,6 +79,16 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   in the drawer gained copy buttons, and the allow/deny/disable actions run
   behind a focus-trapped confirm dialog.
 
+- Rules: the editor lives in a side drawer with live client validation
+  (byte-length caps for name and pattern, id charset, client-side regex
+  compile) plus inline server compile errors, a read-only Score with the
+  reserved note, and a payload tester with a target selector that reports
+  every rule that fires and the matched substring (new backend scope "all"
+  on /api/rules/test backed by U匹配列表, which returns all hits instead of
+  the first one; covered by Test匹配列表返回全部命中). The table shows
+  enabled switches, updated time and version; delete and rollback run behind
+  confirm dialogs.
+
 ## Open items
 
 - None yet.

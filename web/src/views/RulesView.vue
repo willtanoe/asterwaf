@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { api, ApiError } from "../api/client";
-import type { Rule, RuleVersion } from "../api/types";
+import type { Rule, RuleMatch, RuleVersion } from "../api/types";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
+import Drawer from "../components/Drawer.vue";
+import Select from "../components/Select.vue";
 import StateMessage from "../components/StateMessage.vue";
 import { copy } from "../copy";
-import { formatDayTime, formatNumber } from "../format";
+import { formatDayTime } from "../format";
 
 interface RuleDraft {
   id: string;
@@ -16,6 +19,7 @@ interface RuleDraft {
 }
 
 const categories = ["sqli", "xss", "traversal", "rce", "scanner"];
+const targetCategories = ["query", "header", "path", "cookie", "form", "json", "body"];
 
 const rules = ref<Rule[]>([]);
 const version = ref(0);
@@ -29,14 +33,20 @@ const messageOk = ref(true);
 const draft = ref<RuleDraft | null>(null);
 const isNew = ref(true);
 const payload = ref("");
+const target = ref("query");
 const testing = ref(false);
 const testMessage = ref("");
-const testMatched = ref(false);
+const testOk = ref(false);
+const testMatches = ref<RuleMatch[]>([]);
+const draftMatch = ref<string | null>(null);
 
 const versions = ref<RuleVersion[]>([]);
 const versionsLoading = ref(true);
 const versionsError = ref(false);
 const rollingBack = ref(false);
+
+const pendingDelete = ref<Rule | null>(null);
+const pendingRollback = ref<RuleVersion | null>(null);
 
 const editor = reactive<RuleDraft>({
   id: "",
@@ -46,6 +56,34 @@ const editor = reactive<RuleDraft>({
   enabled: true,
   score: 0,
 });
+
+const byteLength = (value: string): number => new TextEncoder().encode(value).length;
+
+const idValid = computed(() => /^[a-z0-9._-]+$/.test(editor.id) && byteLength(editor.id) <= 64);
+const nameValid = computed(
+  () => editor.name.trim() !== "" && byteLength(editor.name) <= 120,
+);
+const patternBytes = computed(() => byteLength(editor.pattern));
+const patternValid = computed(
+  () => editor.pattern !== "" && patternBytes.value <= 1024 && patternRegexError.value === "",
+);
+const patternRegexError = computed(() => {
+  if (editor.pattern === "") {
+    return "";
+  }
+  try {
+    new RegExp(editor.pattern);
+    return "";
+  } catch {
+    return copy.rules.editor.invalidRegex;
+  }
+});
+
+const formValid = computed(() => idValid.value && nameValid.value && patternValid.value);
+
+const targetOptions = computed(() =>
+  targetCategories.map((category) => ({ value: category, label: category })),
+);
 
 function startCreate(): void {
   isNew.value = true;
@@ -58,6 +96,8 @@ function startCreate(): void {
   draft.value = editor;
   payload.value = "";
   testMessage.value = "";
+  testMatches.value = [];
+  draftMatch.value = null;
   saveError.value = "";
   message.value = "";
 }
@@ -73,6 +113,8 @@ function startEdit(rule: Rule): void {
   draft.value = editor;
   payload.value = "";
   testMessage.value = "";
+  testMatches.value = [];
+  draftMatch.value = null;
   saveError.value = "";
   message.value = "";
 }
@@ -107,7 +149,7 @@ async function load(): Promise<void> {
 }
 
 async function save(): Promise<void> {
-  if (draft.value === null) {
+  if (draft.value === null || !formValid.value) {
     return;
   }
   saving.value = true;
@@ -145,8 +187,10 @@ async function toggle(rule: Rule): Promise<void> {
   }
 }
 
-async function remove(rule: Rule): Promise<void> {
-  if (!window.confirm(copy.rules.confirmDelete)) {
+async function remove(): Promise<void> {
+  const rule = pendingDelete.value;
+  pendingDelete.value = null;
+  if (rule === null) {
     return;
   }
   message.value = "";
@@ -160,11 +204,14 @@ async function remove(rule: Rule): Promise<void> {
 }
 
 async function runTest(): Promise<void> {
-  if (draft.value === null) {
+  if (draft.value === null || payload.value === "") {
     return;
   }
   testing.value = true;
   testMessage.value = "";
+  testMatches.value = [];
+  draftMatch.value = null;
+  testOk.value = false;
   try {
     const result = await api.testRule(
       {
@@ -175,19 +222,32 @@ async function runTest(): Promise<void> {
         score: editor.score,
       },
       payload.value,
+      "all",
+      target.value,
     );
-    testMatched.value = result.matched;
-    testMessage.value = result.matched ? copy.rules.editor.matched : copy.rules.editor.notMatched;
+    testMatches.value = result.matches ?? [];
+    testOk.value = result.matched;
+    testMessage.value = result.matched ? copy.rules.editor.fired : copy.rules.editor.noFired;
+    // The saved ruleset cannot contain the unsaved draft; check it client-side
+    // so the author sees what saving would change.
+    try {
+      const match = new RegExp(editor.pattern).exec(payload.value);
+      draftMatch.value = match?.[0] ?? null;
+    } catch {
+      draftMatch.value = null;
+    }
   } catch (caught) {
-    testMatched.value = false;
+    testOk.value = false;
     testMessage.value = caught instanceof ApiError ? caught.message : copy.rules.editor.saveFailed;
   } finally {
     testing.value = false;
   }
 }
 
-async function rollback(item: RuleVersion): Promise<void> {
-  if (!window.confirm(copy.rules.versions.confirmRollback)) {
+async function rollback(): Promise<void> {
+  const item = pendingRollback.value;
+  pendingRollback.value = null;
+  if (item === null) {
     return;
   }
   rollingBack.value = true;
@@ -225,78 +285,6 @@ onMounted(() => {
 
     <p v-if="message !== ''" :class="messageOk ? 'action-ok' : 'action-error'" role="status">{{ message }}</p>
 
-    <section v-if="draft !== null" class="panel">
-      <div class="panel-header">
-        <h2 class="panel-title">
-          {{ isNew ? copy.rules.editor.createTitle : copy.rules.editor.editTitle }}
-        </h2>
-        <button type="button" class="btn btn-small" @click="closeEditor">
-          {{ copy.rules.editor.cancel }}
-        </button>
-      </div>
-      <form class="panel-body editor" @submit.prevent="save">
-        <div class="editor-grid">
-          <label class="field">
-            <span>{{ copy.rules.editor.id }}</span>
-            <input
-              v-model="editor.id"
-              class="input"
-              :disabled="!isNew"
-              maxlength="64"
-              pattern="[a-z0-9._-]+"
-              required
-            />
-            <span class="hint">{{ copy.rules.editor.idHint }}</span>
-          </label>
-          <label class="field">
-            <span>{{ copy.rules.editor.name }}</span>
-            <input v-model="editor.name" class="input" maxlength="120" required />
-          </label>
-          <label class="field">
-            <span>{{ copy.rules.editor.category }}</span>
-            <select v-model="editor.category" class="select">
-              <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>{{ copy.rules.editor.score }}</span>
-            <input :value="editor.score" class="input" disabled />
-            <span class="hint">{{ copy.rules.editor.scoreNote }}</span>
-          </label>
-        </div>
-        <label class="field">
-          <span>{{ copy.rules.editor.pattern }}</span>
-          <textarea v-model="editor.pattern" class="input mono" rows="4" maxlength="1024" required />
-        </label>
-        <label class="check-row">
-          <input v-model="editor.enabled" type="checkbox" />
-          <span>{{ copy.rules.editor.enabled }}</span>
-        </label>
-        <div class="row">
-          <button type="submit" class="btn btn-primary" :disabled="saving">
-            {{ saving ? copy.rules.editor.saving : copy.rules.editor.save }}
-          </button>
-        </div>
-        <p v-if="saveError !== ''" class="action-error" role="alert">{{ saveError }}</p>
-
-        <div class="test-block">
-          <h3 class="panel-title">{{ copy.rules.editor.test }}</h3>
-          <label class="field">
-            <span>{{ copy.rules.editor.payload }}</span>
-            <textarea v-model="payload" class="input mono" rows="3" />
-          </label>
-          <div class="row">
-            <button type="button" class="btn" :disabled="testing || payload === ''" @click="runTest">
-              {{ testing ? copy.rules.editor.testing : copy.rules.editor.runTest }}
-            </button>
-            <span v-if="testMessage !== ''" :class="testMatched ? 'action-ok' : 'action-error'">
-              {{ testMessage }}
-            </span>
-          </div>
-        </div>
-      </form>
-    </section>
-
     <div class="panel">
       <StateMessage v-if="loading" kind="loading" :message="copy.common.loading" />
       <StateMessage v-else-if="error" kind="error" :message="copy.rules.loadFailed" @retry="load" />
@@ -306,37 +294,44 @@ onMounted(() => {
           <thead>
             <tr>
               <th scope="col">{{ copy.rules.table.id }}</th>
-              <th scope="col">{{ copy.rules.table.name }}</th>
               <th scope="col">{{ copy.rules.table.category }}</th>
-              <th scope="col">{{ copy.rules.table.pattern }}</th>
               <th scope="col">{{ copy.rules.table.enabled }}</th>
               <th scope="col">{{ copy.rules.table.source }}</th>
-              <th scope="col" class="numeric">{{ copy.rules.table.score }}</th>
+              <th scope="col">{{ copy.rules.table.updated }}</th>
+              <th scope="col" class="numeric">{{ copy.rules.table.version }}</th>
               <th scope="col">{{ copy.rules.table.actions }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="rule in rules" :key="rule.id">
-              <td class="mono wrap">{{ rule.id }}</td>
-              <td class="wrap">{{ rule.name }}</td>
-              <td class="mono">{{ rule.category }}</td>
-              <td class="mono pattern-cell" :title="rule.pattern">{{ rule.pattern }}</td>
-              <td>
-                <span :class="rule.enabled ? 'badge badge-ok' : 'badge badge-unknown'">
-                  {{ rule.enabled ? copy.common.yes : copy.common.no }}
+              <td class="mono">
+                <span class="cell-stack">
+                  <span class="truncate block-cell" :title="`${rule.id} — ${rule.name}`">{{ rule.id }}</span>
+                  <span class="rule-name truncate block-cell" :title="rule.name">{{ rule.name }}</span>
                 </span>
               </td>
+              <td class="mono">{{ rule.category }}</td>
+              <td>
+                <button
+                  type="button"
+                  class="switch"
+                  role="switch"
+                  :aria-checked="rule.enabled"
+                  :aria-label="`${copy.rules.editor.toggleAria} ${rule.id}`"
+                  @click="toggle(rule)"
+                >
+                  <span class="switch-knob" aria-hidden="true" />
+                </button>
+              </td>
               <td class="mono">{{ rule.source }}</td>
-              <td class="numeric mono">{{ formatNumber(rule.score) }}</td>
+              <td class="mono">{{ formatDayTime(rule.updated_at) }}</td>
+              <td class="numeric mono">v{{ rule.defaults_version }}</td>
               <td>
                 <div class="row">
                   <button type="button" class="btn btn-small" @click="startEdit(rule)">
                     {{ copy.rules.edit }}
                   </button>
-                  <button type="button" class="btn btn-small" @click="toggle(rule)">
-                    {{ rule.enabled ? copy.rules.toggleOff : copy.rules.toggleOn }}
-                  </button>
-                  <button type="button" class="btn btn-small btn-danger" @click="remove(rule)">
+                  <button type="button" class="btn btn-small btn-danger" @click="pendingDelete = rule">
                     {{ copy.rules.delete }}
                   </button>
                 </div>
@@ -374,7 +369,7 @@ onMounted(() => {
               <td class="wrap">{{ item.note }}</td>
               <td class="numeric mono">{{ item.rule_count }}</td>
               <td>
-                <button type="button" class="btn btn-small" :disabled="rollingBack" @click="rollback(item)">
+                <button type="button" class="btn btn-small" :disabled="rollingBack" @click="pendingRollback = item">
                   {{ copy.rules.versions.rollback }}
                 </button>
               </td>
@@ -383,6 +378,118 @@ onMounted(() => {
         </table>
       </div>
     </section>
+
+    <Drawer
+      :open="draft !== null"
+      :title="isNew ? copy.rules.editor.createTitle : copy.rules.editor.editTitle"
+      @close="closeEditor"
+    >
+      <form class="editor" @submit.prevent="save">
+        <label class="field">
+          <span>{{ copy.rules.editor.id }}</span>
+          <input
+            v-model="editor.id"
+            class="input mono"
+            :disabled="!isNew"
+            :aria-invalid="!idValid"
+            required
+          />
+          <span v-if="!idValid" class="field-error">{{ copy.rules.editor.invalidId }}</span>
+          <span v-else class="hint">{{ copy.rules.editor.idHint }}</span>
+        </label>
+        <label class="field">
+          <span>{{ copy.rules.editor.name }}</span>
+          <input v-model="editor.name" class="input" :aria-invalid="!nameValid" required />
+          <span v-if="!nameValid" class="field-error">{{ copy.rules.editor.invalidName }}</span>
+        </label>
+        <div class="editor-grid">
+          <div class="field">
+            <span>{{ copy.rules.editor.category }}</span>
+            <Select :model-value="editor.category" :options="categories.map((c) => ({ value: c, label: c }))" :label="copy.rules.editor.category" @update:model-value="editor.category = $event" />
+          </div>
+          <label class="field">
+            <span>{{ copy.rules.editor.score }}</span>
+            <input :value="editor.score" class="input" disabled />
+            <span class="hint">{{ copy.rules.editor.scoreNote }}</span>
+          </label>
+        </div>
+        <label class="field">
+          <span>{{ copy.rules.editor.pattern }}</span>
+          <textarea
+            v-model="editor.pattern"
+            class="input mono"
+            rows="4"
+            :aria-invalid="!patternValid"
+            required
+          />
+          <span class="hint mono">{{ patternBytes }}/1024</span>
+          <span v-if="patternRegexError !== ''" class="field-error">{{ patternRegexError }}</span>
+          <span v-else-if="patternBytes > 1024" class="field-error">{{ copy.rules.editor.invalidPattern }}</span>
+        </label>
+        <label class="check-row">
+          <input v-model="editor.enabled" type="checkbox" />
+          <span>{{ copy.rules.editor.enabled }}</span>
+        </label>
+        <div class="row">
+          <button type="submit" class="btn btn-primary" :disabled="saving || !formValid">
+            {{ saving ? copy.rules.editor.saving : copy.rules.editor.save }}
+          </button>
+        </div>
+        <p v-if="saveError !== ''" class="action-error" role="alert">{{ saveError }}</p>
+
+        <div class="test-block">
+          <h3 class="panel-title">{{ copy.rules.editor.test }}</h3>
+          <p class="hint">{{ copy.rules.editor.runAll }}</p>
+          <div class="editor-grid">
+            <div class="field">
+              <span>{{ copy.rules.editor.target }}</span>
+              <Select :model-value="target" :options="targetOptions" :label="copy.rules.editor.target" @update:model-value="target = $event" />
+            </div>
+          </div>
+          <label class="field">
+            <span>{{ copy.rules.editor.payload }}</span>
+            <textarea v-model="payload" class="input mono" rows="3" />
+          </label>
+          <div class="row">
+            <button type="button" class="btn" :disabled="testing || payload === ''" @click="runTest">
+              {{ testing ? copy.rules.editor.testing : copy.rules.editor.runTest }}
+            </button>
+            <span v-if="testMessage !== ''" :class="testOk ? 'action-ok' : 'action-error'">
+              {{ testMessage }}
+            </span>
+          </div>
+          <ul v-if="testMatches.length > 0" class="match-list">
+            <li v-for="match in testMatches" :key="match.rule_id" class="match-row">
+              <span class="mono">{{ match.rule_id }}</span>
+              <span class="mono muted">{{ match.category }}</span>
+              <code class="match-fragment">{{ match.match }}</code>
+            </li>
+          </ul>
+          <p v-if="draftMatch !== null" class="hint">
+            {{ copy.rules.editor.draftCheck }}: <code class="match-fragment">{{ draftMatch }}</code>
+          </p>
+        </div>
+      </form>
+    </Drawer>
+
+    <ConfirmDialog
+      :open="pendingDelete !== null"
+      :title="copy.rules.delete"
+      :message="copy.rules.confirmDelete"
+      :confirm-label="copy.rules.delete"
+      danger
+      @confirm="remove"
+      @cancel="pendingDelete = null"
+    />
+
+    <ConfirmDialog
+      :open="pendingRollback !== null"
+      :title="copy.rules.versions.rollback"
+      :message="copy.rules.versions.confirmRollback"
+      :confirm-label="copy.rules.versions.rollback"
+      @confirm="rollback"
+      @cancel="pendingRollback = null"
+    />
   </div>
 </template>
 
@@ -409,6 +516,11 @@ onMounted(() => {
   font-size: var(--fs-12);
 }
 
+.field-error {
+  color: var(--blocked);
+  font-size: var(--fs-12);
+}
+
 .check-row {
   display: flex;
   align-items: center;
@@ -424,11 +536,80 @@ onMounted(() => {
   border-top: 1px solid var(--border);
 }
 
-.pattern-cell {
-  max-width: 340px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.match-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.match-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  flex-wrap: wrap;
+  font-size: var(--fs-12);
+}
+
+.match-fragment {
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 var(--sp-4);
+  overflow-wrap: anywhere;
+}
+
+.cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.rule-name {
+  color: var(--text-dim);
+  font-size: var(--fs-12);
+  max-width: 220px;
+}
+
+.block-cell {
+  display: block;
+  max-width: 220px;
+}
+
+.switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-raised);
+  padding: 0;
+}
+
+.switch[aria-checked="true"] {
+  background: var(--ok-soft);
+  border-color: var(--ok);
+}
+
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: transform 0.15s ease;
+}
+
+.switch[aria-checked="true"] .switch-knob {
+  transform: translateX(16px);
+  background: var(--ok);
 }
 
 .action-ok {

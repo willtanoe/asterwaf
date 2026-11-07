@@ -153,6 +153,44 @@ func (引擎 *U引擎) U决策(模式 string, 目标列表 []检查管线.U目�
 	return 决策
 }
 
+// U匹配 是一次规则测试中的单条命中。U匹配片段 来自被测试的输入本身，
+// 不经过脱敏：调用方只应把它展示给提交输入的人。
+type U匹配 struct {
+	U规则ID string `json:"rule_id"`
+	U类别   string `json:"category"`
+	U名称    string `json:"name"`
+	U匹配片段 string `json:"match"`
+}
+
+// U匹配列表 返回当前规则集中所有命中目标值的启用规则，供规则测试器展示
+// 完整命中清单；与 U决策 的首个命中语义不同。
+func (引擎 *U引擎) U匹配列表(目标列表 []检查管线.U目标) []U匹配 {
+	规则集 := 引擎.当前.Load()
+	if 规则集 == nil {
+		return nil
+	}
+	结果 := make([]U匹配, 0)
+	for _, 编译项 := range 规则集.规则 {
+		if !编译项.定义.U启用 {
+			continue
+		}
+		for _, 目标 := range 目标列表 {
+			片段 := 编译项.正则.FindString(目标.U值)
+			if 片段 == "" {
+				continue
+			}
+			结果 = append(结果, U匹配{
+				U规则ID: 编译项.定义.UID,
+				U类别:   编译项.定义.U类别,
+				U名称:   编译项.定义.U名称,
+				U匹配片段: 片段,
+			})
+			break
+		}
+	}
+	return 结果
+}
+
 func 编译(规则 []U规则) ([]编译规则, error) {
 	已见 := make(map[string]struct{}, len(规则))
 	结果 := make([]编译规则, 0, len(规则))

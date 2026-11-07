@@ -114,6 +114,31 @@ func Test原子替换(t *testing.T) {
 	}
 }
 
+// U匹配列表 必须返回全部命中规则而非首个命中，且附带匹配片段。
+func Test匹配列表返回全部命中(t *testing.T) {
+	引擎, 错误 := U新建([]U规则{
+		{UID: "a.one", U名称: "A", U类别: "sqli", U正则: "union", U启用: true},
+		{UID: "b.two", U名称: "B", U类别: "sqli", U正则: "select", U启用: true},
+		{UID: "c.off", U名称: "C", U类别: "xss", U正则: "union", U启用: false},
+	})
+	if 错误 != nil {
+		t.Fatalf("compile: %v", 错误)
+	}
+	匹配列表 := 引擎.U匹配列表(目标("union select"))
+	if len(匹配列表) != 2 {
+		t.Fatalf("matches=%d, want 2: %+v", len(匹配列表), 匹配列表)
+	}
+	if 匹配列表[0].U规则ID != "a.one" || 匹配列表[1].U规则ID != "b.two" {
+		t.Fatalf("order: %+v", 匹配列表)
+	}
+	if 匹配列表[0].U匹配片段 != "union" {
+		t.Fatalf("match substring %q, want union", 匹配列表[0].U匹配片段)
+	}
+	if 空列表 := 引擎.U匹配列表(目标("benign")); len(空列表) != 0 {
+		t.Fatalf("benign payload matched: %+v", 空列表)
+	}
+}
+
 func Test并发读者看到一致规则集(t *testing.T) {
 	引擎, 错误 := U新建([]U规则{{UID: "one.rule", U名称: "one", U类别: "sqli", U正则: "one", U启用: true}})
 	if 错误 != nil {

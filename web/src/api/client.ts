@@ -78,10 +78,12 @@ export const api = {
   deleteRule: (id: string) => request<void>("DELETE", `/api/rules/${encodeURIComponent(id)}`),
   toggleRule: (id: string) =>
     request<{ rule: Rule; version: number }>("POST", `/api/rules/${encodeURIComponent(id)}/toggle`),
-  testRule: (rule: Partial<Rule>, payload: string) =>
-    request<{ matched: boolean; rule_id?: string; category?: string }>("POST", "/api/rules/test", {
+  testRule: (rule: Partial<Rule>, payload: string, scope: "rule" | "all" = "rule", target = "test") =>
+    request<import("./types").RuleTestResponse>("POST", "/api/rules/test", {
       rule,
       payload,
+      scope,
+      target,
     }),
   ruleVersions: () => request<{ versions: RuleVersion[] }>("GET", "/api/rules/versions"),
   rollbackRuleVersion: (id: number) =>

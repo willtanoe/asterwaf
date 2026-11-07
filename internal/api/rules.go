@@ -37,12 +37,17 @@ type U规则保存响应 struct {
 type U规则测试请求 struct {
 	U规则 U规则输入  `json:"rule"`
 	U载荷 string `json:"payload"`
+	// U范围 "rule"（默认）只测提交的草稿规则；"all" 用当前规则集全量测试。
+	U范围 string `json:"scope,omitempty"`
+	// U目标类别 标注载荷代表的检查目标（query、header、body…），只影响报告。
+	U目标类别 string `json:"target,omitempty"`
 }
 
 type U规则测试响应 struct {
-	U命中   bool   `json:"matched"`
-	U规则ID string `json:"rule_id,omitempty"`
-	U类别   string `json:"category,omitempty"`
+	U命中    bool           `json:"matched"`
+	U规则ID  string         `json:"rule_id,omitempty"`
+	U类别    string         `json:"category,omitempty"`
+	U匹配列表 []规则引擎.U匹配 `json:"matches,omitempty"`
 }
 
 func (管理器 *U管理器) 规则集合(写 http.ResponseWriter, 请求 *http.Request) {
@@ -232,7 +237,17 @@ func (管理器 *U管理器) 测试规则(写 http.ResponseWriter, 请求 *http.
 		写错误(写, http.StatusBadRequest, 错误请求, 错误.Error())
 		return
 	}
-	决策 := 引擎.U决策("enforce", []检查管线.U目标{{U类别: "test", U名称: "payload", U值: 输入.U载荷}})
+	目标类别 := strings.TrimSpace(输入.U目标类别)
+	if 目标类别 == "" {
+		目标类别 = "test"
+	}
+	目标列表 := []检查管线.U目标{{U类别: 目标类别, U名称: "payload", U值: 输入.U载荷}}
+	if 输入.U范围 == "all" {
+		匹配列表 := 管理器.引擎.U匹配列表(目标列表)
+		写JSON(写, http.StatusOK, U规则测试响应{U命中: len(匹配列表) > 0, U匹配列表: 匹配列表})
+		return
+	}
+	决策 := 引擎.U决策("enforce", 目标列表)
 	写JSON(写, http.StatusOK, U规则测试响应{
 		U命中:   决策.U动作 == 规则引擎.U动作拦截,
 		U规则ID: 决策.U规则ID, U类别: 决策.U类别,
