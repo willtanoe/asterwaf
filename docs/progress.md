@@ -72,6 +72,13 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   and path. Polling is 15s overview / 10s latest blocked / 30s status, paused
   when hidden, with in-flight guards.
 
+- Logs: the filter bar keeps a linkable URL (query params synced both ways,
+  so back/forward restores the view), active filters render as removable
+  chips, site and action use the themed listbox, rows truncate with tooltips
+  at 32px height, seeded rows carry a visible "Seed" marker, payload sections
+  in the drawer gained copy buttons, and the allow/deny/disable actions run
+  behind a focus-trapped confirm dialog.
+
 ## Open items
 
 - None yet.

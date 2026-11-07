@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { api } from "../api/client";
 import type { LogEntry, SiteView } from "../api/types";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
+import CopyButton from "../components/CopyButton.vue";
 import Drawer from "../components/Drawer.vue";
+import Select from "../components/Select.vue";
 import StateMessage from "../components/StateMessage.vue";
 import { copy } from "../copy";
 import { actionClass, actionLabel, formatDayTime } from "../format";
+
+const route = useRoute();
+const router = useRouter();
 
 type SortKey = "ts" | "status" | "duration_ms";
 type SortDirection = "asc" | "desc";
@@ -38,6 +45,93 @@ const detailError = ref(false);
 const actionMessage = ref("");
 const actionError = ref(false);
 const acting = ref(false);
+
+interface PendingAction {
+  kind: "allow" | "deny" | "disable";
+}
+
+const pending = ref<PendingAction | null>(null);
+
+interface FilterChip {
+  key: keyof typeof filters;
+  label: string;
+  value: string;
+}
+
+const filterKeys: (keyof typeof filters)[] = [
+  "from",
+  "to",
+  "site",
+  "action",
+  "category",
+  "rule",
+  "ip",
+  "path",
+  "status",
+];
+
+const filterLabels: Record<keyof typeof filters, string> = {
+  from: copy.logs.filters.from,
+  to: copy.logs.filters.to,
+  site: copy.logs.filters.site,
+  action: copy.logs.filters.action,
+  category: copy.logs.filters.category,
+  rule: copy.logs.filters.rule,
+  ip: copy.logs.filters.ip,
+  path: copy.logs.filters.path,
+  status: copy.logs.filters.status,
+};
+
+const chips = computed<FilterChip[]>(() => {
+  const list: FilterChip[] = [];
+  for (const key of filterKeys) {
+    const value = filters[key];
+    if (value !== "") {
+      list.push({ key, label: filterLabels[key], value });
+    }
+  }
+  return list;
+});
+
+function readQueryFilters(): void {
+  const query = route.query;
+  for (const key of filterKeys) {
+    const raw = query[key];
+    const value = typeof raw === "string" ? raw : "";
+    if (filters[key] !== value) {
+      filters[key] = value;
+    }
+  }
+}
+
+function writeQueryFilters(): void {
+  const query: Record<string, string> = {};
+  for (const key of filterKeys) {
+    if (filters[key] !== "") {
+      query[key] = filters[key];
+    }
+  }
+  void router.replace({ query });
+}
+
+function applyFilters(): void {
+  writeQueryFilters();
+  void load(true);
+}
+
+function removeChip(key: keyof typeof filters): void {
+  filters[key] = "";
+  applyFilters();
+}
+
+watch(
+  () => route.query,
+  () => {
+    // Back and forward navigation must restore the linked filter view.
+    readQueryFilters();
+    void load(true);
+  },
+);
 
 const sorted = computed(() => {
   const list = [...items.value];
@@ -122,16 +216,10 @@ async function loadSites(): Promise<void> {
 }
 
 function resetFilters(): void {
-  filters.from = "";
-  filters.to = "";
-  filters.site = "";
-  filters.action = "";
-  filters.category = "";
-  filters.rule = "";
-  filters.ip = "";
-  filters.path = "";
-  filters.status = "";
-  void load(true);
+  for (const key of filterKeys) {
+    filters[key] = "";
+  }
+  applyFilters();
 }
 
 async function openDetail(row: LogEntry): Promise<void> {
@@ -152,6 +240,27 @@ async function openDetail(row: LogEntry): Promise<void> {
 
 function closeDetail(): void {
   selected.value = null;
+}
+
+function requestEntry(action: "allow" | "deny"): void {
+  pending.value = { kind: action };
+}
+
+function requestDisable(): void {
+  pending.value = { kind: "disable" };
+}
+
+async function runPending(): Promise<void> {
+  const action = pending.value;
+  pending.value = null;
+  if (action === null) {
+    return;
+  }
+  if (action.kind === "disable") {
+    await disableRule();
+    return;
+  }
+  await createEntry(action.kind);
 }
 
 async function createEntry(action: "allow" | "deny"): Promise<void> {
@@ -215,7 +324,34 @@ function rowKey(event: KeyboardEvent): void {
   }
 }
 
+const pendingCopy = computed(() => {
+  switch (pending.value?.kind) {
+    case "allow":
+      return { title: copy.logs.detail.confirmAllowTitle, message: copy.logs.detail.confirmAllowMessage, label: copy.logs.detail.allow, danger: false };
+    case "deny":
+      return { title: copy.logs.detail.confirmDenyTitle, message: copy.logs.detail.confirmDenyMessage, label: copy.logs.detail.deny, danger: true };
+    case "disable":
+      return { title: copy.logs.detail.confirmDisableTitle, message: copy.logs.detail.confirmDisableMessage, label: copy.logs.detail.disableRule, danger: true };
+    default:
+      return null;
+  }
+});
+
+const siteOptions = computed(() => [
+  { value: "", label: copy.logs.filters.any },
+  ...sites.value.map((item) => ({ value: item.host, label: item.host })),
+]);
+
+const actionOptions = computed(() => [
+  { value: "", label: copy.logs.filters.any },
+  { value: "allow", label: copy.actions.allow },
+  { value: "block", label: copy.actions.block },
+  { value: "shadow", label: copy.actions.shadow },
+  { value: "ratelimited", label: copy.actions.ratelimited },
+]);
+
 onMounted(() => {
+  readQueryFilters();
   void loadSites();
   void load(true);
 });
@@ -240,23 +376,14 @@ onMounted(() => {
           <span>{{ copy.logs.filters.to }}</span>
           <input v-model="filters.to" class="input" type="datetime-local" />
         </label>
-        <label class="field">
+        <div class="field">
           <span>{{ copy.logs.filters.site }}</span>
-          <select v-model="filters.site" class="select">
-            <option value="">{{ copy.logs.filters.any }}</option>
-            <option v-for="site in sites" :key="site.host" :value="site.host">{{ site.host }}</option>
-          </select>
-        </label>
-        <label class="field">
+          <Select :model-value="filters.site" :options="siteOptions" :label="copy.logs.filters.site" @update:model-value="filters.site = $event" />
+        </div>
+        <div class="field">
           <span>{{ copy.logs.filters.action }}</span>
-          <select v-model="filters.action" class="select">
-            <option value="">{{ copy.logs.filters.any }}</option>
-            <option value="allow">{{ copy.actions.allow }}</option>
-            <option value="block">{{ copy.actions.block }}</option>
-            <option value="shadow">{{ copy.actions.shadow }}</option>
-            <option value="ratelimited">{{ copy.actions.ratelimited }}</option>
-          </select>
-        </label>
+          <Select :model-value="filters.action" :options="actionOptions" :label="copy.logs.filters.action" @update:model-value="filters.action = $event" />
+        </div>
         <label class="field">
           <span>{{ copy.logs.filters.category }}</span>
           <input v-model="filters.category" class="input" />
@@ -283,6 +410,20 @@ onMounted(() => {
         <button type="button" class="btn" @click="resetFilters">{{ copy.logs.filters.reset }}</button>
       </div>
     </form>
+
+    <div v-if="chips.length > 0" class="row chip-row" role="list" :aria-label="copy.logs.filters.apply">
+      <span v-for="chip in chips" :key="chip.key" role="listitem" class="chip">
+        <span class="chip-text"><span class="chip-key">{{ chip.label }}</span> {{ chip.value }}</span>
+        <button
+          type="button"
+          class="chip-remove"
+          :aria-label="`${copy.logs.removeFilter}: ${chip.label} ${chip.value}`"
+          @click="removeChip(chip.key)"
+        >
+          ×
+        </button>
+      </span>
+    </div>
 
     <div class="panel">
       <StateMessage v-if="loading" kind="loading" :message="copy.common.loading" />
@@ -325,14 +466,19 @@ onMounted(() => {
               @click="openDetail(row)"
               @keydown="rowKey"
             >
-              <td class="mono">{{ formatDayTime(row.ts) }}</td>
+              <td class="mono">
+                <span class="cell-flex">
+                  {{ formatDayTime(row.ts) }}
+                  <span v-if="row.seed" class="seed-tag">{{ copy.logs.seed }}</span>
+                </span>
+              </td>
               <td><span :class="actionClass(row.action)">{{ actionLabel(row.action) }}</span></td>
-              <td class="wrap">{{ row.site }}</td>
+              <td class="wrap site-cell"><span class="truncate block-cell" :title="row.site">{{ row.site }}</span></td>
               <td class="mono">{{ row.method }}</td>
-              <td class="mono wrap path-cell">{{ row.path }}</td>
+              <td class="mono path-cell"><span class="truncate block-cell" :title="row.path">{{ row.path }}</span></td>
               <td class="numeric mono">{{ row.status }}</td>
-              <td class="mono wrap">{{ row.client_ip }}</td>
-              <td class="mono wrap">{{ row.rule_id }}</td>
+              <td class="mono ip-cell"><span class="truncate block-cell" :title="row.client_ip">{{ row.client_ip }}</span></td>
+              <td class="mono rule-cell"><span class="truncate block-cell" :title="row.rule_id">{{ row.rule_id || "—" }}</span></td>
               <td class="numeric mono">{{ row.duration_ms }} ms</td>
             </tr>
           </tbody>
@@ -354,6 +500,7 @@ onMounted(() => {
             <span :class="actionClass(detail.action)">{{ actionLabel(detail.action) }}</span>
             <span class="mono">{{ detail.method }} {{ detail.path }}{{ detail.query !== "" ? "?" + detail.query : "" }}</span>
             <span class="badge badge-allow">{{ detail.status }}</span>
+            <span v-if="detail.seed" class="seed-tag">{{ copy.logs.seed }}</span>
           </div>
           <dl class="meta-grid">
             <dt>{{ copy.logs.detail.requestId }}</dt>
@@ -376,21 +523,27 @@ onMounted(() => {
           <pre class="text-block">{{ detail.matched || copy.reserved.none }}</pre>
         </section>
         <section class="stack">
-          <h3 class="panel-title">{{ copy.logs.detail.headers }}</h3>
+          <div class="row payload-header">
+            <h3 class="panel-title">{{ copy.logs.detail.headers }}</h3>
+            <CopyButton v-if="detail.request_headers" :value="detail.request_headers" :subject="copy.logs.detail.headers" />
+          </div>
           <pre v-if="detail.request_headers" class="text-block">{{ detail.request_headers }}</pre>
           <p v-else class="muted">{{ copy.logs.detail.noHeaders }}</p>
         </section>
         <section class="stack">
-          <h3 class="panel-title">{{ copy.logs.detail.body }}</h3>
+          <div class="row payload-header">
+            <h3 class="panel-title">{{ copy.logs.detail.body }}</h3>
+            <CopyButton v-if="detail.request_body" :value="detail.request_body" :subject="copy.logs.detail.body" />
+          </div>
           <pre v-if="detail.request_body" class="text-block">{{ detail.request_body }}</pre>
           <p v-else class="muted">{{ copy.logs.detail.noBody }}</p>
         </section>
 
         <div class="row">
-          <button type="button" class="btn" :disabled="acting" @click="createEntry('allow')">
+          <button type="button" class="btn" :disabled="acting" @click="requestEntry('allow')">
             {{ copy.logs.detail.allow }}
           </button>
-          <button type="button" class="btn" :disabled="acting" @click="createEntry('deny')">
+          <button type="button" class="btn" :disabled="acting" @click="requestEntry('deny')">
             {{ copy.logs.detail.deny }}
           </button>
           <button
@@ -398,7 +551,7 @@ onMounted(() => {
             class="btn"
             :disabled="acting || !canDisableRule"
             :title="canDisableRule ? '' : copy.logs.detail.noRule"
-            @click="disableRule"
+            @click="requestDisable"
           >
             {{ copy.logs.detail.disableRule }}
           </button>
@@ -408,6 +561,16 @@ onMounted(() => {
         </p>
       </template>
     </Drawer>
+
+    <ConfirmDialog
+      :open="pending !== null"
+      :title="pendingCopy?.title ?? ''"
+      :message="pendingCopy?.message ?? ''"
+      :confirm-label="pendingCopy?.label ?? ''"
+      :danger="pendingCopy?.danger ?? false"
+      @confirm="runPending"
+      @cancel="pending = null"
+    />
   </div>
 </template>
 
@@ -449,8 +612,24 @@ onMounted(() => {
   cursor: pointer;
 }
 
+.block-cell {
+  display: block;
+}
+
 .path-cell {
-  max-width: 320px;
+  max-width: 300px;
+}
+
+.site-cell {
+  max-width: 150px;
+}
+
+.ip-cell {
+  max-width: 150px;
+}
+
+.rule-cell {
+  max-width: 140px;
 }
 
 .panel-footer {
@@ -498,6 +677,71 @@ onMounted(() => {
   margin: 0;
   color: var(--blocked);
   font-size: var(--fs-13);
+}
+
+.chip-row {
+  margin: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-8);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  font-size: var(--fs-12);
+  max-width: 100%;
+}
+
+.chip-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-key {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.chip-remove {
+  flex: none;
+  padding: 0 var(--sp-4);
+  min-height: 22px;
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  font-size: var(--fs-14);
+  line-height: 1;
+}
+
+.chip-remove:hover {
+  color: var(--blocked);
+}
+
+.seed-tag {
+  flex: none;
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--recorded);
+  border-radius: var(--radius);
+  color: var(--recorded);
+  font-size: var(--fs-12);
+  line-height: 1.4;
+}
+
+.cell-flex {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  white-space: nowrap;
+}
+
+.payload-header {
+  justify-content: space-between;
 }
 
 @media (max-width: 1000px) {
