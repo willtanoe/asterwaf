@@ -6,7 +6,7 @@ import ConfirmDialog from "../components/ConfirmDialog.vue";
 import Select from "../components/Select.vue";
 import StateMessage from "../components/StateMessage.vue";
 import { copy } from "../copy";
-import { formatClock, formatNumber, siteStatusLabel } from "../format";
+import { formatClock, formatMib, siteStatusLabel } from "../format";
 
 const modeOptions = [
   { value: "off", label: "off" },
@@ -111,7 +111,7 @@ onBeforeUnmount(() => {
       <StateMessage v-else-if="error" kind="error" :message="copy.sites.loadFailed" @retry="load(true)" />
       <StateMessage v-else-if="sites.length === 0" kind="empty" :message="copy.sites.empty" />
       <div v-else class="table-scroll">
-        <table>
+        <table class="sites-table">
           <thead>
             <tr>
               <th scope="col">{{ copy.sites.table.host }}</th>
@@ -153,7 +153,7 @@ onBeforeUnmount(() => {
               <td class="numeric mono">{{ site.failures }}</td>
               <td class="mono">{{ site.last_check ? formatClock(site.last_check) : "—" }}</td>
               <td class="mono">{{ site.health_path }}</td>
-              <td class="numeric mono">{{ formatNumber(site.max_body_bytes) }}</td>
+              <td class="numeric mono">{{ formatMib(site.max_body_bytes) }}</td>
               <td>
                 <button
                   type="button"
@@ -185,6 +185,22 @@ onBeforeUnmount(() => {
 <style scoped>
 .mode-select {
   min-width: 120px;
+}
+
+.sites-table {
+  width: 100%;
+}
+
+@media (min-width: 1900px) {
+  /* Very wide displays spread the columns into unreadable gaps. */
+  .sites-table {
+    max-width: 1500px;
+  }
+
+  .sites-table th,
+  .sites-table td {
+    padding-inline: var(--sp-8);
+  }
 }
 
 .health-cell {

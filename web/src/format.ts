@@ -21,6 +21,10 @@ export function formatPercent(value: number): string {
   return `${value.toFixed(1)}%`;
 }
 
+export function formatMib(bytes: number): string {
+  return `${(bytes / 1048576).toFixed(bytes % 1048576 === 0 ? 0 : 1)} MiB`;
+}
+
 export function formatLatency(value: number): string {
   return `${Math.round(value)} ms`;
 }

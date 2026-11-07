@@ -124,6 +124,10 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   instead) and the rules table disables the Delete button for defaults with
   an explanatory tooltip; custom rules keep the confirm dialog.
 
+- Sites: max body renders as MiB, the confirm-on-lower dialog from the
+  earlier round stays, and tables cap their width at 1900px and wider so
+  columns stop spreading into gaps.
+
 ## Open items
 
 - None yet.
