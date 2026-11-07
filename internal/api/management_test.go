@@ -62,6 +62,17 @@ func Test规则管理API(t *testing.T) {
 		t.Fatalf("update response=%+v", 保存)
 	}
 
+	// 默认规则拒绝删除，只能停用。
+	响应 = 发送JSON(t, 客户端, http.MethodDelete, 服务.URL+"/api/rules/xss.script", nil)
+	if 响应.StatusCode != http.StatusBadRequest {
+		t.Fatalf("default delete status=%d, want 400", 响应.StatusCode)
+	}
+	默认体 := 读取体(t, 响应)
+	_ = 响应.Body.Close()
+	if !strings.Contains(默认体, "cannot be deleted") {
+		t.Fatalf("default delete body=%s", 默认体)
+	}
+
 	响应 = 发送JSON(t, 客户端, http.MethodDelete, 服务.URL+"/api/rules/custom.evil", nil)
 	if 响应.StatusCode != http.StatusNoContent {
 		t.Fatalf("delete status=%d", 响应.StatusCode)

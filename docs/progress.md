@@ -120,6 +120,10 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   Test跳过统计生效 and Test跳过统计站点不落日志. The screenshots loop now
   also captures 1024px.
 
+- Rule deletion: the API rejects DELETE on source=default (400, disable
+  instead) and the rules table disables the Delete button for defaults with
+  an explanatory tooltip; custom rules keep the confirm dialog.
+
 ## Open items
 
 - None yet.

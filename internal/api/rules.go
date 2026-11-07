@@ -169,6 +169,11 @@ func (管理器 *U管理器) 单条规则(写 http.ResponseWriter, 请求 *http.
 		}
 		写JSON(写, http.StatusOK, U规则保存响应{U规则: 行列表[序号], U版本: 版本})
 	case http.MethodDelete:
+		// 默认规则是基线的一部分：只能停用，删除会破坏升级时的差异对比。
+		if 行列表[序号].U来源 == "default" {
+			写错误(写, http.StatusBadRequest, 错误请求, "default rules cannot be deleted; disable them instead")
+			return
+		}
 		原JSON, _ := json.Marshal(行列表[序号])
 		行列表 = append(行列表[:序号], 行列表[序号+1:]...)
 		if !管理器.编译通过(写, 行列表) {

@@ -331,7 +331,13 @@ onMounted(() => {
                   <button type="button" class="btn btn-small" @click="startEdit(rule)">
                     {{ copy.rules.edit }}
                   </button>
-                  <button type="button" class="btn btn-small btn-danger" @click="pendingDelete = rule">
+                  <button
+                    type="button"
+                    class="btn btn-small btn-danger"
+                    :disabled="rule.source === 'default'"
+                    :title="rule.source === 'default' ? copy.rules.defaultNoDelete : ''"
+                    @click="pendingDelete = rule"
+                  >
                     {{ copy.rules.delete }}
                   </button>
                 </div>

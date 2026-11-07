@@ -239,6 +239,7 @@ export const copy = {
     edit: "Edit",
     delete: "Delete",
     confirmDelete: "Delete this rule? This creates a new ruleset version.",
+    defaultNoDelete: "Default rules cannot be deleted. Disable them instead.",
     toggleOn: "Enable",
     toggleOff: "Disable",
     editor: {
