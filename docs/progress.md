@@ -144,6 +144,12 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   1440, 1024 and 768 in both themes (checked in the round's screenshots);
   no change was needed.
 
+- Retheme: tokens now derive from the aster.svg palette (accent #207fff dark
+  / #0d5ecb light, blue-tinted neutrals), semantic colors stay distinct from
+  the accent, and the contrast gate extended to component boundaries and
+  focus rings at 3:1 in both themes. The derivation is recorded in
+  docs/design-system.md.
+
 ## Open items
 
 - None yet.

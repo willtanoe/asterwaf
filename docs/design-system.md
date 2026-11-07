@@ -4,6 +4,35 @@ The dashboard is a dense operator console. Tokens are defined once in `web/src/s
 
 ## Color tokens
 
+The palette derives from `web/public/aster.svg`. Extracted stops, in order:
+background `#2B2F36` -> `#181B20`, mark gradient `#10B8F4` -> `#1478FF` ->
+`#3A42F4` -> `#A21CF4`.
+
+- Accent (primary hue) is `#1478FF`. Dark theme lightens it one step to
+  `#207fff` so it clears 4.5:1 as text on the panel backgrounds; light theme
+  darkens it to `#0d5ecb` for the same reason on white. Hover variants
+  (`--accent-strong`) move away from the text threshold: lighter in dark,
+  darker in light, both keeping the button text pairing above 4.5:1.
+  `--accent-soft` mixes the accent into the panel base (`#142b4a` dark,
+  `#e3eefd` light) for selected states.
+- Neutrals are tinted toward the same hue: dark `#0d1117`/`#141a22`/`#151b23`,
+  light `#f3f6fb`/`#ffffff`/`#e9eef6`, with blue-gray text ramp
+  (`#e8eef6`/`#a5b3c4`/`#8a97a8` dark, `#131b28`/`#47566b`/`#5c6b80` light).
+  `--bg-raised` sits at `#151b23` specifically so accent text on it keeps
+  4.5:1 while button text on the accent keeps 4.5:1.
+- Semantic colors stay distinct from the blue accent: block red
+  (`#ff7b72`/`#b42318`), log amber (`#e3b341`/`#7a5200`), rate-limited purple
+  (`#bc8cff`/`#5b3fa8`). The purple echoes the logo's secondary stop but never
+  replaces the accent. Each is always paired with a text label.
+- Contrast gates (`make contrast`): every text pair 4.5:1, and component
+  boundaries (`--border-strong`), focus rings (`--focus`), and the accent
+  text/background pairing at 3:1 or better. The plain `--border` token is
+  decorative separation and is deliberately not gated.
+- Chart.js reads these same tokens at render time; no chart carries a
+  hard-coded color.
+
+## Color tokens
+
 | Token | Role |
 | --- | --- |
 | `--bg` | application background |

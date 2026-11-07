@@ -56,6 +56,18 @@ const softPairs = [
   ["--ok", "--ok-soft"],
 ];
 
+// Non-text component boundaries and focus rings: 3:1 per WCAG 1.4.11.
+// The plain --border token is decorative separation, so it is not gated.
+const componentPairs = [
+  ["--border-strong", "--bg"],
+  ["--border-strong", "--bg-panel"],
+  ["--border-strong", "--bg-input"],
+  ["--focus", "--bg"],
+  ["--focus", "--bg-panel"],
+  // The accent doubles as button background under --bg-colored text.
+  ["--bg", "--accent"],
+];
+
 const failures = [];
 for (const [theme, block] of [
   ["dark", parseTheme(darkMatch[1])],
@@ -64,17 +76,20 @@ for (const [theme, block] of [
   const pairs = [];
   for (const fg of foregrounds) {
     for (const bg of baseBackgrounds) {
-      pairs.push([fg, bg]);
+      pairs.push([fg, bg, 4.5]);
     }
   }
   for (const [fg, bg] of softPairs) {
-    pairs.push([fg, bg]);
-    pairs.push(["--text", bg]);
+    pairs.push([fg, bg, 4.5]);
+    pairs.push(["--text", bg, 4.5]);
   }
-  for (const [fg, bg] of pairs) {
+  for (const [fg, bg] of componentPairs) {
+    pairs.push([fg, bg, 3]);
+  }
+  for (const [fg, bg, minimum] of pairs) {
     const ratio = contrast(block[fg], block[bg]);
-    if (ratio < 4.5) {
-      failures.push(`${theme}: ${fg} on ${bg} = ${ratio.toFixed(2)}:1`);
+    if (ratio < minimum) {
+      failures.push(`${theme}: ${fg} on ${bg} = ${ratio.toFixed(2)}:1 (need ${minimum})`);
     }
   }
 }

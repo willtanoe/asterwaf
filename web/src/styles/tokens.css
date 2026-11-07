@@ -1,18 +1,21 @@
 :root,
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0e1216;
-  --bg-panel: #151b21;
-  --bg-raised: #1b232b;
-  --bg-input: #10161c;
-  --border: #2b353f;
-  --border-strong: #3a4652;
-  --text: #e7edf3;
-  --text-dim: #a3afbb;
-  --text-faint: #8a959f;
-  --accent: #58a6ff;
-  --accent-strong: #8bc0ff;
-  --accent-soft: #1f3b57;
+  /* Neutral base tinted toward the logo blue (aster.svg hue #1478FF). */
+  --bg: #0d1117;
+  --bg-panel: #141a22;
+  --bg-raised: #151b23;
+  --bg-input: #0f151d;
+  --border: #263041;
+  --border-strong: #5d7390;
+  --text: #e8eef6;
+  --text-dim: #a5b3c4;
+  --text-faint: #8a97a8;
+  /* Accent is the logo's primary hue, lightened one step so it clears
+     4.5:1 as text on the panel backgrounds. */
+  --accent: #207fff;
+  --accent-strong: #3f8dff;
+  --accent-soft: #142b4a;
   --blocked: #ff7b72;
   --blocked-soft: #4a211f;
   --recorded: #e3b341;
@@ -43,25 +46,26 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f4f6f8;
+  --bg: #f3f6fb;
   --bg-panel: #ffffff;
-  --bg-raised: #eef2f5;
+  --bg-raised: #e9eef6;
   --bg-input: #ffffff;
-  --border: #d4dae1;
-  --border-strong: #b8c1cb;
-  --text: #131a21;
-  --text-dim: #4f5b67;
-  --text-faint: #5e6b78;
-  --accent: #0b5cad;
-  --accent-strong: #084a8c;
-  --accent-soft: #dbe9f7;
+  --border: #d5dce7;
+  --border-strong: #5c6f88;
+  --text: #131b28;
+  --text-dim: #47566b;
+  --text-faint: #5c6b80;
+  /* The logo hue darkened until text on white passes 4.5:1. */
+  --accent: #0d5ecb;
+  --accent-strong: #0b4fae;
+  --accent-soft: #e3eefd;
   --blocked: #b42318;
   --blocked-soft: #fbe4e1;
   --recorded: #7a5200;
   --recorded-soft: #fbf0d2;
   --ratelimited: #5b3fa8;
   --ratelimited-soft: #ece6fa;
-  --ok: #14652a;
+  --ok: #15682c;
   --ok-soft: #dcf3e2;
   --focus: #8a5a00;
   --overlay: rgba(15, 23, 32, 0.35);
