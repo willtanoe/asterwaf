@@ -75,6 +75,17 @@ export const api = {
     return request<OverviewResponse>("GET", `/api/stats/overview?${params.toString()}`);
   },
   sites: () => request<{ sites: SiteView[] }>("GET", "/api/sites"),
+  ruleStats: (range: string) =>
+    request<import("./types").RuleStatsResponse>("GET", `/api/stats/rules?range=${range}`),
+  accessStats: (range: string) =>
+    request<import("./types").AccessStatsResponse>("GET", `/api/stats/access?range=${range}`),
+  siteDetail: (host: string) =>
+    request<import("./types").SiteDetailResponse>(
+      "GET",
+      `/api/sites/detail?host=${encodeURIComponent(host)}`,
+    ),
+  logSummary: (query: string) =>
+    request<import("./types").LogSummary>("GET", `/api/logs/summary?${query}`),
   logs: (query: string) => request<LogsResponse>("GET", `/api/logs?${query}`),
   log: (id: number) => request<import("./types").LogEntry>("GET", `/api/logs/${id}`),
   rules: () => request<RulesResponse>("GET", "/api/rules"),

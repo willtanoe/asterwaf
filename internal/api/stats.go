@@ -87,11 +87,12 @@ type U影子行 struct {
 }
 
 type U站点聚合行 struct {
-	U站点    string  `json:"site"`
-	U请求    int64   `json:"requests"`
-	U拦截    int64   `json:"blocked"`
-	U拦截率   float64 `json:"block_rate"`
-	U延迟P95 float64 `json:"p95"`
+	U站点    string    `json:"site"`
+	U请求    int64     `json:"requests"`
+	U拦截    int64     `json:"blocked"`
+	U拦截率   float64   `json:"block_rate"`
+	U延迟P95 float64   `json:"p95"`
+	U序列    []float64 `json:"series"`
 }
 
 type U规则行 struct {
@@ -303,10 +304,31 @@ func (管理器 *U管理器) 概览(写 http.ResponseWriter, 请求 *http.Reques
 		写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
 		return
 	}
+	站点序列, 错误 := 管理器.存储.U站点请求序列(上下文, 范围.从, 范围.到, 范围.桶毫秒)
+	if 错误 != nil {
+		管理器.日志.Error("per-site series failed", "error", 错误)
+		写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
+		return
+	}
+	站点序列表 := map[string][]float64{}
+	起点 := 范围.从 / 范围.桶毫秒 * 范围.桶毫秒
+	桶数 := int((范围.到 - 范围.从) / 范围.桶毫秒)
+	for _, 点 := range 站点序列 {
+		序列列, 存在 := 站点序列表[点.U站点]
+		if !存在 {
+			序列列 = make([]float64, 桶数)
+			站点序列表[点.U站点] = 序列列
+		}
+		下标 := int((点.U桶 - 起点) / 范围.桶毫秒)
+		if 下标 >= 0 && 下标 < 桶数 {
+			序列列[下标] = float64(点.U数量)
+		}
+	}
 	站点聚合 := make([]U站点聚合行, 0, len(站点行))
 	for _, 行 := range 站点行 {
 		站点聚合 = append(站点聚合, U站点聚合行{U站点: 行.U站点, U请求: 行.U请求, U拦截: 行.U拦截,
-			U拦截率: 比率(行.U拦截, 行.U请求), U延迟P95: 存储包.U估算百分位(行.U桶值, 0.95)})
+			U拦截率: 比率(行.U拦截, 行.U请求), U延迟P95: 存储包.U估算百分位(行.U桶值, 0.95),
+			U序列: 站点序列表[行.U站点]})
 	}
 	规则统计, 错误 := 管理器.存储.U规则统计(上下文, 范围.从, 范围.到, 站点, 10)
 	if 错误 != nil {

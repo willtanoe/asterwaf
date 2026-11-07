@@ -420,3 +420,29 @@ func (存储 *U存储) U日志摘要(上下文 context.Context, 查询 U日志�
 	}
 	return 结果, nil
 }
+
+// U站点请求序列 是某桶某站点的请求数，供每站点 sparkline。
+type U站点请求序列点 struct {
+	U桶  int64
+	U站点 string
+	U数量 int64
+}
+
+func (存储 *U存储) U站点请求序列(上下文 context.Context, 从, 到 int64, 桶毫秒 int64) ([]U站点请求序列点, error) {
+	行列表, 错误 := 存储.数据库.QueryContext(上下文, `SELECT (minute / ?) * ? AS bucket, site, SUM(requests)
+		FROM rollup_minute WHERE minute >= ? AND minute < ? AND site != ''
+		GROUP BY bucket, site ORDER BY bucket`, 桶毫秒, 桶毫秒, 从, 到)
+	if 错误 != nil {
+		return nil, fmt.Errorf("store: per-site series: %w", 错误)
+	}
+	defer func() { _ = 行列表.Close() }()
+	结果 := make([]U站点请求序列点, 0, 256)
+	for 行列表.Next() {
+		var 点 U站点请求序列点
+		if 错误 := 行列表.Scan(&点.U桶, &点.U站点, &点.U数量); 错误 != nil {
+			return nil, fmt.Errorf("store: scan per-site series: %w", 错误)
+		}
+		结果 = append(结果, 点)
+	}
+	return 结果, nil
+}
