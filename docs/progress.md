@@ -137,6 +137,9 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   inputs follow the theme (picker indicator inverted in dark mode), and the
   filter row is a compact wrapping bar instead of a four-column grid.
 
+- Access lists: the add form sits on one 38px baseline (select, inputs,
+  checkbox, button) and the YAML seed note moved under the page title.
+
 ## Open items
 
 - None yet.

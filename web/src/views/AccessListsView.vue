@@ -177,8 +177,8 @@ onMounted(() => {
       <div>
         <h1 class="page-title">{{ copy.access.title }}</h1>
         <p class="page-subtitle">{{ copy.access.subtitle }}</p>
+        <p class="seed-note">{{ copy.access.seedNote }}</p>
       </div>
-      <p class="seed-note">{{ copy.access.seedNote }}</p>
     </header>
 
     <p v-if="message !== ''" :class="messageOk ? 'action-ok' : 'action-error'" role="status">{{ message }}</p>
@@ -324,8 +324,8 @@ onMounted(() => {
 
 <style scoped>
 .seed-note {
-  margin: 0;
-  max-width: 420px;
+  margin: var(--sp-4) 0 0;
+  max-width: 560px;
   color: var(--text-faint);
   font-size: var(--fs-12);
 }
@@ -335,6 +335,24 @@ onMounted(() => {
   grid-template-columns: 120px minmax(180px, 1.4fr) minmax(160px, 1fr) max-content max-content;
   gap: var(--sp-12);
   align-items: end;
+}
+
+.entry-form .input {
+  height: 38px;
+}
+
+.entry-form :deep(.select-box .select-button) {
+  height: 38px;
+  padding-block: 0;
+}
+
+.entry-form .check-row {
+  height: 38px;
+  padding-bottom: var(--sp-2);
+}
+
+.entry-form .btn {
+  height: 38px;
 }
 
 .field span {
