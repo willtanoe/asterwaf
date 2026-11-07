@@ -2,8 +2,11 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { api, ApiError } from "../api/client";
 import type { AccessEntry, AccessList, RateLimitConfig } from "../api/types";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
+import Select from "../components/Select.vue";
 import StateMessage from "../components/StateMessage.vue";
 import { copy } from "../copy";
+import { formatDayTime } from "../format";
 
 const list = ref<AccessList | null>(null);
 const entries = computed(() => list.value?.entries ?? []);
@@ -20,6 +23,44 @@ const form = reactive({
   enabled: true,
 });
 const adding = ref(false);
+const pendingDelete = ref<AccessEntry | null>(null);
+
+// Server-side validation stays authoritative; this mirrors it so the form
+// rejects malformed CIDRs before a request is sent.
+function isValidCidr(raw: string): boolean {
+  const value = raw.trim();
+  if (value === "") {
+    return false;
+  }
+  const slash = value.indexOf("/");
+  const address = slash === -1 ? value : value.slice(0, slash);
+  const prefixRaw = slash === -1 ? undefined : value.slice(slash + 1);
+  let prefix: number | undefined;
+  if (prefixRaw !== undefined) {
+    if (!/^\d+$/.test(prefixRaw)) {
+      return false;
+    }
+    prefix = Number(prefixRaw);
+  }
+  const v4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(address);
+  if (v4 !== null) {
+    for (let index = 1; index <= 4; index += 1) {
+      if (Number(v4[index]) > 255) {
+        return false;
+      }
+    }
+    return prefix === undefined || prefix <= 32;
+  }
+  if (!/^[0-9a-fA-F:]+$/.test(address) || !address.includes(":")) {
+    return false;
+  }
+  if (address.split("::").length - 1 > 1) {
+    return false;
+  }
+  return prefix === undefined || prefix <= 128;
+}
+
+const addressValid = computed(() => isValidCidr(form.address));
 
 const rate = reactive<RateLimitConfig>({
   enabled: false,
@@ -82,8 +123,10 @@ async function addEntry(): Promise<void> {
   }
 }
 
-async function removeEntry(entry: AccessEntry): Promise<void> {
-  if (!window.confirm(copy.access.confirmDelete)) {
+async function removeEntry(): Promise<void> {
+  const entry = pendingDelete.value;
+  pendingDelete.value = null;
+  if (entry === null) {
     return;
   }
   deleting.value = entry.id;
@@ -152,16 +195,25 @@ onMounted(() => {
           {{ list?.allow_only ? copy.access.allowOnlyOn : copy.access.allowOnlyOff }}
         </p>
         <form class="entry-form" @submit.prevent="addEntry">
-          <label class="field">
+          <div class="field">
             <span>{{ copy.access.form.action }}</span>
-            <select v-model="form.action" class="select">
-              <option value="deny">deny</option>
-              <option value="allow">allow</option>
-            </select>
-          </label>
+            <Select
+              :model-value="form.action"
+              :options="[{ value: 'deny', label: 'deny' }, { value: 'allow', label: 'allow' }]"
+              :label="copy.access.form.action"
+              @update:model-value="form.action = $event as 'allow' | 'deny'"
+            />
+          </div>
           <label class="field">
             <span>{{ copy.access.form.address }}</span>
-            <input v-model="form.address" class="input mono" required placeholder="203.0.113.0/24" />
+            <input
+              v-model="form.address"
+              class="input mono"
+              required
+              placeholder="203.0.113.0/24 or 2001:db8::/32"
+              :aria-invalid="form.address !== '' && !addressValid"
+            />
+            <span v-if="form.address !== '' && !addressValid" class="field-error">{{ copy.access.invalidCidr }}</span>
           </label>
           <label class="field">
             <span>{{ copy.access.form.note }}</span>
@@ -171,7 +223,7 @@ onMounted(() => {
             <input v-model="form.enabled" type="checkbox" />
             <span>{{ copy.access.form.enabled }}</span>
           </label>
-          <button type="submit" class="btn btn-primary" :disabled="adding || form.address === ''">
+          <button type="submit" class="btn btn-primary" :disabled="adding || form.address === '' || !addressValid">
             {{ adding ? copy.access.form.submitting : copy.access.form.submit }}
           </button>
         </form>
@@ -188,6 +240,7 @@ onMounted(() => {
                 <th scope="col">{{ copy.access.table.address }}</th>
                 <th scope="col">{{ copy.access.table.note }}</th>
                 <th scope="col">{{ copy.access.table.enabled }}</th>
+                <th scope="col">{{ copy.access.table.created }}</th>
                 <th scope="col">{{ copy.access.table.source }}</th>
                 <th scope="col">{{ copy.rules.table.actions }}</th>
               </tr>
@@ -203,13 +256,19 @@ onMounted(() => {
                 <td class="mono wrap">{{ entry.address }}</td>
                 <td class="wrap">{{ entry.note }}</td>
                 <td class="mono">{{ entry.enabled ? copy.common.yes : copy.common.no }}</td>
-                <td class="mono">{{ entry.source_log_id ? entry.source_log_id : copy.reserved.none }}</td>
+                <td class="mono">{{ entry.created_at ? formatDayTime(entry.created_at) : "—" }}</td>
+                <td class="mono">
+                  <RouterLink v-if="entry.source_log_id" :to="{ name: 'logs', query: { log: String(entry.source_log_id) } }">
+                    #{{ entry.source_log_id }}
+                  </RouterLink>
+                  <span v-else>{{ copy.reserved.none }}</span>
+                </td>
                 <td>
                   <button
                     type="button"
                     class="btn btn-small btn-danger"
                     :disabled="deleting === entry.id"
-                    @click="removeEntry(entry)"
+                    @click="pendingDelete = entry"
                   >
                     {{ copy.access.delete }}
                   </button>
@@ -250,6 +309,16 @@ onMounted(() => {
         </template>
       </form>
     </section>
+
+    <ConfirmDialog
+      :open="pendingDelete !== null"
+      :title="copy.access.delete"
+      :message="`${copy.access.confirmDelete} (${pendingDelete?.address ?? ''})`"
+      :confirm-label="copy.access.delete"
+      danger
+      @confirm="removeEntry"
+      @cancel="pendingDelete = null"
+    />
   </div>
 </template>
 
@@ -297,6 +366,11 @@ onMounted(() => {
 
 .rate-form .row {
   grid-column: 1 / -1;
+}
+
+.field-error {
+  color: var(--blocked);
+  font-size: var(--fs-12);
 }
 
 .action-ok {

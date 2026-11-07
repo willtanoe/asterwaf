@@ -240,6 +240,30 @@ async function openDetail(row: LogEntry): Promise<void> {
 
 function closeDetail(): void {
   selected.value = null;
+  if (typeof route.query.log === "string") {
+    const query = { ...route.query };
+    delete query.log;
+    void router.replace({ query });
+  }
+}
+
+// Source-log links from other pages land on /logs?log=<id> with the drawer open.
+async function openFromQuery(): Promise<void> {
+  const raw = route.query.log;
+  if (typeof raw !== "string") {
+    return;
+  }
+  const id = Number(raw);
+  if (!Number.isInteger(id) || id <= 0) {
+    return;
+  }
+  try {
+    const entry = await api.log(id);
+    selected.value = entry;
+    detail.value = entry;
+  } catch {
+    // The record may have aged out of retention; leave the list as-is.
+  }
 }
 
 function requestEntry(action: "allow" | "deny"): void {
@@ -354,6 +378,7 @@ onMounted(() => {
   readQueryFilters();
   void loadSites();
   void load(true);
+  void openFromQuery();
 });
 </script>
 

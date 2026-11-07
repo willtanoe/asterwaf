@@ -32,7 +32,15 @@ async function submit(): Promise<void> {
     await router.replace(next.startsWith("/") ? next : "/");
   } catch (caught) {
     if (caught instanceof ApiError) {
-      error.value = caught.code === "rate_limited" ? copy.login.rateLimited : caught.message;
+      if (caught.code === "rate_limited") {
+        error.value =
+          caught.retryAfter !== undefined
+            ? `${copy.login.rateLimited} ${copy.login.retryIn} ${caught.retryAfter}${copy.login.seconds}`
+            : copy.login.rateLimited;
+      } else {
+        // Never reveal which field was wrong.
+        error.value = copy.login.failed;
+      }
     } else {
       error.value = copy.login.network;
     }

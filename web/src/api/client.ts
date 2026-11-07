@@ -16,11 +16,14 @@ import type {
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
+  /** Retry-After in seconds, set by throttled endpoints such as login. */
+  readonly retryAfter?: number;
 
-  constructor(status: number, code: string, message: string) {
+  constructor(status: number, code: string, message: string, retryAfter?: number) {
     super(message);
     this.status = status;
     this.code = code;
+    this.retryAfter = retryAfter;
   }
 }
 
@@ -46,10 +49,13 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   }
   if (!response.ok) {
     const shaped = data as { error?: { code?: string; message?: string } } | undefined;
+    const retryHeader = response.headers.get("Retry-After");
+    const retryAfter = retryHeader === null ? undefined : Number(retryHeader);
     throw new ApiError(
       response.status,
       shaped?.error?.code ?? "internal",
       shaped?.error?.message ?? `Request failed with status ${response.status}.`,
+      Number.isFinite(retryAfter) ? retryAfter : undefined,
     );
   }
   return data as T;

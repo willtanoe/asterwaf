@@ -80,6 +80,7 @@ export interface SiteHealth {
   status: string;
   latency_ms: number;
   failures: number;
+  last_check: number;
 }
 
 export interface StatusResponse {
@@ -109,6 +110,7 @@ export interface SiteView {
   status: string;
   latency_ms: number;
   failures: number;
+  last_check: number;
 }
 
 export interface LogsResponse {
@@ -164,6 +166,7 @@ export interface AccessEntry {
   note?: string;
   enabled: boolean;
   source_log_id?: number;
+  created_at?: number;
 }
 
 export interface AccessList {

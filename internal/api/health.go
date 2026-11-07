@@ -24,12 +24,14 @@ type U站点健康 struct {
 	U状态   string `json:"status"`
 	U延迟毫秒 int64  `json:"latency_ms"`
 	U失败次数 int    `json:"failures"`
+	U最后检查 int64  `json:"last_check"`
 }
 
 type 探测状态 struct {
 	状态   string
 	延迟毫秒 int64
 	失败次数 int
+	最后检查 int64
 }
 
 // U探测器 周期性访问每个站点的 health_path，连续三次失败才标记 down。
@@ -83,6 +85,7 @@ func (探测器 *U探测器) U状态() []U站点健康 {
 			U状态:   状态.状态,
 			U延迟毫秒: 状态.延迟毫秒,
 			U失败次数: 状态.失败次数,
+			U最后检查: 状态.最后检查,
 		})
 	}
 	return 结果
@@ -119,6 +122,7 @@ func (探测器 *U探测器) 记录(主机 string, 健康 bool, 延迟 int64) {
 	defer 探测器.互斥.Unlock()
 	状态 := 探测器.状态表[主机]
 	状态.延迟毫秒 = 延迟
+	状态.最后检查 = time.Now().UnixMilli()
 	if 健康 {
 		状态.状态 = "up"
 		状态.失败次数 = 0

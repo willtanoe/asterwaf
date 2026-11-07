@@ -19,6 +19,8 @@ type U条目 struct {
 	U备注     string `yaml:"note,omitempty" json:"note,omitempty"`
 	U启用     bool   `yaml:"enabled" json:"enabled"`
 	U来源日志ID int64  `yaml:"source_log_id,omitempty" json:"source_log_id,omitempty"`
+	// U创建时间 由存储层写入；YAML 种子条目没有该字段。
+	U创建时间 int64 `yaml:"created_at,omitempty" json:"created_at,omitempty"`
 }
 
 // U列表 是完整的访问列表配置。allow_only 打开时只放行明确允许的地址。

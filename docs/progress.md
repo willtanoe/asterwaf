@@ -89,6 +89,16 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   enabled switches, updated time and version; delete and rollback run behind
   confirm dialogs.
 
+- Access lists: deletes run behind a confirm dialog, the add form
+  validates IPv4/IPv6 addresses and CIDR prefixes client-side, the table
+  shows the created time, and a source log id links to /logs?log=<id>,
+  which opens the request drawer directly. Sites gained a themed mode
+  select that confirms when lowering away from enforce, a status dot with
+  a text label instead of a repeated badge, and a last-check column
+  (new last_check field on /api/status and /api/sites). The login screen
+  shows the throttling retry window from the Retry-After header and never
+  reveals which field failed.
+
 ## Open items
 
 - None yet.

@@ -2,9 +2,19 @@
 import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { api } from "../api/client";
 import type { SiteView } from "../api/types";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
+import Select from "../components/Select.vue";
 import StateMessage from "../components/StateMessage.vue";
 import { copy } from "../copy";
-import { formatNumber, siteStatusLabel } from "../format";
+import { formatClock, formatNumber, siteStatusLabel } from "../format";
+
+const modeOptions = [
+  { value: "off", label: "off" },
+  { value: "shadow", label: "shadow" },
+  { value: "enforce", label: "enforce" },
+];
+
+const modeRank: Record<string, number> = { off: 0, shadow: 1, enforce: 2 };
 
 const sites = ref<SiteView[]>([]);
 const loading = ref(true);
@@ -14,6 +24,7 @@ const saving = ref("");
 const message = ref("");
 const messageOk = ref(true);
 
+const pendingSite = ref<SiteView | null>(null);
 let timer = 0;
 
 async function load(initial: boolean): Promise<void> {
@@ -33,6 +44,23 @@ async function load(initial: boolean): Promise<void> {
     error.value = true;
   } finally {
     loading.value = false;
+  }
+}
+
+function requestMode(site: SiteView): void {
+  // Lowering away from enforce silently stops blocking; require a confirm.
+  if (site.mode === "enforce" && modeRank[modes[site.host]] < modeRank.enforce) {
+    pendingSite.value = site;
+    return;
+  }
+  void saveMode(site);
+}
+
+async function confirmMode(): Promise<void> {
+  const site = pendingSite.value;
+  pendingSite.value = null;
+  if (site !== null) {
+    await saveMode(site);
   }
 }
 
@@ -92,6 +120,7 @@ onBeforeUnmount(() => {
               <th scope="col">{{ copy.sites.table.health }}</th>
               <th scope="col" class="numeric">{{ copy.sites.table.latency }}</th>
               <th scope="col" class="numeric">{{ copy.sites.table.failures }}</th>
+              <th scope="col">{{ copy.sites.table.lastCheck }}</th>
               <th scope="col">{{ copy.sites.table.healthPath }}</th>
               <th scope="col" class="numeric">{{ copy.sites.table.maxBody }}</th>
               <th scope="col">{{ copy.sites.table.actions }}</th>
@@ -102,22 +131,27 @@ onBeforeUnmount(() => {
               <td class="mono wrap">{{ site.host }}</td>
               <td class="mono wrap">{{ site.upstream }}</td>
               <td>
-                <select v-model="modes[site.host]" class="select mode-select">
-                  <option value="off">off</option>
-                  <option value="shadow">shadow</option>
-                  <option value="enforce">enforce</option>
-                </select>
+                <Select
+                  class="mode-select"
+                  :model-value="modes[site.host]"
+                  :options="modeOptions"
+                  :label="`${copy.sites.table.mode}: ${site.host}`"
+                  @update:model-value="modes[site.host] = $event"
+                />
               </td>
               <td>
-                <span
-                  class="badge"
-                  :class="site.status === 'up' ? 'badge-ok' : site.status === 'down' ? 'badge-down' : 'badge-unknown'"
-                >
+                <span class="health-cell">
+                  <span
+                    class="dot"
+                    :class="site.status === 'up' ? 'dot-ok' : site.status === 'down' ? 'dot-down' : 'dot-unknown'"
+                    aria-hidden="true"
+                  />
                   {{ siteStatusLabel(site.status) }}
                 </span>
               </td>
               <td class="numeric mono">{{ site.latency_ms }} ms</td>
               <td class="numeric mono">{{ site.failures }}</td>
+              <td class="mono">{{ site.last_check ? formatClock(site.last_check) : "—" }}</td>
               <td class="mono">{{ site.health_path }}</td>
               <td class="numeric mono">{{ formatNumber(site.max_body_bytes) }}</td>
               <td>
@@ -125,7 +159,7 @@ onBeforeUnmount(() => {
                   type="button"
                   class="btn btn-small"
                   :disabled="saving === site.host || modes[site.host] === site.mode"
-                  @click="saveMode(site)"
+                  @click="requestMode(site)"
                 >
                   {{ saving === site.host ? copy.sites.saving : copy.sites.saveMode }}
                 </button>
@@ -135,14 +169,49 @@ onBeforeUnmount(() => {
         </table>
       </div>
     </div>
+
+    <ConfirmDialog
+      :open="pendingSite !== null"
+      :title="copy.sites.confirmLowerTitle"
+      :message="`${copy.sites.confirmLowerMessage} (${pendingSite?.host ?? ''}: enforce -> ${modes[pendingSite?.host ?? '']})`"
+      :confirm-label="copy.sites.saveMode"
+      danger
+      @confirm="confirmMode"
+      @cancel="pendingSite = null"
+    />
   </div>
 </template>
 
 <style scoped>
 .mode-select {
   min-width: 120px;
-  padding: var(--sp-4) var(--sp-8);
-  font-size: var(--fs-13);
+}
+
+.health-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
+}
+
+.dot-ok {
+  background: var(--ok);
+}
+
+.dot-down {
+  background: var(--blocked);
+}
+
+.dot-unknown {
+  background: var(--text-faint);
 }
 
 .action-ok {

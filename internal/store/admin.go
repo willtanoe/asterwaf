@@ -380,6 +380,7 @@ func (存储 *U存储) U读取访问列表(上下文 context.Context) (访问列
 		if 来源.Valid {
 			条目.U来源日志ID = 来源.Int64
 		}
+		条目.U创建时间 = 创建
 		结果.U条目 = append(结果.U条目, 条目)
 	}
 	if 错误 := 行列表.Err(); 错误 != nil {
