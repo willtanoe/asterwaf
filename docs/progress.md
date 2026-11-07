@@ -140,6 +140,10 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 - Access lists: the add form sits on one 38px baseline (select, inputs,
   checkbox, button) and the YAML seed note moved under the page title.
 
+- Latest blocked verification: rule ids and IPs truncate on one line at
+  1440, 1024 and 768 in both themes (checked in the round's screenshots);
+  no change was needed.
+
 ## Open items
 
 - None yet.
