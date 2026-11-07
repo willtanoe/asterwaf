@@ -158,7 +158,7 @@ func (引擎 *U引擎) U决策(模式 string, 目标列表 []检查管线.U目�
 type U匹配 struct {
 	U规则ID string `json:"rule_id"`
 	U类别   string `json:"category"`
-	U名称    string `json:"name"`
+	U名称   string `json:"name"`
 	U匹配片段 string `json:"match"`
 }
 

@@ -44,9 +44,9 @@ type U规则测试请求 struct {
 }
 
 type U规则测试响应 struct {
-	U命中    bool           `json:"matched"`
-	U规则ID  string         `json:"rule_id,omitempty"`
-	U类别    string         `json:"category,omitempty"`
+	U命中   bool       `json:"matched"`
+	U规则ID string     `json:"rule_id,omitempty"`
+	U类别   string     `json:"category,omitempty"`
 	U匹配列表 []规则引擎.U匹配 `json:"matches,omitempty"`
 }
 

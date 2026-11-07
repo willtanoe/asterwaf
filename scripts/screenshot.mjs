@@ -398,6 +398,12 @@ async function main() {
           const detail = message.params.exceptionDetails;
           consoleMessages.push(`exception: ${detail.text} ${detail.exception?.description ?? ""}`);
         }
+        if (message.method === "Network.loadingFailed") {
+          // Canceled requests are normal navigation churn; failures are not.
+          if (message.params.errorText !== "net::ERR_ABORTED") {
+            consoleMessages.push(`network: ${message.params.errorText} (${message.params.type})`);
+          }
+        }
       };
       cdp.listeners.push(onConsole);
       await send("Network.setCookie", {

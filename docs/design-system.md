@@ -55,4 +55,4 @@ The shell is a two-column grid (sidebar, content) above 900px and a single colum
 
 ## Verification
 
-`scripts/screenshots.mjs` drives the locally installed Chromium over the DevTools protocol (no npm dependency added) and writes one PNG per page, theme, and width (6 pages x 2 themes x 3 widths) to `docs/screenshots/`. It also fails when the document scroll width exceeds the viewport or when the requested theme is not applied. Contrast ratios are computed from `tokens.css` during the phase 9 self-check and recorded in `docs/progress.md`.
+`scripts/screenshot.mjs` (`make shots`) seeds `data/asterwaf-seed.db`, boots a throwaway instance, and writes one PNG per page, theme, and width (6 pages x 2 themes x 1440/768/390) to `docs/screenshots/`, failing on horizontal overflow, unapplied themes, console errors, and failed network requests. `make contrast` enforces 4.5:1 for every token pair used for text. It also fails when the document scroll width exceeds the viewport or when the requested theme is not applied. Contrast ratios are computed from `tokens.css` during the phase 9 self-check and recorded in `docs/progress.md`.

@@ -99,6 +99,20 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   shows the throttling retry window from the Retry-After header and never
   reveals which field failed.
 
+- Access lists, sites, login: access deletes confirm, the add form
+  validates IPv4/IPv6 CIDRs, entries show created time and deep-link their
+  source log into the logs drawer (/logs?log=<id>). Sites use the themed
+  mode select (confirm when lowering from enforce), a dot-plus-label health
+  column and a last-check column (new last_check field on /api/status and
+  /api/sites). Login shows the Retry-After window on throttling.
+- Functional verification: docs/verification.md records the harness results —
+  47/47 checks passed (auth, sessions, API shapes, overview-vs-stats
+  equality, proxy enforcement, rate limiting, access entries, rule toggles
+  and rollback, site mode persistence, upstream failure and recovery, the
+  dropped-log counter under a forced writer stall, seed isolation). The
+  keyboard walkthrough (skip link, focus rings, drawer Esc, minimum font
+  size) also passes.
+
 ## Open items
 
 - None yet.
