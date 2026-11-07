@@ -132,6 +132,11 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   (event.detail gates it, so keyboard activation keeps focus), which stops
   the focus ring from lingering on the active item after a mouse click.
 
+- Logs: Allowed renders as muted text so Blocked and Recorded badges carry
+  the visual weight, inspection latency under 1 ms shows "<1 ms", date
+  inputs follow the theme (picker indicator inverted in dark mode), and the
+  filter row is a compact wrapping bar instead of a four-column grid.
+
 ## Open items
 
 - None yet.

@@ -26,6 +26,9 @@ export function formatMib(bytes: number): string {
 }
 
 export function formatLatency(value: number): string {
+  if (value > 0 && value < 1) {
+    return "<1 ms";
+  }
   return `${Math.round(value)} ms`;
 }
 
@@ -81,7 +84,9 @@ export function actionClass(action: string): string {
     case "ratelimited":
       return "badge badge-ratelimited";
     default:
-      return "badge badge-allow";
+      // Allowed is the baseline outcome; a badge would shout over the
+      // blocked/recorded states that actually need attention.
+      return "action-muted";
   }
 }
 

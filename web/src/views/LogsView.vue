@@ -608,9 +608,25 @@ onMounted(() => {
 }
 
 .filter-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--sp-12);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-8) var(--sp-12);
+}
+
+.filter-grid .field {
+  flex: 0 1 auto;
+  min-width: 130px;
+}
+
+.filter-grid .field input,
+.filter-grid .field :deep(.select-box) {
+  width: auto;
+  min-width: 130px;
+}
+
+.filter-grid .field:nth-child(-n + 2) input {
+  width: 175px;
 }
 
 .field span {
@@ -769,15 +785,5 @@ onMounted(() => {
   justify-content: space-between;
 }
 
-@media (max-width: 1000px) {
-  .filter-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 
-@media (max-width: 640px) {
-  .filter-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
 </style>
