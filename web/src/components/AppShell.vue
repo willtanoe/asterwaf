@@ -7,6 +7,16 @@ import { api } from "../api/client";
 
 const router = useRouter();
 
+// Vue Router re-renders the route while the clicked link keeps focus, and the
+// browser then treats that retained focus as keyboard-like, so the yellow ring
+// shows after a mouse click. event.detail is 0 for keyboard activation, so
+// only pointer clicks drop focus.
+function onNavClick(event: MouseEvent): void {
+  if (event.detail > 0 && event.currentTarget instanceof HTMLElement) {
+    event.currentTarget.blur();
+  }
+}
+
 async function signOut(): Promise<void> {
   try {
     await api.logout();
@@ -30,11 +40,11 @@ async function signOut(): Promise<void> {
         </span>
       </div>
       <nav class="nav" :aria-label="copy.nav.label">
-        <RouterLink class="nav-link" :to="{ name: 'overview' }">{{ copy.nav.overview }}</RouterLink>
-        <RouterLink class="nav-link" :to="{ name: 'logs' }">{{ copy.nav.logs }}</RouterLink>
-        <RouterLink class="nav-link" :to="{ name: 'rules' }">{{ copy.nav.rules }}</RouterLink>
-        <RouterLink class="nav-link" :to="{ name: 'access-lists' }">{{ copy.nav.accessLists }}</RouterLink>
-        <RouterLink class="nav-link" :to="{ name: 'sites' }">{{ copy.nav.sites }}</RouterLink>
+        <RouterLink class="nav-link" :to="{ name: 'overview' }" @click="onNavClick">{{ copy.nav.overview }}</RouterLink>
+        <RouterLink class="nav-link" :to="{ name: 'logs' }" @click="onNavClick">{{ copy.nav.logs }}</RouterLink>
+        <RouterLink class="nav-link" :to="{ name: 'rules' }" @click="onNavClick">{{ copy.nav.rules }}</RouterLink>
+        <RouterLink class="nav-link" :to="{ name: 'access-lists' }" @click="onNavClick">{{ copy.nav.accessLists }}</RouterLink>
+        <RouterLink class="nav-link" :to="{ name: 'sites' }" @click="onNavClick">{{ copy.nav.sites }}</RouterLink>
       </nav>
       <div class="sidebar-footer">
         <button type="button" class="btn btn-small" @click="toggleTheme">

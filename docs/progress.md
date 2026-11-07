@@ -128,6 +128,10 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   earlier round stays, and tables cap their width at 1900px and wider so
   columns stop spreading into gaps.
 
+- Navigation: pointer clicks blur the link after the route change
+  (event.detail gates it, so keyboard activation keeps focus), which stops
+  the focus ring from lingering on the active item after a mouse click.
+
 ## Open items
 
 - None yet.
