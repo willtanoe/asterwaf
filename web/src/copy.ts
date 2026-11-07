@@ -439,6 +439,13 @@ export const copy = {
     empty: "No sites configured.",
     loadFailed: "Sites could not be loaded.",
     polling: "Health refreshes every 10 seconds while this page is visible.",
+    detail: {
+      title: "Site detail",
+      healthHistory: "Health history",
+      modeHistory: "Mode changes",
+      recentBlocked: "Recent blocked",
+      noModeChanges: "No mode changes recorded.",
+    },
     confirmLowerTitle: "Lower inspection mode",
     confirmLowerMessage: "Reducing from enforce means matching requests are no longer blocked. Continue?",
   },

@@ -181,6 +181,11 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   denied requests), hits-in-range and last-hit columns on entries, and a
   recent top-offenders panel with one-click deny.
 
+- Sites: the table gained per-site requests, blocked, block rate, p95,
+  shadow would-block and a detail drawer per site (probe history ring,
+  audit mode changes, recent blocked requests); host and upstream truncate
+  instead of folding.
+
 ## Open items
 
 - None yet.

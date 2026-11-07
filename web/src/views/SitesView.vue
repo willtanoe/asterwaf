@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { api } from "../api/client";
 import type { SiteView } from "../api/types";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
+import Drawer from "../components/Drawer.vue";
 import Select from "../components/Select.vue";
 import StateMessage from "../components/StateMessage.vue";
+import type { SiteDetailResponse, OverviewResponse } from "../api/types";
 import { copy } from "../copy";
-import { formatClock, formatMib, siteStatusLabel } from "../format";
+import { formatClock, formatLatency, formatMib, formatNumber, siteStatusLabel } from "../format";
 
 const modeOptions = [
   { value: "off", label: "off" },
@@ -25,6 +27,44 @@ const message = ref("");
 const messageOk = ref(true);
 
 const pendingSite = ref<SiteView | null>(null);
+const detail = ref<SiteDetailResponse | null>(null);
+const detailHost = ref("");
+const detailLoading = ref(false);
+const overview = ref<OverviewResponse | null>(null);
+
+const perSite = computed(() => {
+  const map = new Map<string, OverviewResponse["per_site"][number]>();
+  for (const row of overview.value?.per_site ?? []) {
+    map.set(row.site, row);
+  }
+  return map;
+});
+
+const shadowMap = computed(() => {
+  const map = new Map<string, number>();
+  for (const row of overview.value?.shadow_wouldblock ?? []) {
+    map.set(row.site, row.count);
+  }
+  return map;
+});
+
+async function openDetail(host: string): Promise<void> {
+  detailHost.value = host;
+  detail.value = null;
+  detailLoading.value = true;
+  try {
+    detail.value = await api.siteDetail(host);
+  } catch {
+    detail.value = null;
+  } finally {
+    detailLoading.value = false;
+  }
+}
+
+function closeDetail(): void {
+  detailHost.value = "";
+}
+
 let timer = 0;
 
 async function load(initial: boolean): Promise<void> {
@@ -40,6 +80,11 @@ async function load(initial: boolean): Promise<void> {
       }
     }
     error.value = false;
+    try {
+      overview.value = await api.overview("24h", "");
+    } catch {
+      overview.value = null;
+    }
   } catch {
     error.value = true;
   } finally {
@@ -123,13 +168,19 @@ onBeforeUnmount(() => {
               <th scope="col">{{ copy.sites.table.lastCheck }}</th>
               <th scope="col">{{ copy.sites.table.healthPath }}</th>
               <th scope="col" class="numeric">{{ copy.sites.table.maxBody }}</th>
+              <th scope="col" class="numeric">{{ copy.overview.perSite.requests }}</th>
+              <th scope="col" class="numeric">{{ copy.overview.perSite.blocked }}</th>
+              <th scope="col" class="numeric">{{ copy.overview.perSite.blockRate }}</th>
+              <th scope="col" class="numeric">{{ copy.overview.perSite.p95 }}</th>
+              <th scope="col" class="numeric">{{ copy.overview.sections2.shadow }}</th>
+              <th scope="col">{{ copy.overview.perSite.trend }}</th>
               <th scope="col">{{ copy.sites.table.actions }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="site in sites" :key="site.host">
-              <td class="mono wrap">{{ site.host }}</td>
-              <td class="mono wrap">{{ site.upstream }}</td>
+              <td class="mono"><span class="truncate block-cell" :title="site.host">{{ site.host }}</span></td>
+              <td class="mono"><span class="truncate block-cell" :title="site.upstream">{{ site.upstream }}</span></td>
               <td>
                 <Select
                   class="mode-select"
@@ -154,6 +205,16 @@ onBeforeUnmount(() => {
               <td class="mono">{{ site.last_check ? formatClock(site.last_check) : "—" }}</td>
               <td class="mono">{{ site.health_path }}</td>
               <td class="numeric mono">{{ formatMib(site.max_body_bytes) }}</td>
+              <td class="numeric mono">{{ formatNumber(perSite.get(site.host)?.requests ?? 0) }}</td>
+              <td class="numeric mono">{{ formatNumber(perSite.get(site.host)?.blocked ?? 0) }}</td>
+              <td class="numeric mono">{{ (perSite.get(site.host)?.block_rate ?? 0).toFixed(1) }}%</td>
+              <td class="numeric mono">{{ formatLatency(perSite.get(site.host)?.p95 ?? 0) }}</td>
+              <td class="numeric mono">{{ formatNumber(shadowMap.get(site.host) ?? 0) }}</td>
+              <td>
+                <button type="button" class="btn btn-small" @click="openDetail(site.host)">
+                  {{ copy.sites.detail.title }}
+                </button>
+              </td>
               <td>
                 <button
                   type="button"
@@ -179,10 +240,89 @@ onBeforeUnmount(() => {
       @confirm="confirmMode"
       @cancel="pendingSite = null"
     />
+
+    <Drawer :open="detailHost !== ''" :title="`${copy.sites.detail.title}: ${detailHost}`" @close="closeDetail">
+      <StateMessage v-if="detailLoading" kind="loading" :message="copy.common.loading" />
+      <template v-else-if="detail !== null">
+        <section class="stack">
+          <h3 class="panel-title">{{ copy.sites.detail.healthHistory }}</h3>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{{ copy.overview.tables.time }}</th>
+                  <th scope="col">{{ copy.sites.table.health }}</th>
+                  <th scope="col" class="numeric">{{ copy.sites.table.latency }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="sample in [...detail.health_history].reverse()" :key="sample.ts">
+                  <td class="mono">{{ formatClock(sample.ts) }}</td>
+                  <td>{{ siteStatusLabel(sample.status) }}</td>
+                  <td class="numeric mono">{{ formatLatency(sample.latency_ms) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section class="stack">
+          <h3 class="panel-title">{{ copy.sites.detail.modeHistory }}</h3>
+          <p v-if="detail.mode_history.length === 0" class="muted">{{ copy.sites.detail.noModeChanges }}</p>
+          <div v-else class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{{ copy.overview.tables.time }}</th>
+                  <th scope="col">{{ copy.rules.versions.actor }}</th>
+                  <th scope="col">{{ copy.overview.tables.action }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="change in detail.mode_history" :key="change.ts">
+                  <td class="mono">{{ formatClock(change.ts) }}</td>
+                  <td class="mono">{{ change.actor }}</td>
+                  <td class="mono">{{ change.before }} → {{ change.after }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section class="stack">
+          <h3 class="panel-title">{{ copy.sites.detail.recentBlocked }}</h3>
+          <p v-if="detail.recent_blocked.length === 0" class="muted">{{ copy.overview.empty.blocked }}</p>
+          <div v-else class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{{ copy.overview.tables.time }}</th>
+                  <th scope="col">{{ copy.overview.tables.rule }}</th>
+                  <th scope="col">{{ copy.overview.tables.path }}</th>
+                  <th scope="col">{{ copy.overview.tables.ip }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in detail.recent_blocked" :key="row.id">
+                  <td class="mono">{{ formatClock(row.ts) }}</td>
+                  <td class="mono">{{ row.rule_id }}</td>
+                  <td class="mono wrap">{{ row.path }}</td>
+                  <td class="mono">{{ row.client_ip }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </template>
+      <StateMessage v-else kind="error" :message="copy.common.errorTitle" />
+    </Drawer>
   </div>
 </template>
 
 <style scoped>
+.block-cell {
+  display: block;
+  max-width: 200px;
+}
+
 .mode-select {
   min-width: 120px;
 }
