@@ -269,7 +269,7 @@ func (存储 *U存储) U排行路径(上下文 context.Context, 从, 到 int64, 
 
 func (存储 *U存储) U最新拦截(上下文 context.Context, 站点 string, 限制 int) ([]U日志条目, error) {
 	行列表, 错误 := 存储.数据库.QueryContext(上下文, `SELECT id, ts, request_id, site, method, path, query,
-		status, action, category, rule_id, shadow, client_ip, user_agent, duration_ms, seed
+		status, action, category, rule_id, shadow, client_ip, user_agent, duration_ms, seed, bytes_in, bytes_out
 		FROM logs WHERE action = 'block' AND (? = '' OR site = ?)
 		ORDER BY ts DESC, id DESC LIMIT ?`, 站点, 站点, 限制)
 	if 错误 != nil {
@@ -282,7 +282,7 @@ func (存储 *U存储) U最新拦截(上下文 context.Context, 站点 string, �
 		var 影子, 种子 int
 		if 错误 := 行列表.Scan(&条目.UID, &条目.U时间, &条目.U请求ID, &条目.USite, &条目.U方法,
 			&条目.U路径, &条目.U查询, &条目.U状态, &条目.U动作, &条目.U类别, &条目.U规则ID,
-			&影子, &条目.U客户端IP, &条目.U用户代理, &条目.U耗时毫秒, &种子); 错误 != nil {
+			&影子, &条目.U客户端IP, &条目.U用户代理, &条目.U耗时毫秒, &种子, &条目.U字节入, &条目.U字节出); 错误 != nil {
 			return nil, fmt.Errorf("store: scan latest blocked: %w", 错误)
 		}
 		条目.U影子 = 影子 == 1

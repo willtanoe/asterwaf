@@ -88,6 +88,13 @@ func (限流器 *U限流器) U启用() bool {
 	return 限流器.配置.U启用
 }
 
+// U桶数 返回当前持有令牌桶的客户端前缀数量，供管理面展示。
+func (限流器 *U限流器) U桶数() int {
+	限流器.互斥.Lock()
+	defer 限流器.互斥.Unlock()
+	return len(限流器.桶表)
+}
+
 // U允许 消耗一个令牌；拒绝时返回建议的 Retry-After。
 func (限流器 *U限流器) U允许(地址 netip.Addr) (bool, time.Duration) {
 	键, 有效 := 桶键(地址)

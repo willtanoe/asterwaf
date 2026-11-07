@@ -160,6 +160,10 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 			return
 		}
 		记录.U状态 = 状态.状态码()
+		if 记录.U字节入 == 0 && 请求.ContentLength > 0 {
+			记录.U字节入 = 请求.ContentLength
+		}
+		记录.U字节出 = 状态.字节
 		处理器.存储.U加入(记录)
 	}()
 
@@ -283,6 +287,8 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 		请求.Body = io.NopCloser(bytes.NewReader(快照.U体))
 		请求.ContentLength = int64(len(快照.U体))
 	}
+	// Chunked bodies carry no Content-Length; the inspected copy is the truth.
+	记录.U字节入 = int64(len(快照.U体))
 	请求.TransferEncoding = nil
 
 	决策 := 处理器.引擎.U决策(站点模式, 快照.U目标列表())
@@ -354,6 +360,7 @@ type 状态写 struct {
 	http.ResponseWriter
 	请求ID string
 	码    int
+	字节   int64
 }
 
 func (写 *状态写) WriteHeader(码 int) {
@@ -369,7 +376,9 @@ func (写 *状态写) Write(数据 []byte) (int, error) {
 	if 写.码 == 0 {
 		写.WriteHeader(http.StatusOK)
 	}
-	return 写.ResponseWriter.Write(数据)
+	数, 错误 := 写.ResponseWriter.Write(数据)
+	写.字节 += int64(数)
+	return 数, 错误
 }
 
 func (写 *状态写) 状态码() int {
@@ -477,6 +486,11 @@ func (处理器 *U处理器) U更新访问列表(列表 访问列表.U列表) er
 // U更新限流 替换运行时限流参数。
 func (处理器 *U处理器) U更新限流(配置值 限流包.U配置) error {
 	return 处理器.限流.U修改配置(配置值)
+}
+
+// U限流桶数 供管理面展示当前活跃令牌桶数量。
+func (处理器 *U处理器) U限流桶数() int {
+	return 处理器.限流.U桶数()
 }
 
 // U关闭空闲连接 在进程退出前释放上游连接。

@@ -34,11 +34,21 @@ type 探测状态 struct {
 	最后检查 int64
 }
 
+// 探测样本 是一次探测的历史记录；每个站点只保留最近 60 条。
+type 探测样本 struct {
+	时刻   int64  `json:"ts"`
+	状态   string `json:"status"`
+	延迟毫秒 int64  `json:"latency_ms"`
+}
+
+const 探测历史上限 = 60
+
 // U探测器 周期性访问每个站点的 health_path，连续三次失败才标记 down。
 type U探测器 struct {
 	站点   []配置.U站点
 	互斥   sync.Mutex
 	状态表  map[string]探测状态
+	历史表  map[string][]探测样本
 	客户端  *http.Client
 	日志   *slog.Logger
 	停止   chan struct{}
@@ -53,6 +63,7 @@ func U新建探测器(站点列表 []配置.U站点, 间隔 time.Duration, 日�
 	探测器 := &U探测器{
 		站点:  append([]配置.U站点(nil), 站点列表...),
 		状态表: make(map[string]探测状态, len(站点列表)),
+		历史表: make(map[string][]探测样本, len(站点列表)),
 		客户端: &http.Client{
 			Timeout: 探测超时,
 			CheckRedirect: func(*http.Request, []*http.Request) error {
@@ -117,6 +128,16 @@ func (探测器 *U探测器) U探测一次() {
 	}
 }
 
+// U历史 返回站点最近探测样本（旧->新）。
+func (探测器 *U探测器) U历史(主机 string) []探测样本 {
+	探测器.互斥.Lock()
+	defer 探测器.互斥.Unlock()
+	样本 := 探测器.历史表[主机]
+	结果 := make([]探测样本, len(样本))
+	copy(结果, 样本)
+	return 结果
+}
+
 func (探测器 *U探测器) 记录(主机 string, 健康 bool, 延迟 int64) {
 	探测器.互斥.Lock()
 	defer 探测器.互斥.Unlock()
@@ -132,6 +153,12 @@ func (探测器 *U探测器) 记录(主机 string, 健康 bool, 延迟 int64) {
 			状态.状态 = "down"
 		}
 	}
+	样本 := 探测样本{时刻: 状态.最后检查, 延迟毫秒: 延迟, 状态: 状态.状态}
+	历史 := append(探测器.历史表[主机], 样本)
+	if len(历史) > 探测历史上限 {
+		历史 = 历史[len(历史)-探测历史上限:]
+	}
+	探测器.历史表[主机] = 历史
 	探测器.状态表[主机] = 状态
 }
 

@@ -60,13 +60,86 @@ type U范围信息 struct {
 	U备注 []string `json:"notes"`
 }
 
+type U检测序列项 struct {
+	U键  string   `json:"key"`
+	U点集 []U计数时间点 `json:"points"`
+}
+
+type U计数时间点 struct {
+	U时间 int64 `json:"ts"`
+	U数量 int64 `json:"count"`
+}
+
+type U状态序列项 struct {
+	U键  string   `json:"key"`
+	U点集 []U计数时间点 `json:"points"`
+}
+
+type U字节序列项 struct {
+	U时间  int64 `json:"ts"`
+	U字节入 int64 `json:"in"`
+	U字节出 int64 `json:"out"`
+}
+
+type U影子行 struct {
+	U站点 string `json:"site"`
+	U数量 int64  `json:"count"`
+}
+
+type U站点聚合行 struct {
+	U站点    string  `json:"site"`
+	U请求    int64   `json:"requests"`
+	U拦截    int64   `json:"blocked"`
+	U拦截率   float64 `json:"block_rate"`
+	U延迟P95 float64 `json:"p95"`
+}
+
+type U规则行 struct {
+	U规则ID string `json:"rule_id"`
+	U类别   string `json:"category"`
+	U命中   int64  `json:"hits"`
+	U拦截   int64  `json:"blocked"`
+	U记录   int64  `json:"recorded"`
+	U最后命中 int64  `json:"last_seen"`
+}
+
+type U热图点 struct {
+	U周几 int64 `json:"dow"`
+	U小时 int64 `json:"hour"`
+	U数量 int64 `json:"count"`
+}
+
+type U系统信息 struct {
+	U数据库字节 int64          `json:"db_size_bytes"`
+	U保留    map[string]int `json:"retention_days"`
+	U限流    map[string]any `json:"rate_limit"`
+}
+
 type U概览响应 struct {
-	U范围      U范围信息            `json:"range"`
-	UKPI     map[string]UKPI值 `json:"kpis"`
-	U序列      []U时间点           `json:"series"`
-	U分布      U分布              `json:"breakdowns"`
-	U表格      U表格              `json:"tables"`
-	U限流已启用   bool             `json:"rate_limit_enabled"`
+	U范围    U范围信息            `json:"range"`
+	UKPI   map[string]UKPI值 `json:"kpis"`
+	U序列    []U时间点           `json:"series"`
+	U分布    U分布              `json:"breakdowns"`
+	U表格    U表格              `json:"tables"`
+	U限流已启用 bool             `json:"rate_limit_enabled"`
+	U检测序列  []U检测序列项         `json:"detections_series"`
+	U延迟序列  []U延迟点           `json:"latency_series"`
+	U状态序列  []U状态序列项         `json:"status_series"`
+	U方法    []U计数项           `json:"methods"`
+	U字节序列  []U字节序列项         `json:"bytes_series"`
+	U影子拦截  []U影子行           `json:"shadow_wouldblock"`
+	U每站点   []U站点聚合行         `json:"per_site"`
+	U顶级规则  []U规则行           `json:"top_rules"`
+	U顶级UA  []U计数项           `json:"top_user_agents"`
+	U热图    []U热图点           `json:"heatmap"`
+	U原始可用  bool             `json:"raw_available"`
+	U系统    U系统信息            `json:"system"`
+}
+
+type U延迟点 struct {
+	U时间 int64   `json:"ts"`
+	U50 float64 `json:"p50"`
+	U95 float64 `json:"p95"`
 }
 
 type 桶统计 struct {
@@ -158,8 +231,122 @@ func (管理器 *U管理器) 概览(写 http.ResponseWriter, 请求 *http.Reques
 		写错误(写, http.StatusInternalServerError, 错误内部, "could not read rate limit")
 		return
 	}
+	// 原始日志维度只在 24 小时窗口内提供；更长窗口返回 raw_available=false。
+	原始可用 := !范围.近似
+	检测序列, 错误 := 管理器.存储.U检测序列(上下文, 范围.从, 范围.到, 站点, 范围.桶毫秒)
+	if 错误 != nil {
+		管理器.日志.Error("detection series failed", "error", 错误)
+		写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
+		return
+	}
+	检测组 := 分组检测(范围, 检测序列)
+	延迟序列 := make([]U延迟点, 0, len(序列))
+	for _, 点 := range 序列 {
+		统计 := 桶表[点.U时间]
+		if 统计 == nil {
+			延迟序列 = append(延迟序列, U延迟点{U时间: 点.U时间})
+			continue
+		}
+		延迟序列 = append(延迟序列, U延迟点{U时间: 点.U时间,
+			U50: 存储包.U估算百分位(统计.延迟, 0.50), U95: 存储包.U估算百分位(统计.延迟, 0.95)})
+	}
+	var 状态序列 []U状态序列项
+	var 方法 []U计数项
+	var 字节序列 []U字节序列项
+	var 顶级UA []U计数项
+	if 原始可用 {
+		状态原始, 错误 := 管理器.存储.U状态类序列(上下文, 范围.从, 范围.到, 站点, 范围.桶毫秒)
+		if 错误 != nil {
+			管理器.日志.Error("status series failed", "error", 错误)
+			写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
+			return
+		}
+		状态序列 = 分组状态(范围, 状态原始)
+		方法原始, 错误 := 管理器.存储.U方法计数(上下文, 范围.从, 范围.到, 站点, 8)
+		if 错误 != nil {
+			管理器.日志.Error("method counts failed", "error", 错误)
+			写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
+			return
+		}
+		方法 = 转计数(方法原始)
+		字节原始, 错误 := 管理器.存储.U字节序列(上下文, 范围.从, 范围.到, 站点, 范围.桶毫秒)
+		if 错误 != nil {
+			管理器.日志.Error("byte series failed", "error", 错误)
+			写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
+			return
+		}
+		字节序列 = make([]U字节序列项, 0, len(字节原始))
+		for _, 点 := range 字节原始 {
+			字节序列 = append(字节序列, U字节序列项{U时间: 点.U桶, U字节入: 点.U字节入, U字节出: 点.U字节出})
+		}
+		UA原始, 错误 := 管理器.存储.U用户代理计数(上下文, 范围.从, 范围.到, 站点, 10)
+		if 错误 != nil {
+			管理器.日志.Error("user agent counts failed", "error", 错误)
+			写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
+			return
+		}
+		顶级UA = 转计数(UA原始)
+	}
+	影子, 错误 := 管理器.存储.U影子拦截(上下文, 范围.从, 范围.到, 10)
+	if 错误 != nil {
+		管理器.日志.Error("shadow would-block failed", "error", 错误)
+		写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
+		return
+	}
+	影子行 := make([]U影子行, 0, len(影子))
+	for _, 项 := range 影子 {
+		影子行 = append(影子行, U影子行{U站点: 项.U站点, U数量: 项.U数量})
+	}
+	站点行, 错误 := 管理器.存储.U每站点(上下文, 范围.从, 范围.到)
+	if 错误 != nil {
+		管理器.日志.Error("per-site stats failed", "error", 错误)
+		写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
+		return
+	}
+	站点聚合 := make([]U站点聚合行, 0, len(站点行))
+	for _, 行 := range 站点行 {
+		站点聚合 = append(站点聚合, U站点聚合行{U站点: 行.U站点, U请求: 行.U请求, U拦截: 行.U拦截,
+			U拦截率: 比率(行.U拦截, 行.U请求), U延迟P95: 存储包.U估算百分位(行.U桶值, 0.95)})
+	}
+	规则统计, 错误 := 管理器.存储.U规则统计(上下文, 范围.从, 范围.到, 站点, 10)
+	if 错误 != nil {
+		管理器.日志.Error("top rules failed", "error", 错误)
+		写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
+		return
+	}
+	规则行 := make([]U规则行, 0, len(规则统计))
+	for _, 行 := range 规则统计 {
+		规则行 = append(规则行, U规则行{U规则ID: 行.U规则ID, U类别: 行.U类别, U命中: 行.U命中,
+			U拦截: 行.U拦截, U记录: 行.U记录数, U最后命中: 行.U最后命中})
+	}
+	热图, 错误 := 管理器.存储.U热图(上下文, 范围.从, 范围.到)
+	if 错误 != nil {
+		管理器.日志.Error("heatmap failed", "error", 错误)
+		写错误(写, http.StatusInternalServerError, 错误内部, "could not read statistics")
+		return
+	}
+	热图点 := make([]U热图点, 0, len(热图))
+	for _, 点 := range 热图 {
+		热图点 = append(热图点, U热图点{U周几: 点.U周几, U小时: 点.U小时, U数量: 点.U数量})
+	}
 	写JSON(写, http.StatusOK, U概览响应{
 		U限流已启用: 限流配置.U启用,
+		U检测序列:  检测组,
+		U延迟序列:  延迟序列,
+		U状态序列:  状态序列,
+		U方法:    方法,
+		U字节序列:  字节序列,
+		U影子拦截:  影子行,
+		U每站点:   站点聚合,
+		U顶级规则:  规则行,
+		U顶级UA:  顶级UA,
+		U热图:    热图点,
+		U原始可用:  原始可用,
+		U系统: U系统信息{
+			U数据库字节: 管理器.存储.U数据库大小字节(),
+			U保留:    map[string]int{"raw_days": 14, "minute_rollups": 30, "hour_rollups": 180, "audit_days": 365},
+			U限流:    map[string]any{"enabled": 限流配置.U启用, "requests_per_minute": 限流配置.U每分钟, "burst": 限流配置.U突发, "buckets": 管理器.代理.U限流桶数()},
+		},
 		U范围: U范围信息{
 			U从:  范围.时间从.UTC().Format(time.RFC3339),
 			U到:  范围.时间到.UTC().Format(time.RFC3339),
@@ -413,6 +600,54 @@ func 唯一IP序列字段(序列 []U时间点, 桶表 map[int64]int64) []float64
 	结果 := make([]float64, 0, len(序列))
 	for _, 点 := range 序列 {
 		结果 = append(结果, float64(桶表[点.U时间]))
+	}
+	return 结果
+}
+
+func 分组检测(范围 概览范围, 点集 []存储包.U检测序列点) []U检测序列项 {
+	起点 := 范围.从 / 范围.桶毫秒 * 范围.桶毫秒
+	索引 := map[string]map[int64]int64{}
+	for _, 点 := range 点集 {
+		桶集, 存在 := 索引[点.U类别]
+		if !存在 {
+			桶集 = map[int64]int64{}
+			索引[点.U类别] = 桶集
+		}
+		桶集[点.U桶] = 点.U数量
+	}
+	结果 := make([]U检测序列项, 0, len(索引))
+	for 键, 桶集 := range 索引 {
+		点列表 := make([]U计数时间点, 0, len(桶集))
+		for 时刻 := 起点; 时刻 < 范围.到; 时刻 += 范围.桶毫秒 {
+			if 值, 存在 := 桶集[时刻]; 存在 {
+				点列表 = append(点列表, U计数时间点{U时间: 时刻, U数量: 值})
+			}
+		}
+		结果 = append(结果, U检测序列项{U键: 键, U点集: 点列表})
+	}
+	return 结果
+}
+
+func 分组状态(范围 概览范围, 点集 []存储包.U状态类序列点) []U状态序列项 {
+	起点 := 范围.从 / 范围.桶毫秒 * 范围.桶毫秒
+	索引 := map[string]map[int64]int64{}
+	for _, 点 := range 点集 {
+		桶集, 存在 := 索引[点.U类]
+		if !存在 {
+			桶集 = map[int64]int64{}
+			索引[点.U类] = 桶集
+		}
+		桶集[点.U桶] = 点.U数量
+	}
+	结果 := make([]U状态序列项, 0, len(索引))
+	for 键, 桶集 := range 索引 {
+		点列表 := make([]U计数时间点, 0, len(桶集))
+		for 时刻 := 起点; 时刻 < 范围.到; 时刻 += 范围.桶毫秒 {
+			if 值, 存在 := 桶集[时刻]; 存在 {
+				点列表 = append(点列表, U计数时间点{U时间: 时刻, U数量: 值})
+			}
+		}
+		结果 = append(结果, U状态序列项{U键: 键, U点集: 点列表})
 	}
 	return 结果
 }

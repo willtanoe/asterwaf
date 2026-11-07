@@ -132,7 +132,10 @@ func (管理器 *U管理器) 注册路由() {
 	管理器.多路.HandleFunc("/api/me", 管理器.当前用户)
 	管理器.多路.HandleFunc("/api/status", 管理器.状态)
 	管理器.多路.HandleFunc("/api/stats/overview", 管理器.概览)
+	管理器.多路.HandleFunc("/api/stats/rules", 管理器.规则统计)
+	管理器.多路.HandleFunc("/api/stats/access", 管理器.访问统计)
 	管理器.多路.HandleFunc("/api/logs", 管理器.日志列表)
+	管理器.多路.HandleFunc("/api/logs/summary", 管理器.日志摘要)
 	管理器.多路.HandleFunc("/api/logs/", 管理器.日志路由)
 	管理器.多路.HandleFunc("/api/rules", 管理器.规则集合)
 	管理器.多路.HandleFunc("/api/rules/", 管理器.规则路由)
@@ -140,6 +143,7 @@ func (管理器 *U管理器) 注册路由() {
 	管理器.多路.HandleFunc("/api/access-lists/", 管理器.访问列表路由)
 	管理器.多路.HandleFunc("/api/rate-limit", 管理器.限流设置)
 	管理器.多路.HandleFunc("/api/sites", 管理器.站点集合)
+	管理器.多路.HandleFunc("/api/sites/detail", 管理器.站点详情)
 	管理器.多路.HandleFunc("/api/sites/", 管理器.站点路由)
 	管理器.多路.HandleFunc("/", 管理器.未找到)
 }

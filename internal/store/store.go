@@ -50,20 +50,23 @@ type U记录 struct {
 	U请求体   string
 	U匹配    string
 	U种子    bool
+	U字节入   int64
+	U字节出   int64
 }
 
 // U存储 负责 SQLite 生命周期与日志队列。请求路径只做非阻塞入队。
 type U存储 struct {
-	数据库  *sql.DB
-	日志   *slog.Logger
-	队列   chan U记录
-	丢弃   atomic.Int64
-	关闭中  atomic.Bool
-	停止   chan struct{}
-	完成   chan struct{}
-	保留停止 chan struct{}
-	保留完成 chan struct{}
-	一次   sync.Once
+	数据库   *sql.DB
+	数据库路径 string
+	日志    *slog.Logger
+	队列    chan U记录
+	丢弃    atomic.Int64
+	关闭中   atomic.Bool
+	停止    chan struct{}
+	完成    chan struct{}
+	保留停止  chan struct{}
+	保留完成  chan struct{}
+	一次    sync.Once
 }
 
 // U打开 建库、迁移并启动异步写协程。
@@ -87,6 +90,10 @@ func 打开(路径 string, 队列容量 int, 日志 *slog.Logger) (*U存储, err
 	if 错误 != nil {
 		return nil, 错误
 	}
+	绝对路径, 错误 := filepath.Abs(路径)
+	if 错误 != nil {
+		return nil, fmt.Errorf("store: resolve database path: %w", 错误)
+	}
 	数据库, 错误 := sql.Open("sqlite", 源)
 	if 错误 != nil {
 		return nil, fmt.Errorf("store: open database: %w", 错误)
@@ -102,13 +109,14 @@ func 打开(路径 string, 队列容量 int, 日志 *slog.Logger) (*U存储, err
 		return nil, 错误
 	}
 	存储 := &U存储{
-		数据库:  数据库,
-		日志:   日志,
-		队列:   make(chan U记录, 队列容量),
-		停止:   make(chan struct{}),
-		完成:   make(chan struct{}),
-		保留停止: make(chan struct{}),
-		保留完成: make(chan struct{}),
+		数据库:   数据库,
+		数据库路径: 绝对路径,
+		日志:    日志,
+		队列:    make(chan U记录, 队列容量),
+		停止:    make(chan struct{}),
+		完成:    make(chan struct{}),
+		保留停止:  make(chan struct{}),
+		保留完成:  make(chan struct{}),
 	}
 	go 存储.写循环()
 	go 存储.保留循环()
@@ -216,8 +224,9 @@ func (存储 *U存储) 写入事务(批次 []U记录) error {
 	defer func() { _ = 事务.Rollback() }()
 	语句, 错误 := 事务.Prepare(`INSERT INTO logs (
 		request_id, ts, site, method, path, query, status, action, category, rule_id,
-		shadow, client_ip, user_agent, duration_ms, request_headers, request_body, matched, seed
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+		shadow, client_ip, user_agent, duration_ms, request_headers, request_body, matched, seed,
+		bytes_in, bytes_out
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if 错误 != nil {
 		return fmt.Errorf("store: prepare log insert: %w", 错误)
 	}
@@ -235,6 +244,7 @@ func (存储 *U存储) 写入事务(批次 []U记录) error {
 			记录.U请求ID, 记录.U时间, 记录.USite, 记录.U方法, 记录.U路径, 记录.U查询,
 			记录.U状态, 记录.U动作, 记录.U类别, 记录.U规则ID, 影子, 记录.U客户端IP,
 			记录.U用户代理, 记录.U耗时毫秒, 记录.U请求头, 记录.U请求体, 记录.U匹配, 种子,
+			记录.U字节入, 记录.U字节出,
 		); 错误 != nil {
 			return fmt.Errorf("store: insert log row: %w", 错误)
 		}
