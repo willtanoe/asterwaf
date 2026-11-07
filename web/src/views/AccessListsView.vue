@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api, ApiError } from "../api/client";
-import type { AccessEntry, AccessList, RateLimitConfig } from "../api/types";
+import type { AccessEntry, AccessList, AccessStatsResponse, RateLimitConfig } from "../api/types";
+import TwoSeriesChart from "../components/TwoSeriesChart.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 import Select from "../components/Select.vue";
 import StateMessage from "../components/StateMessage.vue";
 import { copy } from "../copy";
-import { formatDayTime } from "../format";
+import { formatDayTime, formatNumber } from "../format";
 
 const list = ref<AccessList | null>(null);
 const entries = computed(() => list.value?.entries ?? []);
@@ -165,9 +166,63 @@ async function saveRate(): Promise<void> {
   }
 }
 
+const RANGE_CHOICES = ["15m", "1h", "24h"] as const;
+type RangeKey = (typeof RANGE_CHOICES)[number];
+const range = ref<RangeKey>("24h");
+
+const stats = ref<AccessStatsResponse | null>(null);
+const statsLoading = ref(false);
+
+const entryStats = computed(() => {
+  const map = new Map<string, { hits: number; last_hit: number }>();
+  for (const row of stats.value?.entries ?? []) {
+    map.set(row.rule_id.replace(/^acl:/, ""), row);
+  }
+  return map;
+});
+
+const offenderBusy = ref("");
+
+async function loadStats(): Promise<void> {
+  statsLoading.value = true;
+  try {
+    stats.value = await api.accessStats(range.value);
+  } catch {
+    stats.value = null;
+  } finally {
+    statsLoading.value = false;
+  }
+}
+
+async function denyOffender(ip: string): Promise<void> {
+  offenderBusy.value = ip;
+  message.value = "";
+  try {
+    await api.createAccessEntry({
+      action: "deny",
+      address: ip,
+      note: `Top offender (${range.value})`,
+      enabled: true,
+    });
+    messageOk.value = true;
+    message.value = copy.access.cards.added;
+    await load();
+  } catch {
+    messageOk.value = false;
+    message.value = copy.access.cards.addFailed;
+  } finally {
+    offenderBusy.value = "";
+  }
+}
+
 onMounted(() => {
   void load();
   void loadRate();
+  void loadStats();
+});
+
+watch(range, () => {
+  void loadStats();
 });
 </script>
 
@@ -182,6 +237,103 @@ onMounted(() => {
     </header>
 
     <p v-if="message !== ''" :class="messageOk ? 'action-ok' : 'action-error'" role="status">{{ message }}</p>
+
+    <div class="toolbar">
+      <div class="row">
+        <span class="muted">{{ copy.common.range }}</span>
+        <div class="segmented" role="group" :aria-label="copy.common.range">
+          <button
+            v-for="item in RANGE_CHOICES"
+            :key="item"
+            type="button"
+            :aria-pressed="range === item"
+            @click="range = item"
+          >
+            {{ item }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <section class="grid-kpi" aria-label="Access summary">
+      <div class="kpi-card">
+        <h3 class="kpi-label">{{ copy.access.cards.entries }}</h3>
+        <span class="kpi-value">{{ entries.length }}</span>
+      </div>
+      <div class="kpi-card">
+        <h3 class="kpi-label">{{ copy.access.cards.allow }}</h3>
+        <span class="kpi-value">{{ stats?.allow_count ?? 0 }}</span>
+      </div>
+      <div class="kpi-card">
+        <h3 class="kpi-label">{{ copy.access.cards.deny }}</h3>
+        <span class="kpi-value">{{ stats?.deny_count ?? 0 }}</span>
+      </div>
+      <div class="kpi-card">
+        <h3 class="kpi-label">{{ copy.access.cards.rateLimit }}</h3>
+        <span class="kpi-value kpi-nowrap">{{ stats?.rate_limit_enabled ? `${rate.requests_per_minute}/min` : copy.access.cards.off }}</span>
+        <p class="kpi-meta">{{ stats?.rate_limit_buckets ?? 0 }} {{ copy.access.cards.buckets }}</p>
+      </div>
+      <div class="kpi-card">
+        <h3 class="kpi-label">{{ copy.access.cards.limited }}</h3>
+        <span class="kpi-value">{{ formatNumber(stats?.ratelimited_total ?? 0) }}</span>
+      </div>
+      <div class="kpi-card">
+        <h3 class="kpi-label">{{ copy.access.cards.denied }}</h3>
+        <span class="kpi-value">{{ formatNumber(stats?.denied_requests ?? 0) }}</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header"><h2 class="panel-title">{{ copy.access.cards.limited }}</h2></div>
+      <div class="panel-body">
+        <p v-if="statsLoading" class="muted">{{ copy.common.loading }}</p>
+        <p v-else-if="stats === null" class="muted">{{ copy.common.errorTitle }}</p>
+        <TwoSeriesChart
+          v-else
+          :points="(stats.ratelimited_series ?? []).map((point) => ({ ts: point.ts, a: point.count, b: 0 }))"
+          label-a="429"
+          label-b=""
+          color-a="var(--ratelimited)"
+          color-b="transparent"
+          :format="formatNumber"
+          :chart-label="copy.access.cards.limited"
+          :height="160"
+        />
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header"><h2 class="panel-title">{{ copy.access.cards.offenders }}</h2></div>
+      <StateMessage v-if="statsLoading" kind="loading" :message="copy.common.loading" />
+      <StateMessage v-else-if="(stats?.top_offenders ?? []).length === 0" kind="empty" :message="copy.overview.empty.blocked" />
+      <div v-else class="table-scroll">
+        <table class="overview-table">
+          <thead>
+            <tr>
+              <th scope="col">{{ copy.overview.tables.ip }}</th>
+              <th scope="col" class="numeric">{{ copy.overview.tables.blocked }}</th>
+              <th scope="col">{{ copy.rules.table.actions }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in stats?.top_offenders ?? []" :key="row.ip">
+              <td class="mono">
+                <span class="cell-copy">
+                  <span class="truncate" :title="row.ip">{{ row.ip }}</span>
+                  <CopyButton :value="row.ip" :subject="copy.overview.tables.ip" />
+                </span>
+              </td>
+              <td class="numeric mono">{{ formatNumber(row.requests) }}</td>
+              <td>
+                <button type="button" class="btn btn-small btn-danger" :disabled="offenderBusy === row.ip" @click="denyOffender(row.ip)">
+                  {{ copy.access.cards.addToDeny }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <section class="panel">
       <div class="panel-header">
@@ -240,6 +392,8 @@ onMounted(() => {
                 <th scope="col">{{ copy.access.table.address }}</th>
                 <th scope="col">{{ copy.access.table.note }}</th>
                 <th scope="col">{{ copy.access.table.enabled }}</th>
+                <th scope="col" class="numeric">{{ copy.access.cards.hits }}</th>
+                <th scope="col">{{ copy.access.cards.lastHit }}</th>
                 <th scope="col">{{ copy.access.table.created }}</th>
                 <th scope="col">{{ copy.access.table.source }}</th>
                 <th scope="col">{{ copy.rules.table.actions }}</th>
@@ -256,6 +410,8 @@ onMounted(() => {
                 <td class="mono wrap">{{ entry.address }}</td>
                 <td class="wrap">{{ entry.note }}</td>
                 <td class="mono">{{ entry.enabled ? copy.common.yes : copy.common.no }}</td>
+                <td class="numeric mono">{{ formatNumber(entryStats.get(entry.id)?.hits ?? 0) }}</td>
+                <td class="mono">{{ entryStats.get(entry.id)?.last_hit ? formatDayTime(entryStats.get(entry.id)!.last_hit) : "—" }}</td>
                 <td class="mono">{{ entry.created_at ? formatDayTime(entry.created_at) : "—" }}</td>
                 <td class="mono">
                   <RouterLink v-if="entry.source_log_id" :to="{ name: 'logs', query: { log: String(entry.source_log_id) } }">
@@ -323,6 +479,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.grid-kpi .kpi-card {
+  align-self: start;
+  min-height: 96px;
+}
+
 .seed-note {
   margin: var(--sp-4) 0 0;
   max-width: 560px;

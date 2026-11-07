@@ -176,6 +176,11 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   the top tables, and a latest-events feed with All/Blocked/Recorded
   filters. Raw-log dimensions are marked and only served up to 24h.
 
+- Access lists: range-scoped summary cards (entries, allow/deny counts,
+  rate-limit state with active buckets, 429s in range with a series,
+  denied requests), hits-in-range and last-hit columns on entries, and a
+  recent top-offenders panel with one-click deny.
+
 ## Open items
 
 - None yet.
