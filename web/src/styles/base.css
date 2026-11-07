@@ -341,9 +341,10 @@ table {
 th,
 td {
   text-align: left;
-  padding: var(--sp-8) var(--sp-12);
+  padding: var(--sp-4) var(--sp-12);
+  height: 32px;
   border-bottom: 1px solid var(--border);
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 th {
@@ -435,7 +436,7 @@ tbody tr:hover {
 
 .grid-kpi {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--sp-12);
 }
 

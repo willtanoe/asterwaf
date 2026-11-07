@@ -394,6 +394,10 @@ async function main() {
             consoleMessages.push(`${entry.level}: ${entry.text}`);
           }
         }
+        if (message.method === "Runtime.exceptionThrown") {
+          const detail = message.params.exceptionDetails;
+          consoleMessages.push(`exception: ${detail.text} ${detail.exception?.description ?? ""}`);
+        }
       };
       cdp.listeners.push(onConsole);
       await send("Network.setCookie", {
@@ -445,9 +449,10 @@ async function main() {
                       right: Math.round(r.right),
                       scrollWidth: el.scrollWidth,
                       overflowX: getComputedStyle(el).overflowX,
+                      scrollable: el.closest(".table-scroll, .drawer, .select-list, [data-inner-scroll]") !== null,
                     };
                   })
-                  .filter((item) => item.width > 0 && item.right > root.clientWidth + 1)
+                  .filter((item) => item.width > 0 && !item.scrollable && item.right > root.clientWidth + 1)
                   .sort((a, b) => b.right - a.right)
                   .slice(0, 8);
                 return JSON.stringify({

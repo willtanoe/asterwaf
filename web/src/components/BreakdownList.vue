@@ -24,6 +24,21 @@ const max = computed(() => {
   return value > 0 ? value : 1;
 });
 
+const total = computed(() => {
+  let value = 0;
+  for (const item of props.items) {
+    value += item.count;
+  }
+  return value;
+});
+
+function share(count: number): string {
+  if (total.value === 0) {
+    return "0%";
+  }
+  return `${Math.round((count / total.value) * 100)}%`;
+}
+
 function label(key: string): string {
   return props.actionStyle ? actionLabel(key) : key;
 }
@@ -57,7 +72,7 @@ function barClass(key: string): string {
         <span class="bar-track" aria-hidden="true">
           <span :class="barClass(item.key)" :style="{ width: `${Math.max(2, (item.count / max) * 100)}%` }" />
         </span>
-        <span class="bar-value mono">{{ formatNumber(item.count) }}</span>
+        <span class="bar-value mono" :title="`${formatNumber(item.count)} (${share(item.count)})`">{{ formatNumber(item.count) }} <span class="bar-share">({{ share(item.count) }})</span></span>
       </li>
     </ul>
   </div>
@@ -136,5 +151,10 @@ function barClass(key: string): string {
   color: var(--text-dim);
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bar-share {
+  color: var(--text-faint);
 }
 </style>

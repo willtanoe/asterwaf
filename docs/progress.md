@@ -60,6 +60,18 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   End, Enter, Esc, typeahead); the sidebar becomes a top bar at 768px and
   controls reach 36px touch targets at 390px.
 
+- Overview redesign: the gauge was replaced by a seven-card dense KPI row
+  (value, signed delta, 96px sparkline; Recorded as a secondary figure on the
+  Blocked card; histogram notes moved into tooltips; approximate flag on
+  Unique IPs for rollup ranges). The traffic chart draws per-bucket bars for
+  requests plus a stepped square-marker line for blocked, integer y axis from
+  zero, bucket-start tooltips with block rate, no per-point animation. The
+  status strip collapses to "N/N up" with an expandable list when healthy and
+  shows only problem sites otherwise. Top tables are dense 32px rows with
+  sortable headers (aria-sort), tabular numbers and copy-to-clipboard on IP
+  and path. Polling is 15s overview / 10s latest blocked / 30s status, paused
+  when hidden, with in-flight guards.
+
 ## Open items
 
 - None yet.

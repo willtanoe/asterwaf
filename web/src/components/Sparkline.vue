@@ -35,7 +35,7 @@ function render(): void {
           backgroundColor: "transparent",
           borderWidth: 1.5,
           pointRadius: 0,
-          tension: 0.2,
+          tension: 0,
         },
       ],
     },

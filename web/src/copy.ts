@@ -27,6 +27,8 @@ export const copy = {
     signOut: "Sign out",
     unavailable: "Unavailable",
     stale: "Could not refresh; showing the last successful data.",
+    copy: "Copy",
+    copied: "Copied",
     none: "None",
     yes: "Yes",
     no: "No",
@@ -53,6 +55,8 @@ export const copy = {
     healthy: "up",
     unhealthy: "down",
     unknown: "unknown",
+    showSites: "Show sites",
+    hideSites: "Hide sites",
   },
   overview: {
     title: "Overview",
@@ -70,8 +74,8 @@ export const copy = {
       ratelimited_requests: "Rate limited",
       block_rate: "Block rate",
       unique_ips: "Unique IPs",
-      latency_p50_ms: "Inspection p50",
-      latency_p95_ms: "Inspection p95",
+      latency_p50_ms: "Inspection latency p50",
+      latency_p95_ms: "Inspection latency p95",
     },
     kpiContext: {
       uniqueRaw: "Counted from raw request logs.",
@@ -114,13 +118,12 @@ export const copy = {
     chart: {
       requests: "Requests",
       blocked: "Blocked",
-      aria: "Request and blocked request counts over time",
+      blockRate: "Block rate",
+      aria: "Requests and blocked requests per bucket; bars for requests, a stepped line with square markers for blocked",
     },
     approximate: "Approximate values",
-    gauge: {
-      aria: "Block rate gauge",
-      counters: "Decision counts",
-    },
+    deltaUp: "up",
+    deltaDown: "down",
   },
   pages: {
     logs: {

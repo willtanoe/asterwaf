@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Chart } from "chart.js";
+import { Chart, type ChartDataset } from "chart.js";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { token } from "../charts";
-import { formatDayTime } from "../format";
+import { formatClock, formatNumber } from "../format";
 import { theme } from "../theme";
 import type { SeriesPoint } from "../api/types";
 import { copy } from "../copy";
@@ -13,80 +13,105 @@ const props = defineProps<{
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
-let chart: Chart<"line"> | null = null;
-
-function labels(): string[] {
-  return props.series.map((point) => formatDayTime(point.ts));
-}
+let chart: Chart<"bar" | "line", number[], string> | null = null;
 
 function render(): void {
   if (canvas.value === null) {
     return;
   }
-  const requests = props.series.map((point) => point.requests);
-  const blocked = props.series.map((point) => point.blocked);
   const accent = token("--accent");
   const blockedColor = token("--blocked");
   const grid = token("--border");
   const text = token("--text-dim");
+  const datasets: ChartDataset<"bar" | "line", number[]>[] = [
+    {
+      // Requests: solid bars per bucket.
+      type: "bar",
+      label: copy.overview.chart.requests,
+      data: props.series.map((point) => point.requests),
+      backgroundColor: accent,
+      borderWidth: 0,
+      maxBarThickness: 24,
+      order: 2,
+    },
+    {
+      // Blocked: stepped outline with square markers, never smoothed.
+      type: "line",
+      label: copy.overview.chart.blocked,
+      data: props.series.map((point) => point.blocked),
+      borderColor: blockedColor,
+      backgroundColor: "transparent",
+      borderWidth: 2,
+      stepped: true,
+      pointStyle: "rect" as const,
+      pointRadius: 2.5,
+      pointHoverRadius: 3.5,
+      pointBackgroundColor: blockedColor,
+      tension: 0,
+      order: 1,
+    },
+  ];
+  const scaleColor = { ticks: { color: text, precision: 0 }, grid: { color: grid } };
   if (chart !== null) {
-    chart.data.labels = labels();
-    chart.data.datasets[0].data = requests;
-    chart.data.datasets[1].data = blocked;
-    chart.data.datasets[0].borderColor = accent;
-    chart.data.datasets[1].borderColor = blockedColor;
+    chart.data.labels = props.series.map(() => "");
+    chart.data.datasets = datasets;
     chart.options.scales!.x!.ticks!.color = text;
-    chart.options.scales!.y!.ticks!.color = text;
     chart.options.scales!.x!.grid!.color = grid;
+    chart.options.scales!.y!.ticks!.color = text;
     chart.options.scales!.y!.grid!.color = grid;
+    chart.options.plugins!.legend!.labels!.color = text;
     chart.update("none");
     return;
   }
-  chart = new Chart(canvas.value, {
-    type: "line",
-    data: {
-      labels: labels(),
-      datasets: [
-        {
-          label: copy.overview.chart.requests,
-          data: requests,
-          borderColor: accent,
-          backgroundColor: "transparent",
-          borderWidth: 2,
-          pointRadius: 0,
-          tension: 0.2,
-        },
-        {
-          label: copy.overview.chart.blocked,
-          data: blocked,
-          borderColor: blockedColor,
-          backgroundColor: "transparent",
-          borderWidth: 2,
-          pointRadius: 0,
-          tension: 0.2,
-        },
-      ],
-    },
+  chart = new Chart<"bar" | "line", number[], string>(canvas.value, {
+    type: "bar",
+    data: { labels: props.series.map(() => ""), datasets },
     options: {
       animation: false,
       responsive: true,
       maintainAspectRatio: false,
       interaction: { mode: "index", intersect: false },
       plugins: {
-        legend: {
-          labels: { color: text, boxWidth: 12, boxHeight: 2 },
+        legend: { labels: { color: text, boxWidth: 12, boxHeight: 8 } },
+        tooltip: {
+          enabled: true,
+          callbacks: {
+            title: (items) => {
+              const index = items[0]?.dataIndex ?? 0;
+              const point = props.series[index];
+              return point === undefined ? "" : formatClock(point.ts);
+            },
+            label: (item) => `${item.dataset.label}: ${formatNumber(item.parsed.y ?? 0)}`,
+            footer: (items) => {
+              const point = props.series[items[0]?.dataIndex ?? 0];
+              if (point === undefined || point.requests === 0) {
+                return `${copy.overview.chart.blockRate}: —`;
+              }
+              const rate = (point.blocked / point.requests) * 100;
+              return `${copy.overview.chart.blockRate}: ${rate.toFixed(1)}%`;
+            },
+          },
+          footerColor: text,
         },
-        tooltip: { enabled: true },
       },
       scales: {
         x: {
-          ticks: { color: text, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
+          ticks: {
+            color: text,
+            maxRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: 8,
+            // Labels show the bucket start time; the raw ts is only for tooltips.
+            callback: (_value, index) => {
+              const point = props.series[index as number];
+              return point === undefined ? "" : formatClock(point.ts);
+            },
+          },
           grid: { color: grid },
         },
         y: {
           beginAtZero: true,
-          ticks: { color: text, precision: 0 },
-          grid: { color: grid },
+          ...scaleColor,
         },
       },
     },
@@ -112,7 +137,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .chart-wrap {
-  height: 260px;
+  height: 240px;
   min-width: 0;
 }
 </style>

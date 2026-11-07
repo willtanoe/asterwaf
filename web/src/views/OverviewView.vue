@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { api } from "../api/client";
 import type { LogEntry, OverviewResponse, SiteView, StatusResponse } from "../api/types";
 import BreakdownList from "../components/BreakdownList.vue";
-import Gauge from "../components/Gauge.vue";
+import CopyButton from "../components/CopyButton.vue";
 import KpiCard from "../components/KpiCard.vue";
 import Select from "../components/Select.vue";
 import StateMessage from "../components/StateMessage.vue";
@@ -26,6 +26,10 @@ type RangeKey = (typeof ranges)[number];
 const range = ref<RangeKey>("15m");
 const site = ref("");
 
+const OVERVIEW_INTERVAL = 15000;
+const LATEST_INTERVAL = 10000;
+const STATUS_INTERVAL = 30000;
+
 const sites = ref<SiteView[]>([]);
 const siteOptions = computed(() => [
   { value: "", label: copy.common.allSites },
@@ -45,21 +49,9 @@ const updatedAt = ref<number | null>(null);
 let overviewTimer = 0;
 let statusTimer = 0;
 let latestTimer = 0;
-
-const kpiDefs = [
-  { key: "unique_ips", color: "--accent", format: formatNumber },
-  { key: "latency_p50_ms", color: "--text-dim", format: formatLatency },
-  { key: "latency_p95_ms", color: "--text-dim", format: formatLatency },
-] as const;
-
-const heroCounters = computed(() => [
-  { key: "total", tone: "total", label: copy.overview.kpis.total_requests, value: kpiValue("total_requests", formatNumber) },
-  { key: "blocked", tone: "blocked", label: copy.overview.kpis.blocked_requests, value: kpiValue("blocked_requests", formatNumber) },
-  { key: "shadow", tone: "shadow", label: copy.overview.kpis.shadow_requests, value: kpiValue("shadow_requests", formatNumber) },
-  { key: "ratelimited", tone: "ratelimited", label: copy.overview.kpis.ratelimited_requests, value: kpiValue("ratelimited_requests", formatNumber) },
-]);
-
-const blockRateValue = computed<number | null>(() => overview.value?.kpis.block_rate?.value ?? null);
+let overviewInFlight = false;
+let statusInFlight = false;
+let latestInFlight = false;
 
 const sectionState = computed<"ready" | "loading" | "error">(() => {
   if (overview.value !== null) {
@@ -90,9 +82,12 @@ const kpiDelta = (key: string): number | null => overview.value?.kpis[key]?.delt
 
 const kpiSeries = (key: string): number[] | undefined => overview.value?.kpis[key]?.series;
 
-const kpiContext = (key: string): string => {
+// Definitions live in tooltips so permanent body text stays numeric.
+const kpiNote = (key: string): string => {
   if (key === "unique_ips") {
-    return overview.value?.range.approximate ? copy.overview.kpiContext.uniqueApprox : copy.overview.kpiContext.uniqueRaw;
+    return overview.value?.range.approximate
+      ? copy.overview.kpiContext.uniqueApprox
+      : copy.overview.kpiContext.uniqueRaw;
   }
   if (key === "latency_p50_ms" || key === "latency_p95_ms") {
     return copy.overview.kpiContext.latency;
@@ -103,7 +98,106 @@ const kpiContext = (key: string): string => {
   return "";
 };
 
+type KpiKey = keyof typeof copy.overview.kpis;
+
+interface KpiDef {
+  key: KpiKey;
+  color: string;
+  format: (value: number) => string;
+  secondary?: () => { label: string; value: string } | undefined;
+  flag?: () => string | undefined;
+}
+
+const kpiDefs: KpiDef[] = [
+  { key: "total_requests", color: "--accent", format: formatNumber },
+  {
+    key: "blocked_requests",
+    color: "--blocked",
+    format: formatNumber,
+    secondary: () =>
+      overview.value?.kpis.shadow_requests === undefined
+        ? undefined
+        : { label: copy.overview.kpis.shadow_requests, value: kpiValue("shadow_requests", formatNumber) },
+  },
+  { key: "block_rate", color: "--accent", format: formatPercent },
+  { key: "ratelimited_requests", color: "--ratelimited", format: formatNumber },
+  {
+    key: "unique_ips",
+    color: "--accent",
+    format: formatNumber,
+    flag: () => (overview.value?.range.approximate === true ? copy.overview.approximate.toLowerCase() : undefined),
+  },
+  { key: "latency_p50_ms", color: "--text-dim", format: formatLatency },
+  { key: "latency_p95_ms", color: "--text-dim", format: formatLatency },
+];
+
+type SortKey = "key" | "requests" | "blocked";
+interface SortState {
+  key: SortKey;
+  dir: "asc" | "desc";
+}
+
+const ipSort = ref<SortState>({ key: "requests", dir: "desc" });
+const pathSort = ref<SortState>({ key: "requests", dir: "desc" });
+
+function toggleSort(state: SortState, key: SortKey): SortState {
+  if (state.key === key) {
+    return { key, dir: state.dir === "desc" ? "asc" : "desc" };
+  }
+  return { key, dir: "desc" };
+}
+
+function sortRows<T>(
+  rows: T[],
+  state: SortState,
+  value: (row: T) => string,
+  numeric: (row: T, key: "requests" | "blocked") => number,
+): T[] {
+  const sorted = [...rows].sort((left, right) => {
+    switch (state.key) {
+      case "requests":
+        return numeric(left, "requests") - numeric(right, "requests");
+      case "blocked":
+        return numeric(left, "blocked") - numeric(right, "blocked");
+      default:
+        return value(left).localeCompare(value(right));
+    }
+  });
+  if (state.dir === "desc") {
+    sorted.reverse();
+  }
+  return sorted;
+}
+
+const sortedIps = computed(() =>
+  sortRows(
+    topIps.value,
+    ipSort.value,
+    (row) => row.ip,
+    (row, key) => row[key],
+  ),
+);
+const sortedPaths = computed(() =>
+  sortRows(
+    topPaths.value,
+    pathSort.value,
+    (row) => row.path,
+    (row, key) => row[key],
+  ),
+);
+
+const ariaSort = (state: SortState, key: SortKey): "ascending" | "descending" | "none" => {
+  if (state.key !== key) {
+    return "none";
+  }
+  return state.dir === "asc" ? "ascending" : "descending";
+};
+
 async function loadOverview(): Promise<void> {
+  if (overviewInFlight) {
+    return;
+  }
+  overviewInFlight = true;
   overviewLoading.value = overview.value === null;
   try {
     overview.value = await api.overview(range.value, site.value);
@@ -112,11 +206,16 @@ async function loadOverview(): Promise<void> {
   } catch {
     overviewError.value = true;
   } finally {
+    overviewInFlight = false;
     overviewLoading.value = false;
   }
 }
 
 async function loadStatus(): Promise<void> {
+  if (statusInFlight) {
+    return;
+  }
+  statusInFlight = true;
   statusLoading.value = status.value === null;
   try {
     status.value = await api.status();
@@ -124,11 +223,16 @@ async function loadStatus(): Promise<void> {
   } catch {
     statusError.value = true;
   } finally {
+    statusInFlight = false;
     statusLoading.value = false;
   }
 }
 
 async function loadLatest(): Promise<void> {
+  if (latestInFlight) {
+    return;
+  }
+  latestInFlight = true;
   latestLoading.value = latest.value.length === 0;
   try {
     const query = new URLSearchParams({ action: "block", limit: "10" });
@@ -141,16 +245,8 @@ async function loadLatest(): Promise<void> {
   } catch {
     latestError.value = true;
   } finally {
+    latestInFlight = false;
     latestLoading.value = false;
-  }
-}
-
-async function loadSites(): Promise<void> {
-  try {
-    const response = await api.sites();
-    sites.value = response.sites;
-  } catch {
-    sites.value = [];
   }
 }
 
@@ -177,17 +273,17 @@ onMounted(() => {
     if (!document.hidden) {
       void loadOverview();
     }
-  }, 30000);
+  }, OVERVIEW_INTERVAL);
   latestTimer = window.setInterval(() => {
     if (!document.hidden) {
       void loadLatest();
     }
-  }, 15000);
+  }, LATEST_INTERVAL);
   statusTimer = window.setInterval(() => {
     if (!document.hidden) {
       void loadStatus();
     }
-  }, 10000);
+  }, STATUS_INTERVAL);
   document.addEventListener("visibilitychange", onVisibility);
 });
 
@@ -206,6 +302,15 @@ watch(site, () => {
 watch(range, () => {
   void loadOverview();
 });
+
+async function loadSites(): Promise<void> {
+  try {
+    const response = await api.sites();
+    sites.value = response.sites;
+  } catch {
+    sites.value = [];
+  }
+}
 </script>
 
 <template>
@@ -240,7 +345,7 @@ watch(range, () => {
             @update:model-value="site = $event"
           />
         </div>
-        <span v-if="updatedAt !== null" class="faint mono">
+        <span v-if="updatedAt !== null" class="updated">
           {{ copy.common.updated }} {{ formatClock(updatedAt) }}
         </span>
       </div>
@@ -249,40 +354,6 @@ watch(range, () => {
     <StatusBar :status="status" :loading="statusLoading" :error="statusError" />
 
     <p v-if="overviewError && overview !== null" class="stale" role="status">{{ copy.common.stale }}</p>
-
-    <section class="panel" aria-label="Block rate">
-      <div class="panel-header">
-        <h2 class="panel-title">{{ copy.overview.kpis.block_rate }}</h2>
-        <span v-if="overview?.range.approximate" class="badge badge-unknown">{{ copy.overview.approximate }}</span>
-      </div>
-      <div class="panel-body hero-body">
-        <StateMessage
-          v-if="sectionState === 'loading'"
-          kind="loading"
-          :message="copy.common.loading"
-        />
-        <StateMessage
-          v-else-if="sectionState === 'error'"
-          kind="error"
-          :message="copy.common.errorTitle"
-          @retry="loadOverview"
-        />
-        <template v-else>
-          <Gauge
-            class="hero-gauge"
-            :value="blockRateValue"
-            :display="kpiValue('block_rate', formatPercent)"
-            :label="copy.overview.kpis.block_rate"
-          />
-          <dl class="hero-counters" :aria-label="copy.overview.gauge.counters">
-            <div v-for="counter in heroCounters" :key="counter.key" class="counter" :class="`counter-${counter.tone}`">
-              <dt>{{ counter.label }}</dt>
-              <dd class="mono">{{ counter.value }}</dd>
-            </div>
-          </dl>
-        </template>
-      </div>
-    </section>
 
     <section class="grid-kpi" aria-label="Key metrics">
       <KpiCard
@@ -293,7 +364,9 @@ watch(range, () => {
         :delta="kpiDelta(definition.key)"
         :series="kpiSeries(definition.key)"
         :color="definition.color"
-        :context="kpiContext(definition.key)"
+        :note="kpiNote(definition.key)"
+        :flag="overview !== null && definition.flag !== undefined ? definition.flag() : undefined"
+        :secondary="overview !== null && definition.secondary !== undefined ? definition.secondary() : undefined"
         :state="sectionState"
       />
     </section>
@@ -370,24 +443,35 @@ watch(range, () => {
       </div>
     </section>
 
-    <section class="grid-3">
+    <section class="grid-2">
       <div class="panel">
         <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections.topIps }}</h2></div>
         <StateMessage v-if="overviewLoading && overview === null" kind="loading" :message="copy.common.loading" />
         <StateMessage v-else-if="overviewError && overview === null" kind="error" :message="copy.common.errorTitle" @retry="loadOverview" />
         <StateMessage v-else-if="topIps.length === 0" kind="empty" :message="copy.overview.empty.ips" />
         <div v-else class="table-scroll">
-          <table>
+          <table class="overview-table">
             <thead>
               <tr>
-                <th scope="col">{{ copy.overview.tables.ip }}</th>
-                <th scope="col" class="numeric" aria-sort="none">{{ copy.overview.tables.requests }}</th>
-                <th scope="col" class="numeric" aria-sort="none">{{ copy.overview.tables.blocked }}</th>
+                <th scope="col" :aria-sort="ariaSort(ipSort, 'key')">
+                  <button type="button" class="sort-btn" @click="ipSort = toggleSort(ipSort, 'key')">{{ copy.overview.tables.ip }}</button>
+                </th>
+                <th scope="col" class="numeric" :aria-sort="ariaSort(ipSort, 'requests')">
+                  <button type="button" class="sort-btn" @click="ipSort = toggleSort(ipSort, 'requests')">{{ copy.overview.tables.requests }}</button>
+                </th>
+                <th scope="col" class="numeric" :aria-sort="ariaSort(ipSort, 'blocked')">
+                  <button type="button" class="sort-btn" @click="ipSort = toggleSort(ipSort, 'blocked')">{{ copy.overview.tables.blocked }}</button>
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in topIps" :key="row.ip">
-                <td class="mono wrap">{{ row.ip }}</td>
+              <tr v-for="row in sortedIps" :key="row.ip">
+                <td class="mono">
+                  <span class="cell-copy">
+                    <span class="truncate" :title="row.ip">{{ row.ip }}</span>
+                    <CopyButton :value="row.ip" :subject="copy.overview.tables.ip" />
+                  </span>
+                </td>
                 <td class="numeric mono">{{ formatNumber(row.requests) }}</td>
                 <td class="numeric mono">{{ formatNumber(row.blocked) }}</td>
               </tr>
@@ -402,17 +486,28 @@ watch(range, () => {
         <StateMessage v-else-if="overviewError && overview === null" kind="error" :message="copy.common.errorTitle" @retry="loadOverview" />
         <StateMessage v-else-if="topPaths.length === 0" kind="empty" :message="copy.overview.empty.paths" />
         <div v-else class="table-scroll">
-          <table>
+          <table class="overview-table">
             <thead>
               <tr>
-                <th scope="col">{{ copy.overview.tables.path }}</th>
-                <th scope="col" class="numeric" aria-sort="none">{{ copy.overview.tables.requests }}</th>
-                <th scope="col" class="numeric" aria-sort="none">{{ copy.overview.tables.blocked }}</th>
+                <th scope="col" :aria-sort="ariaSort(pathSort, 'key')">
+                  <button type="button" class="sort-btn" @click="pathSort = toggleSort(pathSort, 'key')">{{ copy.overview.tables.path }}</button>
+                </th>
+                <th scope="col" class="numeric" :aria-sort="ariaSort(pathSort, 'requests')">
+                  <button type="button" class="sort-btn" @click="pathSort = toggleSort(pathSort, 'requests')">{{ copy.overview.tables.requests }}</button>
+                </th>
+                <th scope="col" class="numeric" :aria-sort="ariaSort(pathSort, 'blocked')">
+                  <button type="button" class="sort-btn" @click="pathSort = toggleSort(pathSort, 'blocked')">{{ copy.overview.tables.blocked }}</button>
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in topPaths" :key="row.path">
-                <td class="mono wrap">{{ row.path }}</td>
+              <tr v-for="row in sortedPaths" :key="row.path">
+                <td class="mono">
+                  <span class="cell-copy">
+                    <span class="truncate" :title="row.path">{{ row.path }}</span>
+                    <CopyButton :value="row.path" :subject="copy.overview.tables.path" />
+                  </span>
+                </td>
                 <td class="numeric mono">{{ formatNumber(row.requests) }}</td>
                 <td class="numeric mono">{{ formatNumber(row.blocked) }}</td>
               </tr>
@@ -421,13 +516,15 @@ watch(range, () => {
         </div>
       </div>
 
-      <div class="panel">
-        <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections.latestBlocked }}</h2></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header"><h2 class="panel-title">{{ copy.overview.sections.latestBlocked }}</h2></div>
         <StateMessage v-if="latestLoading && latest.length === 0" kind="loading" :message="copy.common.loading" />
         <StateMessage v-else-if="latestError && latest.length === 0" kind="error" :message="copy.common.errorTitle" @retry="loadLatest" />
         <StateMessage v-else-if="latest.length === 0" kind="empty" :message="copy.overview.empty.blocked" />
         <div v-else class="table-scroll">
-          <table>
+          <table class="overview-table">
             <thead>
               <tr>
                 <th scope="col">{{ copy.overview.tables.time }}</th>
@@ -442,81 +539,43 @@ watch(range, () => {
               <tr v-for="row in latest" :key="row.id">
                 <td class="mono">{{ formatDayTime(row.ts) }}</td>
                 <td><span :class="actionClass(row.action)">{{ actionLabel(row.action) }}</span></td>
-                <td class="mono wrap">{{ row.rule_id }}</td>
-                <td class="mono wrap">{{ row.path }}</td>
-                <td class="mono wrap">{{ row.client_ip }}</td>
+                <td class="mono"><span class="truncate block-cell" :title="row.rule_id">{{ row.rule_id }}</span></td>
+                <td class="mono">
+                  <span class="cell-copy">
+                    <span class="truncate" :title="row.path">{{ row.path }}</span>
+                    <CopyButton :value="row.path" :subject="copy.overview.tables.path" />
+                  </span>
+                </td>
+                <td class="mono">
+                  <span class="cell-copy">
+                    <span class="truncate" :title="row.client_ip">{{ row.client_ip }}</span>
+                    <CopyButton :value="row.client_ip" :subject="copy.overview.tables.ip" />
+                  </span>
+                </td>
                 <td class="numeric mono">{{ row.status }}</td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
     </section>
   </div>
 </template>
 
 <style scoped>
+.overview-table td {
+  white-space: nowrap;
+}
+
 .stale {
   margin: 0;
   color: var(--recorded);
   font-size: var(--fs-13);
 }
 
-.hero-body {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-24);
-  flex-wrap: wrap;
-}
-
-.hero-gauge {
-  flex: 1 1 240px;
-}
-
-.hero-counters {
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sp-12);
-  flex: 2 1 300px;
-}
-
-.counter {
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--border-strong);
-  border-radius: var(--radius);
-  padding: var(--sp-12) var(--sp-16);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
-  min-width: 0;
-}
-
-.counter dt {
+.updated {
   color: var(--text-dim);
   font-size: var(--fs-13);
-}
-
-.counter dd {
-  margin: 0;
-  font-size: var(--fs-20);
-  overflow-wrap: anywhere;
-}
-
-.counter-total {
-  border-left-color: var(--accent);
-}
-
-.counter-blocked {
-  border-left-color: var(--blocked);
-}
-
-.counter-shadow {
-  border-left-color: var(--recorded);
-}
-
-.counter-ratelimited {
-  border-left-color: var(--ratelimited);
+  font-variant-numeric: tabular-nums;
 }
 
 .site-select {
@@ -526,12 +585,41 @@ watch(range, () => {
 
 .breakdown-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: var(--sp-16);
 }
 
 .bucket-note {
   margin: var(--sp-8) 0 0;
+}
+
+.sort-btn {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+}
+
+.sort-btn:hover {
+  color: var(--text);
+}
+
+.cell-copy {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+.cell-copy .truncate {
+  flex: 1 1 auto;
+}
+
+.block-cell {
+  display: block;
+  max-width: 140px;
 }
 
 @media (max-width: 640px) {
