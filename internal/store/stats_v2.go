@@ -385,9 +385,9 @@ func (存储 *U存储) U日志摘要(上下文 context.Context, 查询 U日志�
 	条件, 参数 := 日志查询条件(查询)
 	结果 := U日志摘要结果{U序列: []U日志摘要点{}}
 	行列表, 错误 := 存储.数据库.QueryContext(上下文, `SELECT COUNT(*),
-		SUM(CASE WHEN action = 'block' THEN 1 ELSE 0 END),
-		SUM(CASE WHEN action = 'shadow' THEN 1 ELSE 0 END),
-		COUNT(DISTINCT client_ip), MIN(ts), MAX(ts) FROM logs `+条件, 参数...)
+		COALESCE(SUM(CASE WHEN action = 'block' THEN 1 ELSE 0 END), 0),
+		COALESCE(SUM(CASE WHEN action = 'shadow' THEN 1 ELSE 0 END), 0),
+		COUNT(DISTINCT client_ip), COALESCE(MIN(ts), 0), COALESCE(MAX(ts), 0) FROM logs `+条件, 参数...)
 	if 错误 != nil {
 		return 结果, fmt.Errorf("store: log summary: %w", 错误)
 	}
