@@ -191,6 +191,10 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   last-matched columns with per-rule sparklines, a noisy marker above 50
   percent of hits, and matched-sample history in the editor drawer.
 
+- Logs: a summary strip above the table shows rows, blocked, recorded,
+  unique IPs and the time span for the current filter, with a small
+  rows/blocked histogram of the same filter served by /api/logs/summary.
+
 ## Open items
 
 - None yet.

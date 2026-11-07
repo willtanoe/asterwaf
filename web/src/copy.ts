@@ -295,6 +295,14 @@ export const copy = {
     seed: "Seed",
     removeFilter: "Remove filter",
     sourceLog: "Source log",
+    summary: {
+      rows: "Rows",
+      blocked: "Blocked",
+      recorded: "Recorded",
+      uniqueIps: "Unique IPs",
+      span: "Span",
+      histogram: "Filtered requests over time",
+    },
   },
   rules: {
     title: "Rules",

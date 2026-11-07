@@ -2,17 +2,28 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../api/client";
-import type { LogEntry, SiteView } from "../api/types";
+import type { LogEntry, LogSummary, SiteView } from "../api/types";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 import CopyButton from "../components/CopyButton.vue";
 import Drawer from "../components/Drawer.vue";
+import TwoSeriesChart from "../components/TwoSeriesChart.vue";
 import Select from "../components/Select.vue";
 import StateMessage from "../components/StateMessage.vue";
 import { copy } from "../copy";
-import { actionClass, actionLabel, formatDayTime } from "../format";
+import { actionClass, actionLabel, formatDayTime, formatNumber } from "../format";
 
 const route = useRoute();
 const router = useRouter();
+
+const summary = ref<LogSummary | null>(null);
+
+async function loadSummary(): Promise<void> {
+  try {
+    summary.value = await api.logSummary(buildQuery());
+  } catch {
+    summary.value = null;
+  }
+}
 
 type SortKey = "ts" | "status" | "duration_ms";
 type SortDirection = "asc" | "desc";
@@ -117,6 +128,7 @@ function writeQueryFilters(): void {
 function applyFilters(): void {
   writeQueryFilters();
   void load(true);
+  void loadSummary();
 }
 
 function removeChip(key: keyof typeof filters): void {
@@ -379,6 +391,7 @@ onMounted(() => {
   void loadSites();
   void load(true);
   void openFromQuery();
+  void loadSummary();
 });
 </script>
 
@@ -449,6 +462,30 @@ onMounted(() => {
         </button>
       </span>
     </div>
+
+    <div v-if="summary !== null && summary.rows > 0" class="system-strip" aria-label="Log summary">
+      <span class="system-item"><span class="system-label">{{ copy.logs.summary.rows }}</span><span class="mono">{{ formatNumber(summary.rows) }}</span></span>
+      <span class="system-item"><span class="system-label">{{ copy.logs.summary.blocked }}</span><span class="mono">{{ formatNumber(summary.blocked) }}</span></span>
+      <span class="system-item"><span class="system-label">{{ copy.logs.summary.recorded }}</span><span class="mono">{{ formatNumber(summary.recorded) }}</span></span>
+      <span class="system-item"><span class="system-label">{{ copy.logs.summary.uniqueIps }}</span><span class="mono">{{ formatNumber(summary.unique_ips) }}</span></span>
+      <span class="system-item"><span class="system-label">{{ copy.logs.summary.span }}</span><span class="mono">{{ formatDayTime(summary.first_ts) }} – {{ formatDayTime(summary.last_ts) }}</span></span>
+    </div>
+
+    <section v-if="summary !== null && summary.series.length > 1" class="panel">
+      <div class="panel-header"><h2 class="panel-title">{{ copy.logs.summary.histogram }}</h2></div>
+      <div class="panel-body">
+        <TwoSeriesChart
+          :points="summary.series.map((point) => ({ ts: point.ts, a: point.rows, b: point.blocked }))"
+          label-a="rows"
+          label-b="blocked"
+          color-a="var(--accent)"
+          color-b="var(--blocked)"
+          :format="formatNumber"
+          :chart-label="copy.logs.summary.histogram"
+          :height="140"
+        />
+      </div>
+    </section>
 
     <div class="panel">
       <StateMessage v-if="loading" kind="loading" :message="copy.common.loading" />
@@ -706,6 +743,31 @@ onMounted(() => {
   overflow-wrap: anywhere;
   max-height: 240px;
   overflow-y: auto;
+}
+
+.system-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4) var(--sp-24);
+  padding: var(--sp-8) var(--sp-12);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: var(--fs-12);
+}
+
+.system-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  white-space: nowrap;
+}
+
+.system-label {
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .action-ok {
