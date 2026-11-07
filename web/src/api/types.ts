@@ -198,11 +198,21 @@ export interface LogSummary {
   series: { ts: number; rows: number; blocked: number }[];
 }
 
+export interface RuleStatsRow {
+  rule_id: string;
+  category: string;
+  hits: number;
+  blocked: number;
+  recorded: number;
+  last_seen: number;
+  series: number[];
+}
+
 export interface RuleStatsResponse {
   range: { from: string; to: string; bucket: string; approximate: boolean; notes: string[] };
   raw_available: boolean;
   total_rules: number;
-  rules: TopRuleRow[];
+  rules: RuleStatsRow[];
 }
 
 export interface AccessStatsResponse {

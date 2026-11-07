@@ -186,6 +186,11 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   audit mode changes, recent blocked requests); host and upstream truncate
   instead of folding.
 
+- Rules: summary strip (total, enabled, disabled, custom, hits in range,
+  zero hits), a range selector, category/source/enabled filters, hits and
+  last-matched columns with per-rule sparklines, a noisy marker above 50
+  percent of hits, and matched-sample history in the editor drawer.
+
 ## Open items
 
 - None yet.

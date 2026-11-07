@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api, ApiError } from "../api/client";
-import type { Rule, RuleMatch, RuleVersion } from "../api/types";
+import type { Rule, RuleMatch, RuleStatsRow, RuleVersion } from "../api/types";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 import Drawer from "../components/Drawer.vue";
 import Select from "../components/Select.vue";
+import Sparkline from "../components/Sparkline.vue";
 import StateMessage from "../components/StateMessage.vue";
+import type { RuleStatsResponse } from "../api/types";
 import { copy } from "../copy";
-import { formatDayTime } from "../format";
+import { formatDayTime, formatNumber } from "../format";
 
 interface RuleDraft {
   id: string;
@@ -47,6 +49,101 @@ const rollingBack = ref(false);
 
 const pendingDelete = ref<Rule | null>(null);
 const pendingRollback = ref<RuleVersion | null>(null);
+
+const RANGE_CHOICES = ["15m", "1h", "24h"] as const;
+type StatsRange = (typeof RANGE_CHOICES)[number];
+const statsRange = ref<StatsRange>("24h");
+const stats = ref<RuleStatsResponse | null>(null);
+const statsLoading = ref(false);
+
+const filterCategory = ref("");
+const filterSource = ref("");
+const filterEnabled = ref("");
+
+const statByKey = computed(() => {
+  const map = new Map<string, RuleStatsRow>();
+  for (const row of stats.value?.rules ?? []) {
+    map.set(row.rule_id, row);
+  }
+  return map;
+});
+
+const totalHits = computed(() => (stats.value?.rules ?? []).reduce((sum, row) => sum + row.hits, 0));
+
+const zeroHits = computed(() => {
+  const hit = statByKey.value;
+  return (rules.value ?? []).filter((rule) => (hit.get(rule.id)?.hits ?? 0) === 0).length;
+});
+
+const enabledCount = computed(() => (rules.value ?? []).filter((rule) => rule.enabled).length);
+
+const customCount = computed(() => (rules.value ?? []).filter((rule) => rule.source === "custom").length);
+
+function isNoisy(rule: Rule): boolean {
+  const row = statByKey.value.get(rule.id);
+  if (row === undefined || totalHits.value === 0) {
+    return false;
+  }
+  return row.hits / totalHits.value > 0.5;
+}
+
+const visibleRules = computed(() =>
+  (rules.value ?? []).filter((rule) => {
+    if (filterCategory.value !== "" && rule.category !== filterCategory.value) {
+      return false;
+    }
+    if (filterSource.value !== "" && rule.source !== filterSource.value) {
+      return false;
+    }
+    if (filterEnabled.value === "on" && !rule.enabled) {
+      return false;
+    }
+    if (filterEnabled.value === "off" && rule.enabled) {
+      return false;
+    }
+    return true;
+  }),
+);
+
+const categoryOptions = computed(() => [
+  { value: "", label: copy.rules.filters.any },
+  ...categories.map((category) => ({ value: category, label: category })),
+]);
+const sourceOptions = computed(() => [
+  { value: "", label: copy.rules.filters.any },
+  { value: "default", label: "default" },
+  { value: "custom", label: "custom" },
+]);
+const enabledOptions = computed(() => [
+  { value: "", label: copy.rules.filters.any },
+  { value: "on", label: copy.rules.filters.on },
+  { value: "off", label: copy.rules.filters.off },
+]);
+
+const samples = ref("");
+const samplesLoading = ref(false);
+
+async function loadSamples(ruleId: string): Promise<void> {
+  samplesLoading.value = true;
+  samples.value = "";
+  try {
+    const response = await api.logs(new URLSearchParams({ rule_id: ruleId, limit: "5" }).toString());
+    samples.value = response.items
+      .map((row) => `${formatDayTime(row.ts)} ${row.method} ${row.path} — ${row.client_ip}`)
+      .join("\n");
+  } catch {
+    samples.value = copy.rules.samples.rangeError;
+  } finally {
+    samplesLoading.value = false;
+  }
+}
+
+watch([() => draft.value?.id, () => statsRange.value], () => {
+  const id = draft.value?.id;
+  if (id !== undefined && id !== "") {
+    void loadSamples(id);
+  }
+}, { immediate: true });
 
 const editor = reactive<RuleDraft>({
   id: "",
@@ -125,8 +222,20 @@ function closeEditor(): void {
   testMessage.value = "";
 }
 
+async function loadStats(): Promise<void> {
+  statsLoading.value = true;
+  try {
+    stats.value = await api.ruleStats(statsRange.value);
+  } catch {
+    stats.value = null;
+  } finally {
+    statsLoading.value = false;
+  }
+}
+
 async function load(): Promise<void> {
   loading.value = true;
+  void loadStats();
   error.value = false;
   versionsLoading.value = true;
   versionsError.value = false;
@@ -285,6 +394,38 @@ onMounted(() => {
 
     <p v-if="message !== ''" :class="messageOk ? 'action-ok' : 'action-error'" role="status">{{ message }}</p>
 
+    <div class="system-strip" aria-label="Ruleset summary">
+      <span class="system-item"><span class="system-label">{{ copy.rules.strip.total }}</span><span class="mono">{{ rules.length }}</span></span>
+      <span class="system-item"><span class="system-label">{{ copy.rules.strip.enabled }}</span><span class="mono">{{ enabledCount }}</span></span>
+      <span class="system-item"><span class="system-label">{{ copy.rules.strip.disabled }}</span><span class="mono">{{ rules.length - enabledCount }}</span></span>
+      <span class="system-item"><span class="system-label">{{ copy.rules.strip.custom }}</span><span class="mono">{{ customCount }}</span></span>
+      <span class="system-item"><span class="system-label">{{ copy.rules.strip.hits }}</span><span class="mono">{{ formatNumber(totalHits) }}</span></span>
+      <span class="system-item"><span class="system-label">{{ copy.rules.strip.zeroHits }}</span><span class="mono">{{ zeroHits }}</span></span>
+      <div class="row">
+        <span class="muted">{{ copy.common.range }}</span>
+        <div class="segmented" role="group" :aria-label="copy.common.range">
+          <button
+            v-for="item in RANGE_CHOICES"
+            :key="item"
+            type="button"
+            :aria-pressed="statsRange === item"
+            @click="statsRange = item"
+          >
+            {{ item }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row filter-row">
+      <span class="muted">{{ copy.rules.filters.category }}</span>
+      <Select class="filter-select" :model-value="filterCategory" :options="categoryOptions" :label="copy.rules.filters.category" @update:model-value="filterCategory = $event" />
+      <span class="muted">{{ copy.rules.filters.source }}</span>
+      <Select class="filter-select" :model-value="filterSource" :options="sourceOptions" :label="copy.rules.filters.source" @update:model-value="filterSource = $event" />
+      <span class="muted">{{ copy.rules.filters.enabled }}</span>
+      <Select class="filter-select" :model-value="filterEnabled" :options="enabledOptions" :label="copy.rules.filters.enabled" @update:model-value="filterEnabled = $event" />
+    </div>
+
     <div class="panel">
       <StateMessage v-if="loading" kind="loading" :message="copy.common.loading" />
       <StateMessage v-else-if="error" kind="error" :message="copy.rules.loadFailed" @retry="load" />
@@ -297,16 +438,19 @@ onMounted(() => {
               <th scope="col">{{ copy.rules.table.category }}</th>
               <th scope="col">{{ copy.rules.table.enabled }}</th>
               <th scope="col">{{ copy.rules.table.source }}</th>
+              <th scope="col" class="numeric">{{ copy.rules.table.hits }}</th>
+              <th scope="col">{{ copy.rules.table.lastMatched }}</th>
+              <th scope="col">{{ copy.rules.table.trend }}</th>
               <th scope="col">{{ copy.rules.table.updated }}</th>
               <th scope="col" class="numeric">{{ copy.rules.table.version }}</th>
               <th scope="col">{{ copy.rules.table.actions }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="rule in rules" :key="rule.id">
+            <tr v-for="rule in visibleRules" :key="rule.id">
               <td class="mono">
                 <span class="cell-stack">
-                  <span class="truncate block-cell" :title="`${rule.id} — ${rule.name}`">{{ rule.id }}</span>
+                  <span class="truncate block-cell" :title="`${rule.id} — ${rule.name}`">{{ rule.id }}<span v-if="isNoisy(rule)" class="noisy-badge">{{ copy.rules.strip.noisy }}</span></span>
                   <span class="rule-name truncate block-cell" :title="rule.name">{{ rule.name }}</span>
                 </span>
               </td>
@@ -324,6 +468,18 @@ onMounted(() => {
                 </button>
               </td>
               <td class="mono">{{ rule.source }}</td>
+              <td class="numeric mono">{{ formatNumber(statByKey.get(rule.id)?.hits ?? 0) }}</td>
+              <td class="mono">{{ statByKey.get(rule.id)?.last_seen ? formatDayTime(statByKey.get(rule.id)!.last_seen) : "—" }}</td>
+              <td>
+                <Sparkline
+                  v-if="(statByKey.get(rule.id)?.series?.length ?? 0) > 1"
+                  :values="statByKey.get(rule.id)!.series"
+                  color="--accent"
+                  :label="rule.id"
+                  class="rule-spark"
+                />
+                <span v-else class="muted">—</span>
+              </td>
               <td class="mono">{{ formatDayTime(rule.updated_at) }}</td>
               <td class="numeric mono">v{{ rule.defaults_version }}</td>
               <td>
@@ -474,6 +630,12 @@ onMounted(() => {
           <p v-if="draftMatch !== null" class="hint">
             {{ copy.rules.editor.draftCheck }}: <code class="match-fragment">{{ draftMatch }}</code>
           </p>
+          <div class="test-block">
+            <h3 class="panel-title">{{ copy.rules.samples.title }}</h3>
+            <p v-if="samplesLoading" class="hint">{{ copy.common.loading }}</p>
+            <pre v-else-if="samples !== ''" class="text-block">{{ samples }}</pre>
+            <p v-else class="hint">{{ copy.rules.samples.empty }}</p>
+          </div>
         </div>
       </form>
     </Drawer>
@@ -500,6 +662,54 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.system-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4) var(--sp-24);
+  padding: var(--sp-8) var(--sp-12);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: var(--fs-12);
+}
+
+.system-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+}
+
+.system-label {
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.filter-row {
+  margin: 0;
+}
+
+.filter-select {
+  width: auto;
+  min-width: 110px;
+}
+
+.noisy-badge {
+  margin-left: var(--sp-8);
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--recorded);
+  border-radius: var(--radius);
+  color: var(--recorded);
+  font-size: var(--fs-10);
+}
+
+.rule-spark {
+  width: 90px;
+  height: 24px;
+  display: block;
+}
+
 .editor {
   display: flex;
   flex-direction: column;
