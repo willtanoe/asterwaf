@@ -13,7 +13,7 @@ export GOCACHE := $(TOOLCHAIN)/cache/go-build
 export GOMODCACHE := $(TOOLCHAIN)/cache/go-mod
 export npm_config_cache := $(TOOLCHAIN)/cache/npm
 
-.PHONY: bootstrap tools fmt lint vet test check build web-build run seed stage-a calibrate clean
+.PHONY: bootstrap tools fmt lint vet test check build web-build shots contrast run seed stage-a calibrate clean
 
 bootstrap:
 	bash scripts/bootstrap.sh
@@ -51,6 +51,12 @@ web-build: bootstrap
 	else \
 		echo "web-build: no web/package.json, keeping committed placeholder"; \
 	fi
+
+contrast: bootstrap
+	$(NODE) scripts/contrast.mjs
+
+shots: build
+	$(NODE) scripts/screenshot.mjs
 
 run: bootstrap
 	$(GO) run ./cmd/asterwaf -config config.yaml

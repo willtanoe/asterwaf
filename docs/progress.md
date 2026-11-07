@@ -47,6 +47,19 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
 - One rule-adjustment round was needed (93.33% -> 98.00%). The three remaining misses are explained in `docs/calibration.md`; they are parser limits or deliberate non-goals, not silent gaps.
 - `make calibrate` runs the gate. Rule changes for the round were applied through `asterwaf rules import-defaults`, which reported 3 inserted defaults, 0 updated defaults, and 22 custom rules skipped (the local test database had edited rules).
 
+## UI overhaul (in progress)
+
+- Screenshot loop: `scripts/screenshot.mjs` (`make shots`) seeds
+  `data/asterwaf-seed.db`, starts a throwaway instance on 127.0.0.1:18180/18190,
+  and captures all six pages in both themes at 1440/768/390 with console-error
+  and horizontal-overflow checks. `make contrast` fails below 4.5:1 for every
+  token pair used for text; `--text-faint` (dark) and `--ok` (light) were
+  adjusted to pass.
+- Shell fixes: the skip link is fixed, transform-hidden, and shown only on
+  :focus-visible; the site filter is a themed listbox (keyboard: arrows, Home,
+  End, Enter, Esc, typeahead); the sidebar becomes a top bar at 768px and
+  controls reach 36px touch targets at 390px.
+
 ## Open items
 
 - None yet.

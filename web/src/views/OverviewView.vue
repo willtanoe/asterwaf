@@ -5,6 +5,7 @@ import type { LogEntry, OverviewResponse, SiteView, StatusResponse } from "../ap
 import BreakdownList from "../components/BreakdownList.vue";
 import Gauge from "../components/Gauge.vue";
 import KpiCard from "../components/KpiCard.vue";
+import Select from "../components/Select.vue";
 import StateMessage from "../components/StateMessage.vue";
 import StatusBar from "../components/StatusBar.vue";
 import TrafficChart from "../components/TrafficChart.vue";
@@ -26,6 +27,10 @@ const range = ref<RangeKey>("15m");
 const site = ref("");
 
 const sites = ref<SiteView[]>([]);
+const siteOptions = computed(() => [
+  { value: "", label: copy.common.allSites },
+  ...sites.value.map((item) => ({ value: item.host, label: item.host })),
+]);
 const overview = ref<OverviewResponse | null>(null);
 const overviewLoading = ref(true);
 const overviewError = ref(false);
@@ -226,11 +231,14 @@ watch(range, () => {
           </div>
         </div>
         <div class="row">
-          <label class="muted" for="site-filter">{{ copy.common.site }}</label>
-          <select id="site-filter" v-model="site" class="select site-select">
-            <option value="">{{ copy.common.allSites }}</option>
-            <option v-for="item in sites" :key="item.host" :value="item.host">{{ item.host }}</option>
-          </select>
+          <span class="muted">{{ copy.common.site }}</span>
+          <Select
+            class="site-select"
+            :model-value="site"
+            :options="siteOptions"
+            :label="copy.common.site"
+            @update:model-value="site = $event"
+          />
         </div>
         <span v-if="updatedAt !== null" class="faint mono">
           {{ copy.common.updated }} {{ formatClock(updatedAt) }}

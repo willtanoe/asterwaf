@@ -9,7 +9,7 @@
   --border-strong: #3a4652;
   --text: #e7edf3;
   --text-dim: #a3afbb;
-  --text-faint: #7d8a96;
+  --text-faint: #8a959f;
   --accent: #58a6ff;
   --accent-strong: #8bc0ff;
   --accent-soft: #1f3b57;
@@ -61,7 +61,7 @@
   --recorded-soft: #fbf0d2;
   --ratelimited: #5b3fa8;
   --ratelimited-soft: #ece6fa;
-  --ok: #1a7f37;
+  --ok: #14652a;
   --ok-soft: #dcf3e2;
   --focus: #8a5a00;
   --overlay: rgba(15, 23, 32, 0.35);
