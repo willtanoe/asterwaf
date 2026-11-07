@@ -20,7 +20,7 @@ const proxyPort = 18180;
 const adminPort = 18190;
 const baseUrl = `http://127.0.0.1:${adminPort}`;
 
-const widths = [1440, 768, 390];
+const widths = [1440, 1024, 768, 390];
 const themes = ["dark", "light"];
 const pages = [
   { name: "overview", route: "/" },

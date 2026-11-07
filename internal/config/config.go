@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/netip"
 	"net/url"
 	"os"
@@ -33,6 +34,25 @@ type U站点 struct {
 	U模式     string `yaml:"mode,omitempty"`
 	U最大请求体  int64  `yaml:"max_body_bytes"`
 	U健康检查路径 string `yaml:"health_path"`
+	// U跳过统计 未设置时按 U跳过统计生效 推断；指针用于区分"显式关闭"。
+	U跳过统计 *bool `yaml:"skip_stats,omitempty"`
+}
+
+// U跳过统计生效 决定该站点的请求是否跳过日志与滚算。上游指向管理监听的
+// 站点（仪表盘自身）默认跳过，否则管理面流量会淹没真实站点的统计。
+func (站点 U站点) U跳过统计生效(管理监听 string) bool {
+	if 站点.U跳过统计 != nil {
+		return *站点.U跳过统计
+	}
+	上游, 错误 := url.Parse(站点.U上游)
+	if 错误 != nil {
+		return false
+	}
+	主机, 端口, 错误 := net.SplitHostPort(管理监听)
+	if 错误 != nil {
+		return false
+	}
+	return 上游.Hostname() == 主机 && 上游.Port() == 端口
 }
 
 // U认证配置 是单用户管理面的凭据设置。

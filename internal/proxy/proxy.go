@@ -46,6 +46,7 @@ type 站点 struct {
 	代理    *httputil.ReverseProxy
 	最大请求体 int64
 	模式    atomic.Value
+	跳过统计  bool
 }
 
 func (站点值 *站点) 当前模式() string {
@@ -114,7 +115,7 @@ func U新建(配置值 配置.U配置, 解析器 *客户端地址.U解析器, �
 		if 模式 == "" {
 			模式 = 配置值.U模式
 		}
-		站点值 := &站点{主机: 主机, 上游: 上游, 最大请求体: 最大请求体}
+		站点值 := &站点{主机: 主机, 上游: 上游, 最大请求体: 最大请求体, 跳过统计: 站点配置.U跳过统计生效(配置值.U管理监听)}
 		站点值.模式.Store(模式)
 		站点值.代理 = &httputil.ReverseProxy{
 			Rewrite: func(请求 *httputil.ProxyRequest) {
@@ -153,8 +154,9 @@ func (处理器 *U处理器) ServeHTTP(写 http.ResponseWriter, 请求 *http.Req
 		U用户代理:  检查管线.U截断文本(请求.UserAgent(), 512),
 		U动作:    "allow",
 	}
+	var 站点值 *站点
 	defer func() {
-		if 处理器.存储 == nil || 记录.USite == "" {
+		if 处理器.存储 == nil || 记录.USite == "" || (站点值 != nil && 站点值.跳过统计) {
 			return
 		}
 		记录.U状态 = 状态.状态码()

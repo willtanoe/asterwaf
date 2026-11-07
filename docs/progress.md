@@ -113,6 +113,13 @@ Status of each phase, with branch, tag and open items. Update at the end of ever
   keyboard walkthrough (skip link, focus rings, drawer Esc, minimum font
   size) also passes.
 
+- UI polish round: per-site `skip_stats` (pointer flag, resolved by
+  U跳过统计生效) stops the dashboard's own traffic from filling logs and
+  rollups; the site whose upstream is the admin listener defaults to skip,
+  explicit values win, existing rows are untouched. Covered by
+  Test跳过统计生效 and Test跳过统计站点不落日志. The screenshots loop now
+  also captures 1024px.
+
 ## Open items
 
 - None yet.

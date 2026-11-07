@@ -23,6 +23,7 @@ type U站点视图 struct {
 	U延迟毫秒   int64  `json:"latency_ms"`
 	U失败次数   int    `json:"failures"`
 	U最后检查   int64  `json:"last_check"`
+	U跳过统计   bool   `json:"skip_stats"`
 }
 
 func (管理器 *U管理器) 访问列表集合(写 http.ResponseWriter, 请求 *http.Request) {
@@ -200,7 +201,7 @@ func (管理器 *U管理器) 站点集合(写 http.ResponseWriter, 请求 *http.
 			U主机: 站点值.U主机, U上游: 站点值.U上游, U模式: 模式,
 			U健康检查路径: 站点值.U健康检查路径, U最大请求体: 站点值.U最大请求体,
 			U健康状态: 健康.U状态, U延迟毫秒: 健康.U延迟毫秒, U失败次数: 健康.U失败次数,
-			U最后检查: 健康.U最后检查,
+			U最后检查: 健康.U最后检查, U跳过统计: 站点值.U跳过统计生效(管理器.配置.U管理监听),
 		})
 	}
 	写JSON(写, http.StatusOK, map[string]any{"sites": 结果})

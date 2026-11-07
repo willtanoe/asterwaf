@@ -111,6 +111,7 @@ export interface SiteView {
   latency_ms: number;
   failures: number;
   last_check: number;
+  skip_stats: boolean;
 }
 
 export interface LogsResponse {

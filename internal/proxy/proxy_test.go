@@ -206,6 +206,75 @@ func Test上游不可达返回502(t *testing.T) {
 	}
 }
 
+// 仪表盘自身（上游等于管理监听）默认不写日志与滚算；显式 skip_stats: false 恢复记录。
+func Test跳过统计站点不落日志(t *testing.T) {
+	上游 := httptest.NewServer(http.HandlerFunc(func(写 http.ResponseWriter, _ *http.Request) {
+		写.WriteHeader(http.StatusOK)
+	}))
+	defer 上游.Close()
+	上游地址 := strings.TrimPrefix(上游.URL, "http://")
+
+	数据库, 错误 := 存储包.U打开(filepath.Join(t.TempDir(), "test.db"), slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if 错误 != nil {
+		t.Fatalf("store: %v", 错误)
+	}
+	defer func() { _ = 数据库.Close(context.Background()) }()
+
+	关闭 := false
+	解析器, 错误 := 客户端地址.U新建(nil)
+	if 错误 != nil {
+		t.Fatalf("resolver: %v", 错误)
+	}
+	引擎, 错误 := 引擎.U新建(引擎.U默认规则())
+	if 错误 != nil {
+		t.Fatalf("engine: %v", 错误)
+	}
+	处理器, 错误 := U新建(配置.U配置{
+		U模式:   "enforce",
+		U管理监听: 上游地址,
+		U站点: []配置.U站点{
+			{U主机: "waf.test", U上游: 上游.URL},
+			{U主机: "kept.test", U上游: 上游.URL, U跳过统计: &关闭},
+		},
+	}, 解析器, 引擎, 数据库, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if 错误 != nil {
+		t.Fatalf("proxy: %v", 错误)
+	}
+	t.Cleanup(处理器.U关闭空闲连接)
+
+	for _, 主机 := range []string{"waf.test", "kept.test", "waf.test", "kept.test"} {
+		记录 := httptest.NewRecorder()
+		处理器.ServeHTTP(记录, httptest.NewRequest("GET", "http://"+主机+"/", nil))
+		if 记录.Code != http.StatusOK {
+			t.Fatalf("%s status=%d", 主机, 记录.Code)
+		}
+	}
+
+	上下文 := context.Background()
+	// 写入是异步的：轮询等写循环把批次落库。
+	var 条目 []存储包.U日志条目
+	deadline := time.Now().Add(3 * time.Second)
+	for time.Now().Before(deadline) {
+		得到, 错误 := 数据库.U查询日志(上下文, 存储包.U日志查询{U限制: 10})
+		if 错误 != nil {
+			t.Fatalf("query: %v", 错误)
+		}
+		if len(得到) == 2 {
+			条目 = 得到
+			break
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	if len(条目) != 2 {
+		t.Fatalf("rows=%d, want 2 (only kept.test)", len(条目))
+	}
+	for _, 条目项 := range 条目 {
+		if 条目项.USite != "kept.test" {
+			t.Fatalf("unexpected site %q in logs", 条目项.USite)
+		}
+	}
+}
+
 func 新建处理器(t *testing.T, 配置值 配置.U配置, 受信 []string) *U处理器 {
 	t.Helper()
 	解析器, 错误 := 客户端地址.U新建(受信)

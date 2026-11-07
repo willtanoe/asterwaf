@@ -187,6 +187,32 @@ func Test按主机取站点(t *testing.T) {
 	}
 }
 
+// 管理监听上游默认跳过统计；显式取值始终优先。
+func Test跳过统计生效(t *testing.T) {
+	关闭 := false
+	开启 := true
+	测试用例 := []struct {
+		名称   string
+		站点   U站点
+		管理监听 string
+		期望   bool
+	}{
+		{"upstream equals admin defaults to skip", U站点{U主机: "waf.test", U上游: "http://127.0.0.1:9090"}, "127.0.0.1:9090", true},
+		{"different host does not skip", U站点{U主机: "app.test", U上游: "http://127.0.0.1:3000"}, "127.0.0.1:9090", false},
+		{"different port does not skip", U站点{U主机: "app.test", U上游: "http://127.0.0.1:9091"}, "127.0.0.1:9090", false},
+		{"explicit false overrides admin match", U站点{U主机: "waf.test", U上游: "http://127.0.0.1:9090", U跳过统计: &关闭}, "127.0.0.1:9090", false},
+		{"explicit true applies anywhere", U站点{U主机: "app.test", U上游: "http://127.0.0.1:3000", U跳过统计: &开启}, "127.0.0.1:9090", true},
+		{"invalid upstream does not skip", U站点{U主机: "app.test", U上游: "::::"}, "127.0.0.1:9090", false},
+	}
+	for _, 用例 := range 测试用例 {
+		t.Run(用例.名称, func(t *testing.T) {
+			if 得到 := 用例.站点.U跳过统计生效(用例.管理监听); 得到 != 用例.期望 {
+				t.Fatalf("skip_stats=%v, want %v", 得到, 用例.期望)
+			}
+		})
+	}
+}
+
 func 写临时配置(t *testing.T, 内容 string) string {
 	t.Helper()
 	路径 := filepath.Join(t.TempDir(), "config.yaml")
